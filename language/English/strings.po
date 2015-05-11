@@ -10362,7 +10362,7 @@ msgstr ""
 #: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
 #: xbmc/playlists/SmartPlaylist.cpp
 msgctxt "#20339"
-msgid "Director"
+msgid "Directed by"
 msgstr ""
 
 msgctxt "#20340"
