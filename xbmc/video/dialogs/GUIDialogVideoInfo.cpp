@@ -60,6 +60,10 @@
 #include "utils/Variant.h"
 #include "utils/log.h"
 
+#include "utils/log.h"
+#include "cores/IPlayer.h"
+#include "utils/LangCodeExpander.h"
+
 using namespace std;
 using namespace XFILE::VIDEODATABASEDIRECTORY;
 using namespace XFILE;
@@ -411,6 +415,48 @@ void CGUIDialogVideoInfo::Update()
     pImageControl->FreeResources();
     pImageControl->SetFileName(m_movieItem->GetArt("thumb"));
   }
+  // Update the Audio Stream spinner
+  int current = 0;
+  int audioStreamCount = g_application.m_pPlayer->GetAudioStreamCount();
+  std::vector< std::pair<std::string, int> > list;
+  CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: stream count: %d", audioStreamCount);
+  // cycle through each audio stream and add it to our list control
+  for (int i = 0; i < audioStreamCount; ++i)
+  {
+    std::string strItem;
+    CStdString strLanguage;
+
+    SPlayerAudioStreamInfo info;
+    g_application.m_pPlayer->GetAudioStreamInfo(i, info);
+
+    if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+      strLanguage = g_localizeStrings.Get(13205); // Unknown
+
+    if (info.name.length() == 0)
+      strItem = strLanguage;
+    else
+      strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
+
+    strItem += StringUtils::Format(" (%i/%i)", i + 1, audioStreamCount);
+    list.push_back(make_pair(strItem, i));
+  }
+  // If the list is empty, 
+  if (list.empty())
+  {
+    list.push_back(make_pair(g_localizeStrings.Get(231), -1));
+    current = -1;
+  }
+  SET_CONTROL_LABELS(33101, current, &list);
+#if 0
+  std::vector< std::pair<std::string, int> > labels;
+  std::string strLabel = StringUtils::Format("AreaCode %i", 0);
+  labels.push_back(make_pair(strLabel, 0));
+  strLabel = StringUtils::Format("AreaCode %i", 1);
+  labels.push_back(make_pair(strLabel, 0));
+  //SET_CONTROL_LABEL(402,strLabel);
+  SET_CONTROL_LABELS(402, 0, &labels);
+#endif
+
   // tell our GUI to completely reload all controls (as some of them
   // are likely to have had this image in use so will need refreshing)
   if (m_hasUpdatedThumb)
