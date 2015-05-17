@@ -752,6 +752,8 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   if (canfilter && url.HasOption("filter"))
     directory = RemoveParameterFromPath(directory, "filter");
 
+  CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : Start Get Dir");
+
   CFileItemList items;
   if (!GetDirectory(directory, items))
   {
@@ -771,6 +773,19 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   
   ClearFileItems();
   m_vecItems->Copy(items);
+
+  for (int i=0; i < items.Size(); i++)
+  {
+    //items[i]->SetLabel("toto");
+    CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
+            CURL::GetRedacted(items[i]->GetPath()).c_str(),
+            items[i]->HasArt("thumb"),
+            items[i]->HasArt("poster"),
+            items[i]->HasArt("fanart"),
+            items[i]->HasArt("icon"),
+            items[i]->GetLabel().c_str(),
+            items[i]->GetArt("fanart").c_str());
+  }
 
   // check the given path for filter data
   UpdateFilterPath(strDirectory, items, updateFilterPath);
@@ -836,6 +851,7 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   OnCacheFileItems(*m_vecItems);
 
   // Filter and group the items if necessary
+  CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : filter items");
   OnFilterItems(GetProperty("filter").asString());
 
   // Ask the devived class if it wants to do custom list operations,
@@ -850,6 +866,17 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   for (int i = 0; i < m_vecItems->Size(); ++i)
   {
     CFileItemPtr pItem = m_vecItems->Get(i);
+    CFileItem * cItem  = pItem.get();
+
+    CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
+            CURL::GetRedacted(cItem->GetPath()).c_str(),
+            cItem->HasArt("thumb"),
+            cItem->HasArt("poster"),
+            cItem->HasArt("fanart"),
+            cItem->HasArt("icon"),
+            cItem->GetLabel().c_str(),
+            cItem->GetArt("fanart").c_str());
+    //cItem->SetLabel("toto");
 
     // Update selected item
     std::string strHistory;
@@ -1405,6 +1432,7 @@ void CGUIMediaWindow::UpdateFileList()
   FormatAndSort(*m_vecItems);
   UpdateButtons();
 
+  CLog::Log(LOGDEBUG,"CGUIMediaWindow::UpdateFileList");
   m_viewControl.SetItems(*m_vecItems);
   m_viewControl.SetSelectedItem(strSelected);
 
@@ -1470,12 +1498,15 @@ void CGUIMediaWindow::OnRenameItem(int iItem)
 
 void CGUIMediaWindow::OnInitWindow()
 {
+  CLog::Log(LOGDEBUG, "------ Window Init start  ------");
   // initial fetch is done unthreaded to ensure the items are setup prior to skin animations kicking off
   m_rootDir.SetAllowThreads(false);
 
   // the start directory may change during Refresh
   bool updateStartDirectory = URIUtils::PathEquals(m_vecItems->GetPath(), m_startDirectory, true);
+  CLog::Log(LOGDEBUG, "------ Refresh start  ------");
   Refresh();
+  CLog::Log(LOGDEBUG, "------ Refresh stop ------");
   if (updateStartDirectory)
   {
     // reset the start directory to the path of the items
@@ -1490,6 +1521,22 @@ void CGUIMediaWindow::OnInitWindow()
   if (m_iSelectedItem > -1)
     m_viewControl.SetSelectedItem(m_iSelectedItem);
 
+  for (int i = 0; i < m_vecItems->Size(); ++i)
+  {
+    CFileItemPtr pItem = m_vecItems->Get(i);
+    CFileItem * cItem  = pItem.get();
+
+    CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
+            CURL::GetRedacted(cItem->GetPath()).c_str(),
+            cItem->HasArt("thumb"),
+            cItem->HasArt("poster"),
+            cItem->HasArt("fanart"),
+            cItem->HasArt("icon"),
+            cItem->GetLabel().c_str(),
+            cItem->GetArt("fanart").c_str());
+  }
+
+  CLog::Log(LOGDEBUG, "------ Window Init end ------");
   CGUIWindow::OnInitWindow();
 }
 
@@ -1819,6 +1866,7 @@ void CGUIMediaWindow::OnFilterItems(const std::string &filter)
   }
 
   // and update our view control + buttons
+  CLog::Log(LOGDEBUG,"CGUIMediaWindow::OnFilterItems");
   m_viewControl.SetItems(*m_vecItems);
   m_viewControl.SetSelectedItem(currentItemPath);
   UpdateButtons();

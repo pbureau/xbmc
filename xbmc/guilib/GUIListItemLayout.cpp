@@ -26,6 +26,7 @@
 #include "GUIListLabel.h"
 #include "GUIImage.h"
 #include "utils/XBMCTinyXML.h"
+#include "utils/log.h"
 
 using namespace std;
 

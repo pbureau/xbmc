@@ -93,6 +93,7 @@ public:
   void ResetAutoScrolling();
   void UpdateAutoScrolling(unsigned int currentTime);
 
+  virtual unsigned int GetNumItems() const { return m_items.size(); };
 #ifdef _DEBUG
   virtual void DumpTextureUse();
 #endif
@@ -118,7 +119,6 @@ protected:
   virtual bool SelectItemFromPoint(const CPoint &point) { return false; };
   virtual int GetCursorFromPoint(const CPoint &point, CPoint *itemPoint = NULL) const { return -1; };
   virtual void Reset();
-  virtual unsigned int GetNumItems() const { return m_items.size(); };
   virtual int GetCurrentPage() const;
   bool InsideLayout(const CGUIListItemLayout *layout, const CPoint &point) const;
   virtual void OnFocus();
@@ -150,6 +150,7 @@ protected:
 
   CGUIListItemLayout *m_layout;
   CGUIListItemLayout *m_focusedLayout;
+  CGUIControl *m_labelCategoryNoArt;
 
   void ScrollToOffset(int offset);
   void SetContainerMoving(int direction);

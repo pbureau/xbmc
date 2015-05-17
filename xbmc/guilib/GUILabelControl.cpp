@@ -22,6 +22,8 @@
 #include "utils/CharsetConverter.h"
 #include "utils/StringUtils.h"
 
+#include "utils/log.h"
+
 using namespace std;
 
 CGUILabelControl::CGUILabelControl(int parentID, int controlID, float posX, float posY, float width, float height, const CLabelInfo& labelInfo, bool wrapMultiLine, bool bHasPath)
@@ -127,6 +129,7 @@ void CGUILabelControl::Process(unsigned int currentTime, CDirtyRegionList &dirty
 {
   bool changed = false;
 
+  //CLog::Log(LOGDEBUG,"CGUILabelControl::Process: %s (%.1f,%.1f)", GetDescription().c_str(), m_posX, m_posY);
   changed |= m_label.SetColor(IsDisabled() ? CGUILabel::COLOR_DISABLED : CGUILabel::COLOR_TEXT);
   changed |= m_label.SetMaxRect(m_posX, m_posY, GetMaxWidth(), m_height);
   changed |= m_label.Process(currentTime);

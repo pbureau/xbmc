@@ -27,6 +27,7 @@
 #include "GUIInfoManager.h"
 #include "guilib/WindowIDs.h"
 #include "guilib/IGUIContainer.h"
+#include "utils/log.h"
 
 CGUIViewControl::CGUIViewControl(void)
 {
@@ -139,13 +140,14 @@ void CGUIViewControl::SetItems(CFileItemList &items)
 void CGUIViewControl::UpdateContents(const CGUIControl *control, int currentItem)
 {
   if (!control || !m_fileItems) return;
+  CLog::Log(LOGDEBUG,"CGUIViewControl::UpdateContents");
   CGUIMessage msg(GUI_MSG_LABEL_BIND, m_parentWindow, control->GetID(), currentItem, 0, m_fileItems);
   g_windowManager.SendMessage(msg, m_parentWindow);
 }
 
 void CGUIViewControl::UpdateView()
 {
-//  CLog::Log(LOGDEBUG,"UpdateView: %i", m_currentView);
+  CLog::Log(LOGDEBUG,"CGUIViewControl::UpdateView: %i", m_currentView);
   if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
     return; // no valid current view!
 

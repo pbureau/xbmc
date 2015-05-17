@@ -329,6 +329,7 @@ namespace VIDEO
       else
       { // need to fetch the folder
         CDirectory::GetDirectory(strDirectory, items, g_advancedSettings.m_videoExtensions);
+        CLog::Log(LOGDEBUG, "VideoInfoScanner: video ext %s", g_advancedSettings.m_videoExtensions.c_str());
         items.Stack();
 
         // check whether to re-use previously computed fast hash
@@ -455,6 +456,8 @@ namespace VIDEO
     {
       m_nfoReader.Close();
       CFileItemPtr pItem = items[i];
+      if(!pItem->m_bIsFolder)
+        CLog::Log(LOGDEBUG, "RetrieveVideoInfo: scanning %s", CURL::GetRedacted(pItem->GetPath()).c_str());
 
       // we do this since we may have a override per dir
       ScraperPtr info2 = m_database.GetScraperForPath(pItem->m_bIsFolder ? pItem->GetPath() : items.GetPath());
@@ -597,6 +600,10 @@ namespace VIDEO
 
   INFO_RET CVideoInfoScanner::RetrieveInfoForMovie(CFileItem *pItem, bool bDirNames, ScraperPtr &info2, bool useLocal, CScraperUrl* pURL, CGUIDialogProgress* pDlgProgress)
   {
+    CLog::Log(LOGDEBUG, "RetrieveInfoForMovie: scanning %s", CURL::GetRedacted(pItem->GetPath()).c_str());
+    CLog::Log(LOGDEBUG, "RetrieveInfoForMovie: isVideo %d", pItem->IsVideo());
+    CLog::Log(LOGDEBUG, "RetrieveInfoForMovie: mimetype %s", pItem->GetMimetype().c_str());
+
     if (pItem->m_bIsFolder || !pItem->IsVideo() || pItem->IsNFO() ||
        (pItem->IsPlayList() && !URIUtils::HasExtension(pItem->GetPath(), ".strm")))
       return INFO_NOT_NEEDED;
@@ -1142,7 +1149,10 @@ namespace VIDEO
     // ensure the art map isn't completely empty by specifying an empty thumb
     map<string, string> art = pItem->GetArt();
     if (art.empty())
+    {
+      CLog::Log(LOGDEBUG, "VideoInfoScanner: art is empty");
       art["thumb"] = "";
+    }
 
     CVideoInfoTag &movieDetails = *pItem->GetVideoInfoTag();
     if (movieDetails.m_basePath.empty())

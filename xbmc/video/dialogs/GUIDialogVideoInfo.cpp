@@ -58,6 +58,7 @@
 #include "network/upnp/UPnP.h"
 #endif
 #include "utils/FileUtils.h"
+#include "utils/log.h"
 
 using namespace std;
 using namespace XFILE::VIDEODATABASEDIRECTORY;
@@ -383,6 +384,7 @@ void CGUIDialogVideoInfo::Update()
   StringUtils::Trim(strTmp);
   SetLabel(CONTROL_TEXTAREA, strTmp);
 
+  CLog::Log(LOGDEBUG,"CGUIDialogVideoInfo::Update");
   CGUIMessage msg(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_castList);
   OnMessage(msg);
 

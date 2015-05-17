@@ -51,6 +51,7 @@
 #include "GUIWrappingListContainer.h"
 #include "epg/GUIEPGGridContainer.h"
 #include "GUIPanelContainer.h"
+#include "GUIExtPanelContainer.h"
 #include "GUIMultiSelectText.h"
 #include "GUIListLabel.h"
 #include "GUIListGroup.h"
@@ -113,7 +114,8 @@ static const ControlMapping controls[] =
     {"wraplist",          CGUIControl::GUICONTAINER_WRAPLIST},
     {"fixedlist",         CGUIControl::GUICONTAINER_FIXEDLIST},
     {"epggrid",           CGUIControl::GUICONTAINER_EPGGRID},
-    {"panel",             CGUIControl::GUICONTAINER_PANEL}};
+    {"panel",             CGUIControl::GUICONTAINER_PANEL},
+    {"extendedpanel",     CGUIControl::GUICONTAINER_EXTPANEL}};
 
 CGUIControl::GUICONTROLTYPES CGUIControlFactory::TranslateControlType(const CStdString &type)
 {
@@ -1050,6 +1052,11 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
     viewType = VIEW_TYPE_ICON;
     viewLabel = g_localizeStrings.Get(536);
   }
+  else if (type == CGUIControl::GUICONTAINER_EXTPANEL)
+  {
+    viewType = VIEW_TYPE_ICON;
+    viewLabel = g_localizeStrings.Get(536);
+  }
   else if (type == CGUIControl::GUICONTAINER_LIST)
   {
     viewType = VIEW_TYPE_LIST;
@@ -1137,6 +1144,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   else if (type == CGUIControl::GUICONTROL_LABEL)
   {
     const CGUIInfoLabel &content = (infoLabels.size()) ? infoLabels[0] : CGUIInfoLabel("");
+    CLog::Log(LOGDEBUG,"CGUIControlFactory:: Create Label #%d: (%.1f,%.1f) (%.1f/%.1f)", id, posX, posY, width, height);
     if (insideContainer)
     { // inside lists we use CGUIListLabel
       control = new CGUIListLabel(parentID, id, posX, posY, width, height, labelInfo, content, scrollValue);
@@ -1387,6 +1395,21 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
     ((CGUIPanelContainer *)control)->SetPageControl(pageControl);
     ((CGUIPanelContainer *)control)->SetRenderOffset(offset);
     ((CGUIPanelContainer *)control)->SetAutoScrolling(pControlNode);
+  }
+  else if (type == CGUIControl::GUICONTAINER_EXTPANEL)
+  {
+    CScroller scroller;
+    GetScroller(pControlNode, "scrolltime", scroller); 
+
+    control = new CGUIExtPanelContainer(parentID, id, posX, posY, width, height, orientation, scroller, preloadItems);
+    CLog::Log(LOGDEBUG,"CGUIControlFactory size start is: %d", ((CGUIPanelContainer *)control)->GetNumItems());
+    ((CGUIExtPanelContainer *)control)->LoadLayout(pControlNode);
+    ((CGUIExtPanelContainer *)control)->LoadListProvider(pControlNode, defaultControl, defaultAlways);
+    ((CGUIExtPanelContainer *)control)->SetType(viewType, viewLabel);
+    ((CGUIExtPanelContainer *)control)->SetPageControl(pageControl);
+    ((CGUIExtPanelContainer *)control)->SetRenderOffset(offset);
+    ((CGUIExtPanelContainer *)control)->SetAutoScrolling(pControlNode);
+    CLog::Log(LOGDEBUG,"CGUIControlFactory size end is: %d", ((CGUIPanelContainer *)control)->GetNumItems());
   }
   else if (type == CGUIControl::GUICONTROL_TEXTBOX)
   {

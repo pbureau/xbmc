@@ -4439,6 +4439,7 @@ bool CGUIInfoManager::GetItemInt(int &value, const CGUIListItem *item, int info)
 
 CStdString CGUIInfoManager::GetItemLabel(const CFileItem *item, int info, std::string *fallback)
 {
+  //CLog::Log(LOGDEBUG,"CGUIInfoManager::GetItemLabel %d", info);
   if (!item) return "";
 
   if (info >= CONDITIONAL_LABEL_START && info <= CONDITIONAL_LABEL_END)
@@ -4447,6 +4448,7 @@ CStdString CGUIInfoManager::GetItemLabel(const CFileItem *item, int info, std::s
   if (info >= LISTITEM_PROPERTY_START + LISTITEM_ART_OFFSET && info - (LISTITEM_PROPERTY_START + LISTITEM_ART_OFFSET) < (int)m_listitemProperties.size())
   { // grab the art
     std::string art = m_listitemProperties[info - (LISTITEM_PROPERTY_START + LISTITEM_ART_OFFSET)];
+    //CLog::Log(LOGDEBUG,"CGUIInfoManager::GetItemLabel:GetArt %s", art.c_str());
     return item->GetArt(art);
   }
 
@@ -5136,6 +5138,7 @@ CStdString CGUIInfoManager::GetItemLabel(const CFileItem *item, int info, std::s
 
 CStdString CGUIInfoManager::GetItemImage(const CFileItem *item, int info, std::string *fallback)
 {
+  //CLog::Log(LOGDEBUG,"CGUIInfoManager::GetItemImage %d", info);
   if (info >= CONDITIONAL_LABEL_START && info <= CONDITIONAL_LABEL_END)
     return GetSkinVariableString(info, true, item);
 
@@ -5165,6 +5168,7 @@ CStdString CGUIInfoManager::GetItemImage(const CFileItem *item, int info, std::s
     break;
   }  /* switch (info) */
 
+  //CLog::Log(LOGDEBUG,"CGUIInfoManager::GetItemImage return %s", GetItemLabel(item, info, fallback).c_str());
   return GetItemLabel(item, info, fallback);
 }
 

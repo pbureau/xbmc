@@ -21,6 +21,9 @@
 #include "GUILabel.h"
 #include <limits>
 
+#include "utils/log.h"
+#include <execinfo.h>
+
 CGUILabel::CGUILabel(float posX, float posY, float width, float height, const CLabelInfo& labelInfo, CGUILabel::OVER_FLOW overflow)
     : m_label(labelInfo)
     , m_textLayout(labelInfo.font, overflow == OVER_FLOW_WRAP, height)
@@ -90,6 +93,7 @@ bool CGUILabel::Process(unsigned int currentTime)
 {
   // TODO Add the correct processing
 
+  //CLog::Log(LOGDEBUG,"CGUILabel::Process: (%.1f,%.1f)", m_renderRect.Width(), m_renderRect.Height());
   bool overFlows = (m_renderRect.Width() + 0.5f < m_textLayout.GetTextWidth()); // 0.5f to deal with floating point rounding issues
   bool renderSolid = (m_color == COLOR_DISABLED);
 
@@ -143,7 +147,22 @@ bool CGUILabel::UpdateColors()
 bool CGUILabel::SetMaxRect(float x, float y, float w, float h)
 {
   CRect oldRect = m_maxRect;
+#if 0
+#define BACKSIZE 10
+  void *array[BACKSIZE];
+  size_t size;
+  char **strings;
+  int j;
 
+  CLog::Log(LOGDEBUG, "**** CGUILabel::SetMaxRect ****");
+  size = backtrace (array, BACKSIZE);
+  strings = backtrace_symbols (array, size);
+  for(j=0; j<size; j++)
+    CLog::Log(LOGDEBUG, "%s", strings[j]);
+  free(strings);
+#endif
+
+  //CLog::Log(LOGDEBUG,"CGUILabel::SetMaxRect (%.1f, %1.f, %1.f, %1.f)", x, y, w, h);
   m_maxRect.SetRect(x, y, x + w, y + h);
   UpdateRenderRect();
 
@@ -198,6 +217,7 @@ void CGUILabel::UpdateRenderRect()
   // recalculate our text layout
   float width, height;
   m_textLayout.GetTextExtent(width, height);
+  //CLog::Log(LOGDEBUG,"CGUILabel::UpdateRenderRect (%.1f, %.1f)", width, height);
   width = std::min(width, GetMaxWidth());
   if (m_label.align & XBFONT_CENTER_Y)
     m_renderRect.y1 = m_maxRect.y1 + (m_maxRect.Height() - height) * 0.5f;
@@ -211,6 +231,14 @@ void CGUILabel::UpdateRenderRect()
     m_renderRect.x1 = m_maxRect.x1 + m_label.offsetX;
   m_renderRect.x2 = m_renderRect.x1 + width;
   m_renderRect.y2 = m_renderRect.y1 + height;
+
+#if 0
+  CLog::Log(LOGDEBUG,"CGUILabel::UpdateRenderRect (%.1f, %.1f, %1.f, %1.f)", 
+      m_renderRect.x1,
+      m_renderRect.y1,
+      m_renderRect.x2,
+      m_renderRect.y2);
+#endif
 }
 
 float CGUILabel::GetMaxWidth() const

@@ -155,6 +155,8 @@ void CGUIControlProfilerItem::SaveToXML(TiXmlElement *parent)
     lpszType = "fixedlist"; break;
   case CGUIControl::GUICONTAINER_PANEL:
     lpszType = "panel"; break;
+  case CGUIControl::GUICONTAINER_EXTPANEL:
+    lpszType = "extendedpanel"; break;
   //case CGUIControl::GUICONTROL_UNKNOWN:
   default:
     break;
