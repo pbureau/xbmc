@@ -43,6 +43,7 @@
 #include "FileItem.h"
 #include "filesystem/AddonsDirectory.h"
 #include "guilib/TextureManager.h"
+#include "utils/log.h"
 
 #if defined(TARGET_ANDROID)
 #include "filesystem/AndroidAppDirectory.h"

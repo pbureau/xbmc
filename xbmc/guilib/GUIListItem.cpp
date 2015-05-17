@@ -24,6 +24,9 @@
 #include "utils/CharsetConverter.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
+#include "utils/log.h"
+
+#include <execinfo.h>
 
 using namespace std;
 
@@ -112,6 +115,21 @@ const std::wstring& CGUIListItem::GetSortLabel() const
 
 void CGUIListItem::SetArt(const std::string &type, const std::string &url)
 {
+#if 0
+#define BACKSIZE 10
+  void *array[BACKSIZE];
+  size_t size;
+  char **strings;
+  int j;
+
+  CLog::Log(LOGDEBUG, "**** CGUIListItem::SetArt ****");
+  size = backtrace (array, BACKSIZE);
+  strings = backtrace_symbols (array, size);
+  for(j=0; j<size; j++)
+    CLog::Log(LOGDEBUG, "%s", strings[j]);
+  free(strings);
+#endif
+
   ArtMap::iterator i = m_art.find(type);
   if (i == m_art.end() || i->second != url)
   {
@@ -122,6 +140,19 @@ void CGUIListItem::SetArt(const std::string &type, const std::string &url)
 
 void CGUIListItem::SetArt(const ArtMap &art)
 {
+#if 0
+  void *array[BACKSIZE];
+  size_t size;
+  char **strings;
+  int j;
+  CLog::Log(LOGDEBUG, "**** CGUIListItem::SetArt Artmap ****");
+  size = backtrace (array, BACKSIZE);
+  strings = backtrace_symbols (array, size);
+  for(j=0; j<size; j++)
+    CLog::Log(LOGDEBUG, "%s", strings[j]);
+  free(strings);
+#endif
+
   m_art = art;
   SetInvalid();
 }

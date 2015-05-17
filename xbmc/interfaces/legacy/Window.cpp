@@ -328,6 +328,7 @@ namespace XBMCAddon
       case CGUIControl::GUICONTAINER_WRAPLIST:
       case CGUIControl::GUICONTAINER_FIXEDLIST:
       case CGUIControl::GUICONTAINER_PANEL:
+      case CGUIControl::GUICONTAINER_EXTPANEL:
         pControl = new ControlList();
         // create a python spin control
         ((ControlList*)pControl)->pControlSpin = new ControlSpin();

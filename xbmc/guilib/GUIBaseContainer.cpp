@@ -19,6 +19,8 @@
  */
 
 #include "GUIBaseContainer.h"
+#include "GUIControlFactory.h"
+#include "GUIWindowManager.h"
 #include "utils/CharsetConverter.h"
 #include "GUIInfoManager.h"
 #include "utils/TimeUtils.h"
@@ -404,6 +406,7 @@ bool CGUIBaseContainer::OnMessage(CGUIMessage& message)
     {
       if (message.GetMessage() == GUI_MSG_LABEL_BIND && message.GetPointer())
       { // bind our items
+          CLog::Log(LOGDEBUG, "------ bind items start ------");
         Reset();
         CFileItemList *items = (CFileItemList *)message.GetPointer();
         for (int i = 0; i < items->Size(); i++)
@@ -892,6 +895,7 @@ void CGUIBaseContainer::UpdateListProvider(bool forceRefresh /* = false */)
   {
     if (m_listProvider->Update(forceRefresh))
     {
+      CLog::Log(LOGDEBUG,"CGUIBaseContainer::UpdateListProvider");
       // save the current item
       int currentItem = GetSelectedItem();
       CGUIListItem *current = (currentItem >= 0 && currentItem < (int)m_items.size()) ? m_items[currentItem].get() : NULL;
@@ -900,6 +904,11 @@ void CGUIBaseContainer::UpdateListProvider(bool forceRefresh /* = false */)
       SetPageControlRange();
       // update the newly selected item
       bool found = false;
+      for (int i = 0; i < (int)m_items.size(); i++)
+      {
+        CGUIListItemPtr item = m_items[i];
+        CLog::Log(LOGDEBUG,"CGUIBaseContainer::UpdateListProvider: label is %s", item->GetLabel().c_str());
+      }
       for (int i = 0; i < (int)m_items.size(); i++)
       {
         if (m_items[i].get() == current)
@@ -1092,6 +1101,15 @@ void CGUIBaseContainer::LoadLayout(TiXmlElement *layout)
     itemLayout.LoadLayout(itemElement, GetParentID(), true);
     m_focusedLayouts.push_back(itemLayout);
     itemElement = itemElement->NextSiblingElement("focusedlayout");
+  }
+  itemElement = layout->FirstChildElement("labelxxxx");
+  if(itemElement)
+  {
+    CGUIControlFactory factory;
+    CRect rect(0,0,0,0);
+
+    CLog::Log(LOGDEBUG, "*************CGUIBaseContainer::LoadLayout");
+    m_labelCategoryNoArt = factory.Create(GetParentID(), rect, itemElement, false);
   }
 }
 
