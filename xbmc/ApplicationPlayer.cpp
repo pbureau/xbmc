@@ -23,6 +23,7 @@
 #include "Application.h"
 #include "settings/MediaSettings.h"
 
+
 CApplicationPlayer::CApplicationPlayer()
 {
   m_iPlayerOPSeq = 0;
@@ -511,7 +512,7 @@ int  CApplicationPlayer::GetAudioStreamCount()
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
-    return player->GetAudioStreamCount();
+      return player->GetAudioStreamCount();
   else
     return 0;
 }

@@ -8,9 +8,9 @@
   <include>CommonBackgroundPlayer</include>
     <include>Clock</include>
                 <control type="image">
-                    <left>70</left>
+                    <left>60</left>
                     <top>60</top>
-                    <width>1140</width>
+                    <width>1150</width>
                     <height>600</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
@@ -26,9 +26,9 @@
                                     </control>
                         <!-- Main Panel - Cover grid -->
 			<control type="panel" id="500">
-				<left>90</left>
+				<left>80</left>
 				<top>80</top>
-				<width>850</width>
+				<width>860</width>
 				<height>558</height>
 				<onleft>2</onleft>
 				<onright>60</onright>
@@ -259,7 +259,7 @@
 					<font>font12</font>
                                         <textcolor>grey2</textcolor>
                                         <focusedcolor>grey2</focusedcolor>
-					<autoscroll time="3000" delay="4000" repeat="5000">Skin.HasSetting(Enable.AutoScroll) + !Control.HasFocus(61)</autoscroll>
+                                        <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
 				</control>
 <!--
 				<control type="scrollbar" id="61">

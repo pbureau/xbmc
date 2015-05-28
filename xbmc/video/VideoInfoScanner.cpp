@@ -569,7 +569,6 @@ namespace VIDEO
   {
     CLog::Log(LOGDEBUG, "RetrieveInfoForMovie: scanning %s", CURL::GetRedacted(pItem->GetPath()).c_str());
     CLog::Log(LOGDEBUG, "RetrieveInfoForMovie: isVideo %d", pItem->IsVideo());
-    CLog::Log(LOGDEBUG, "RetrieveInfoForMovie: mimetype %s", pItem->GetMimetype().c_str());
 
     if (pItem->m_bIsFolder || !pItem->IsVideo() || pItem->IsNFO() ||
        (pItem->IsPlayList() && !URIUtils::HasExtension(pItem->GetPath(), ".strm")))
