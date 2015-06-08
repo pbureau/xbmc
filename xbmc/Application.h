@@ -179,6 +179,7 @@ public:
   void SaveFileState(bool bForeground = false);
   void UpdateFileState();
   void LoadVideoSettings(const std::string &path);
+  void SaveVideoSettings(const std::string &path);
   void StopPlaying();
   void Restart(bool bSamePosition = true);
   void DelayedPlayerRestart();
