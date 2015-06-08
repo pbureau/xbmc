@@ -44,6 +44,7 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/MediaSourceSettings.h"
 #include "settings/Settings.h"
+#include "settings/MediaSettings.h"
 #include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "ContextMenuManager.h"
@@ -78,6 +79,8 @@ using namespace XFILE;
 #define CONTROL_BTN_PLAY_TRAILER    11
 #define CONTROL_BTN_GET_FANART      12
 #define CONTROL_BTN_DIRECTOR        13
+#define CONTROL_SPIN_AUDIOSTREAM    14
+#define CONTROL_SPIN_SUBTITLES      15
 
 #define CONTROL_LIST                50
 
@@ -105,11 +108,24 @@ CGUIDialogVideoInfo::~CGUIDialogVideoInfo(void)
 
 bool CGUIDialogVideoInfo::OnMessage(CGUIMessage& message)
 {
+  // Check if the movie we are looking at is currently playing
+  CGUIInfoBool m_isPlaying;
+  m_isPlaying.Parse("listitem.isplaying", 0);
+  m_isPlaying.Update(m_movieItem.get());
+
   switch ( message.GetMessage() )
   {
   case GUI_MSG_WINDOW_DEINIT:
     {
       ClearCastList();
+      // Save the video settings
+      CVideoDatabase dbs;
+      if (dbs.Open())
+      {
+        CLog::Log(LOGDEBUG, "Saving settings for %s", m_movieItem->GetPath().c_str());
+        dbs.SetVideoSettings(m_movieItem->GetPath(), CMediaSettings::Get().GetCurrentVideoSettings());
+        dbs.Close();
+      }
     }
     break;
 
@@ -171,6 +187,44 @@ bool CGUIDialogVideoInfo::OnMessage(CGUIMessage& message)
         std::string strDirector = StringUtils::Join(m_movieItem->GetVideoInfoTag()->m_director, g_advancedSettings.m_videoItemSeparator);
         OnSearch(strDirector);
       }
+      else if (iControl == CONTROL_SPIN_SUBTITLES)
+      {
+        CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
+        OnMessage(msg);
+        int iItem = msg.GetParam1();
+
+        // if movie is currently playing, change player stream
+        if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
+          g_application.m_pPlayer->SetSubtitle(iItem);
+        else
+        {
+          // only change the audio stream if it is different from current Settings
+          if (CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream != iItem)
+          {
+            // Set the audio stream to the one selected
+            CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream = iItem;
+          }
+        }
+      }
+      else if (iControl == CONTROL_SPIN_AUDIOSTREAM)
+      {
+        CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
+        OnMessage(msg);
+        int iItem = msg.GetParam1();
+
+        // if movie is currently playing, change player stream
+        if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
+          g_application.m_pPlayer->SetAudioStream(iItem);
+        else
+        {
+          // only change the audio stream if it is different from current Settings
+          if (CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream != iItem)
+          {
+            // Set the audio stream to the one selected
+            CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream = iItem;
+          }
+        }
+      }
       else if (iControl == CONTROL_LIST)
       {
         int iAction = message.GetParam1();
@@ -212,6 +266,11 @@ void CGUIDialogVideoInfo::OnInitWindow()
   m_bRefreshAll = true;
   m_hasUpdatedThumb = false;
   m_bViewReview = true;
+
+  // Load video settings
+  // FIXME: Is it better to reopen the database, which has been done right before,
+  // or to duplicate code in LoadVideoSettings? Both are suboptimal.
+  g_application.LoadVideoSettings(m_movieItem->GetPath());
 
   CONTROL_ENABLE_ON_CONDITION(CONTROL_BTN_REFRESH, (CProfilesManager::Get().GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser) && !StringUtils::StartsWithNoCase(m_movieItem->GetVideoInfoTag()->m_strIMDBNumber, "xx"));
   CONTROL_ENABLE_ON_CONDITION(CONTROL_BTN_GET_THUMB, (CProfilesManager::Get().GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser) && !StringUtils::StartsWithNoCase(m_movieItem->GetVideoInfoTag()->m_strIMDBNumber.c_str() + 2, "plugin"));
@@ -415,47 +474,113 @@ void CGUIDialogVideoInfo::Update()
     pImageControl->FreeResources();
     pImageControl->SetFileName(m_movieItem->GetArt("thumb"));
   }
-  // Update the Audio Stream spinner
-  int current = 0;
-  int audioStreamCount = g_application.m_pPlayer->GetAudioStreamCount();
-  std::vector< std::pair<std::string, int> > list;
-  CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: stream count: %d", audioStreamCount);
-  // cycle through each audio stream and add it to our list control
-  for (int i = 0; i < audioStreamCount; ++i)
+  // Update the Audio Stream and Subtitles spinners
+  PLAYERCOREID eNewCore   = EPC_NONE;
+  int audioStream         = 0;
+  int subtitleStream      = 0;
+  int audioStreamCount    = 0;
+  int subtitleStreamCount = 0;
+  std::vector< std::pair<std::string, int> > list_audio;
+  std::vector< std::pair<std::string, int> > list_subs;
+  CApplicationPlayer * m_pPlayer;
+
+  // Check if the movie we are looking at is currently playing
+  CGUIInfoBool m_isPlaying;
+  m_isPlaying.Parse("listitem.isplaying", 0);
+  m_isPlaying.Update(m_movieItem.get());
+
+  //CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: ######## we are playing a movie? %d", bool(m_isPlaying));
+
+  if(g_application.m_pPlayer->HasPlayer() && g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
   {
-    std::string strItem;
-    CStdString strLanguage;
-
-    SPlayerAudioStreamInfo info;
-    g_application.m_pPlayer->GetAudioStreamInfo(i, info);
-
-    if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
-      strLanguage = g_localizeStrings.Get(13205); // Unknown
-
-    if (info.name.length() == 0)
-      strItem = strLanguage;
-    else
-      strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
-
-    strItem += StringUtils::Format(" (%i/%i)", i + 1, audioStreamCount);
-    list.push_back(make_pair(strItem, i));
+    m_pPlayer = g_application.m_pPlayer;
+    // Set stream and subtitle
+    audioStream    = m_pPlayer->GetAudioStream();
+    subtitleStream = m_pPlayer->GetSubtitle();
   }
-  // If the list is empty, 
-  if (list.empty())
+  else
   {
-    list.push_back(make_pair(g_localizeStrings.Get(231), -1));
-    current = -1;
+    CPlayerOptions options;
+    // If movie is not playing, Create a temporary player
+    eNewCore  = CPlayerCoreFactory::Get().GetDefaultPlayer(*m_movieItem);
+    m_pPlayer = new CApplicationPlayer;
+
+    m_pPlayer->CreatePlayer(eNewCore, g_application);
+    // Load stream information from file
+    m_pPlayer->PreloadFileInfo(*m_movieItem, options);
+    // Set stream and subtitle from video settings
+    audioStream    = CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream;
+    subtitleStream = CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream;
   }
-  SET_CONTROL_LABELS(33101, current, &list);
-#if 0
-  std::vector< std::pair<std::string, int> > labels;
-  std::string strLabel = StringUtils::Format("AreaCode %i", 0);
-  labels.push_back(make_pair(strLabel, 0));
-  strLabel = StringUtils::Format("AreaCode %i", 1);
-  labels.push_back(make_pair(strLabel, 0));
-  //SET_CONTROL_LABEL(402,strLabel);
-  SET_CONTROL_LABELS(402, 0, &labels);
-#endif
+
+  if( m_pPlayer->GetCurrentPlayer() == EPC_NONE )
+    CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: no current player");
+  else
+  {
+    audioStreamCount    = m_pPlayer->GetAudioStreamCount();
+    subtitleStreamCount = m_pPlayer->GetSubtitleCount();
+
+    //CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: stream count: %d/%d", audioStream, audioStreamCount);
+    //CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: sub count: %d/%d", subtitleStream, subtitleStreamCount);
+
+    // cycle through each audio stream and add it to our list control
+    for (int i = 0; i < audioStreamCount; ++i)
+    {
+      std::string strItem;
+      CStdString strLanguage;
+
+      SPlayerAudioStreamInfo info;
+      m_pPlayer->GetAudioStreamInfo(i, info);
+
+      if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+        strLanguage = g_localizeStrings.Get(13205); // Unknown
+
+      if (info.name.length() == 0)
+        strItem = strLanguage;
+      else
+        strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
+
+      strItem += StringUtils::Format(" (%i/%i)", i + 1, audioStreamCount);
+      list_audio.push_back(make_pair(strItem, i));
+    }
+    // cycle through each subtitle and add it to our entry list
+    for (int i = 0; i < subtitleStreamCount; ++i)
+    {
+      SPlayerSubtitleStreamInfo info;
+      m_pPlayer->GetSubtitleStreamInfo(i, info);
+
+      CStdString strItem;
+      CStdString strLanguage;
+
+      if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+        strLanguage = g_localizeStrings.Get(13205); // Unknown
+
+      if (info.name.length() == 0)
+        strItem = strLanguage;
+      else
+        strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
+
+      strItem += StringUtils::Format(" (%i/%i)", i + 1, subtitleStreamCount);
+
+      list_subs.push_back(make_pair(strItem, i));
+    }
+  }
+
+  // If the audio list is empty, 
+  if (list_audio.empty())
+  {
+    list_audio.push_back(make_pair(g_localizeStrings.Get(231), -1));
+    audioStream = -1;
+  }
+  SET_CONTROL_LABELS(CONTROL_SPIN_AUDIOSTREAM, audioStream, &list_audio);
+
+  // no subtitle streams - just add a "None" entry
+  if (list_subs.empty())
+  {
+    list_subs.push_back(make_pair(g_localizeStrings.Get(231), -1));
+    subtitleStreamCount = -1;
+  }
+  SET_CONTROL_LABELS(CONTROL_SPIN_SUBTITLES, subtitleStream, &list_subs);
 
   // tell our GUI to completely reload all controls (as some of them
   // are likely to have had this image in use so will need refreshing)
