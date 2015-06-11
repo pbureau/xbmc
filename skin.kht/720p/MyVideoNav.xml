@@ -172,6 +172,11 @@
 					</control>
 				</itemlayout>
 				<focusedlayout condition="Container.Content(Movies) | Container.Content(Seasons) | Container.Content(TVShows) | Container.Content(Sets)" height="163" width="110">
+                                    <control type="group">
+                                        <animation type="Focus" reversible="false">
+                                                <effect type="zoom" start="95" end="120" time="300" tween="sine" easing="inout" center="auto" />
+                                                <effect type="fade" start="80" end="100" time="300" />
+                                        </animation>
 					<control type="image">
 						<left>1</left>
 						<top>0</top>
@@ -202,6 +207,7 @@
 						<aspectratio>keep</aspectratio>
 						<texture>$INFO[ListItem.Overlay]</texture>
 					</control>
+                                    </control>
 				</focusedlayout>
 			</control>
                         <!-- Right Info Panel - Movie details -->

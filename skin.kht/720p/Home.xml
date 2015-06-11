@@ -3,76 +3,98 @@
 	<defaultcontrol always="true">9000</defaultcontrol>
         <onload condition="Window.Previous(fullscreenvideo)">ActivateWindow(videolibrary)</onload>
 	<controls>
-          <control type="panel" id="9000" description="ICONE">
-              <posx>0</posx>
-              <posy>0</posy>
-              <width>1840</width>
-              <height>1080</height>
-              <onleft>9000</onleft>
-              <onright>9000</onright>
-              <onup>20</onup>
-              <ondown>noop</ondown>
-              <orientation>vertical</orientation>
-              <scrolltime tween="sine" easing="inout">280</scrolltime>
-              <itemlayout height="250" width="368">
-                  <control type="image" description="THMBSCOLOR">
-                      <width>368</width>
-                      <height>230</height>
-                      <texture>icon_favourites.png</texture>
+              <include>CommonBackground</include>
+              <include>Clock</include>
+              <control type="group">
+                  <left>60</left>
+                  <top>60</top>
+                  <control type="image">
+                      <left>0</left>
+                      <top>0</top>
+                      <width>1150</width>
+                      <height>600</height>
+                      <texture background="false" border="10">RecentAddedBack.png</texture>
                   </control>
-                  <control type="label" description="label_unfocused">
-                      <width>368</width>
-                      <height>24</height>
-                      <font>size30</font>
-                      <align>center</align>
-                      <textcolor>white</textcolor>
-                      <label>[B]$INFO[ListItem.label][/B]</label>
+                  <!-- Main Icon Panel -->
+                  <control type="panel" id="9000" description="ICONE">
+                      <posx>15</posx>
+                      <posy>15</posy>
+                      <width>1150</width>
+                      <onleft>9000</onleft>
+                      <onright>9000</onright>
+                      <onup>noop</onup>
+                      <ondown>20</ondown>
+                      <orientation>vertical</orientation>
+                      <scrolltime tween="sine" easing="inout">280</scrolltime>
+                      <itemlayout height="200" width="200">
+                          <control type="image" description="THMBSCOLOR">
+                              <width>180</width>
+                              <height>180</height>
+                              <texture>$INFO[ListItem.Thumb]</texture>
+                              <colordiffuse>8F563467</colordiffuse>
+                          </control>
+                          <control type="label" description="label_unfocused">
+                              <top>180</top>
+                              <width>200</width>
+                              <height>20</height>
+                              <font>size30</font>
+                              <align>center</align>
+                              <textcolor>blue</textcolor>
+                              <label>[B]$INFO[ListItem.label][/B]</label>
+                          </control>
+                      </itemlayout>
+                      <focusedlayout height="" width="384">
+                          <control type="image" description="THMBSCOLOR">
+                              <width>180</width>
+                              <height>180</height>
+                              <texture>$INFO[ListItem.Thumb]</texture>
+                          </control>
+                          <control type="label" description="label_focused">
+                              <top>180</top>
+                              <width>200</width>
+                              <height>20</height>
+                              <font>size30</font>
+                              <align>center</align>
+                              <textcolor>white</textcolor>
+                              <label>[B]$INFO[ListItem.label][/B]</label>
+                          </control>
+                      </focusedlayout>
+                      <content>
+                          <item id="355">
+                              <visible>true</visible>
+                              <thumb>icon_video.png</thumb>
+                              <label>342</label>
+                              <onclick condition="Library.HasContent(Movies)">ActivateWindow(Videos,MovieTitles,return)</onclick>
+                              <onclick condition="!Library.HasContent(Movies)">ActivateWindow(Videos,root)</onclick>
+                          </item>
+                          <item id="357">
+                              <visible>true</visible>
+                              <thumb>icon_music.png</thumb>
+                              <label>2</label>
+                              <onclick>ActivateWindow(musiclibrary)</onclick>
+                          </item>
+                          <item id="358">
+                              <visible>true</visible>
+                              <thumb>icon_music.png</thumb>
+                              <label>2</label>
+                              <onclick>ActivateWindow(musicfiles)</onclick>
+                          </item>
+                      </content>
                   </control>
-              </itemlayout>
-              <focusedlayout height="250" width="384">
-                  <control type="image" description="THMBSCOLOR">
-                      <width>368</width>
-                      <height>230</height>
-                      <texture>icon_system.png</texture>
-                  </control>
-                  <control type="label" description="label_focused">
-                      <width>368</width>
-                      <height>24</height>
-                      <font>size30</font>
-                      <align>center</align>
-                      <textcolor>blue</textcolor>
-                      <label>[B]$INFO[ListItem.label][/B]</label>
-                  </control>
-              </focusedlayout>
-              <content>
-                  <item id="355">
-                      <visible>true</visible>
-                      <thumb>icon_favourites.png</thumb>
-                      <label>342</label>
-                      <onclick condition="Library.HasContent(Movies)">ActivateWindow(Videos,MovieTitles,return)</onclick>
-                      <onclick condition="!Library.HasContent(Movies)">ActivateWindow(Videos,root)</onclick>
-                  </item>
-                  <item id="357">
-                      <visible>true</visible>
-                      <thumb>icon_favourites.png</thumb>
-                      <label>2</label>
-                      <onclick>noop</onclick>
-                      <onclick>noop</onclick>
-                  </item>
-              </content>
-          </control>
-		<control type="image">
-			<left>0</left>
-			<top>90r</top>
-			<width>1280</width>
-			<height>90</height>
-			<texture>floor.png</texture>
-<!--
-			<animation effect="fade" time="250" condition="Window.Previous(Home)">WindowOpen</animation>
-			<animation effect="fade" time="250" condition="Window.Next(Home)">WindowClose</animation>
--->
-		</control>
-		<control type="group" id="10">
+              </control>
+              <!-- Floor Panel Buttons -->
+              <control type="image">
+                      <left>0</left>
+                      <top>60r</top>
+                      <width>1280</width>
+                      <height>60</height>
+                      <texture>floor.png</texture>
+                      <!--
+                      <animation effect="fade" time="250" condition="Window.Previous(Home)">WindowOpen</animation>
+                      <animation effect="fade" time="250" condition="Window.Next(Home)">WindowClose</animation>
+                      -->
+              </control>
+              <control type="group" id="10">
 			<left>200</left>
 			<top>55r</top>
 			<control type="button" id="20">
@@ -88,8 +110,8 @@
 				<texturenofocus border="5">floor_button.png</texturenofocus>
 				<onleft>22</onleft>
 				<onright>21</onright>
-				<onup>9002</onup>
-				<ondown>9003</ondown>
+				<onup>9000</onup>
+				<ondown>9000</ondown>
 			</control>
 			<control type="image">
 				<description>Favourites Icon</description>
@@ -113,8 +135,8 @@
 				<texturenofocus border="5">floor_button.png</texturenofocus>
 				<onleft>20</onleft>
 				<onright>22</onright>
-				<onup>9002</onup>
-				<ondown>9003</ondown>
+				<onup>9000</onup>
+				<ondown>9000</ondown>
 			</control>
 			<control type="image">
 				<description>Power Icon</description>
@@ -138,8 +160,8 @@
 				<texturenofocus border="5">floor_button.png</texturenofocus>
 				<onleft>21</onleft>
 				<onright>20</onright>
-				<onup>9002</onup>
-				<ondown>9003</ondown>
+				<onup>9000</onup>
+				<ondown>9000</ondown>
 			</control>
 			<control type="image">
 				<description>Favourites Icon</description>
