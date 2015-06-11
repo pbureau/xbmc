@@ -14,8 +14,8 @@
         </include>
 	<!-- Media Flags -->
 	<include name="MediaFlagVars">
-		<width>135</width>
-		<height>90</height>
+                <width>50</width>
+                <height>30</height>
 		<aspectratio>keep</aspectratio>
 		<fadetime>250</fadetime>
 		<colordiffuse>white</colordiffuse>

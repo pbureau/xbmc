@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">33101</defaultcontrol>
+	<defaultcontrol always="true">8</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
 <!--
 	<onload condition="Skin.HasSetting(ActivateTvTunes) + System.HasAddon(script.tvtunes)">RunScript(script.tvtunes,backend=True)</onload>
@@ -23,73 +23,90 @@
 				<texture border="15,0,0,0" flipx="true">MediaBladeSub.png</texture>
 			</control>
 -->
-                        <control type="spincontrolex" id="33101">
-                                <description>change location button</description>
-                                <left>700</left>
-                                <top>0</top>
-                                <font>font12</font>
-                                <include>ButtonCommonValues</include>
-                                <onleft>50</onleft>
-                                <onright>33102</onright>
-                                <onup>33102</onup>
-                                <ondown>33102</ondown>
+                        <!--- Subtitle Selection Panel -->
+                        <control type="group">
+                                <description>Subtitle Selection Panel</description>
+                                <visible>Control.HasFocus(33203)</visible>
+                                <left>80</left>
+                                <top>110</top>
+                                <control type="image">
+                                    <left>0</left>
+                                    <top>0</top>
+                                    <width>300</width>
+                                    <height>50</height>
+                                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                                </control>
+                                <control type="spincontrolex" id="33101">
+                                        <description>change location button</description>
+                                        <left>5</left>
+                                        <top>5</top>
+                                        <font>font12</font>
+                                        <include>ButtonCommonValues</include>
+                                        <onleft>50</onleft>
+                                        <onright>33102</onright>
+                                        <onup>33102</onup>
+                                        <ondown>33102</ondown>
+                                </control>
                         </control>
-                        <control type="image">
-                                <left>700</left>
-                                <top>150</top>
-                                <width>50</width>
-                                <colordiffuse>grey</colordiffuse>
-                                <include>MediaFlagVars</include>
-                                <texture>$INFO[ListItem.VideoAspect,flagging/aspectratio/,.png]</texture>
-                        </control>
-                        <control type="image">
-                                <left>700</left>
-                                <top>200</top>
-                                <width>50</width>
-                                <colordiffuse>grey</colordiffuse>
-                                <include>MediaFlagVars</include>
-                                <texture>$INFO[ListItem.VideoResolution,flagging/video/,.png]</texture>
-                                <visible>!IsEmpty(ListItem.VideoResolution)</visible>
-                        </control>
-                        <control type="image">
-                                <left>700</left>
-                                <top>250</top>
-                                <width>50</width>
-                                <colordiffuse>grey</colordiffuse>
-                                <include>MediaFlagVars</include>
-                                <texture>$INFO[ListItem.AudioCodec,flagging/audio/,.png]</texture>
-                                <visible>!IsEmpty(ListItem.AudioCodec)</visible>
-                        </control>
-                        <control type="image">
-                                <left>700</left>
-                                <top>300</top>
-                                <width>50</width>
-                                <colordiffuse>grey</colordiffuse>
-                                <include>MediaFlagVars</include>
-                                <texture>$INFO[ListItem.AudioChannels,flagging/audio/,.png]</texture>
-                                <visible>!IsEmpty(ListItem.AudioChannels)</visible>
-                        </control>
-                        <control type="image">
-                                <left>700</left>
-                                <top>350</top>
-                                <width>50</width>
-                                <colordiffuse>grey</colordiffuse>
-                                <include>MediaFlagVars</include>
-                                <texture>$VAR[SourceFlagVar,flagging/video/,.png]</texture>
-                        </control>
-                        <control type="label">
-                                <left>800</left>
-                                <top>350</top>
-                                <width>200</width>
-                                <label>$VAR[SourceFlagVar]</label>
-                                <font>font12</font>
-                                <textcolor>grey</textcolor>
+                        <!--- Movie Techn Info Panel -->
+                        <control type="group">
+                                <description>Movie Technical Information Panel</description>
+                                <left>10</left>
+                                <top>662</top>
+                                <control type="image">
+                                    <left>0</left>
+                                    <top>0</top>
+                                    <width>300</width>
+                                    <height>50</height>
+                                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                                </control>
+                                <control type="grouplist" id="33301">
+                                    <left>8</left>
+                                    <top>9</top>
+                                    <orientation>horizontal</orientation>
+                                    <control type="image">
+                                            <colordiffuse>grey</colordiffuse>
+                                            <include>MediaFlagVars</include>
+                                            <texture>$INFO[ListItem.VideoAspect,flagging/aspectratio/,.png]</texture>
+                                            <visible>!IsEmpty(ListItem.VideoAspect)</visible>
+                                    </control>
+                                    <control type="image">
+                                            <colordiffuse>grey</colordiffuse>
+                                            <include>MediaFlagVars</include>
+                                            <texture>$INFO[ListItem.VideoResolution,flagging/video/,.png]</texture>
+                                            <visible>!IsEmpty(ListItem.VideoResolution)</visible>
+                                    </control>
+                                    <control type="image">
+                                            <colordiffuse>grey</colordiffuse>
+                                            <include>MediaFlagVars</include>
+                                            <texture>$INFO[ListItem.AudioCodec,flagging/audio/,.png]</texture>
+                                            <visible>!IsEmpty(ListItem.AudioCodec)</visible>
+                                    </control>
+                                    <control type="image">
+                                            <colordiffuse>grey</colordiffuse>
+                                            <include>MediaFlagVars</include>
+                                            <texture>$INFO[ListItem.AudioChannels,flagging/audio/,.png]</texture>
+                                            <visible>!IsEmpty(ListItem.AudioChannels)</visible>
+                                    </control>
+                                    <control type="image">
+                                            <colordiffuse>grey</colordiffuse>
+                                            <include>MediaFlagVars</include>
+                                            <texture>$VAR[SourceFlagVar,flagging/video/,.png]</texture>
+                                    </control>
+                                    <control type="label">
+                                            <width>200</width>
+                                            <label>$VAR[SourceFlagVar]</label>
+                                            <font>font12</font>
+                                            <textcolor>grey</textcolor>
+                                    </control>
+                            </control>
                         </control>
                         <!--- Cast Information Panel -->
                         <control type="group">
                                 <description>Cast information Panel</description>
-                                <left>0</left>
-                                <top>0</top>
+                                <visible>Control.HasFocus(33202) | Control.HasFocus(50)</visible>
+                                <left>80</left>
+                                <top>60</top>
                                 <control type="image">
                                     <left>0</left>
                                     <top>0</top>
@@ -104,7 +121,7 @@
 					<height>200</height>
 					<onleft>50</onleft>
 					<onright>50</onright>
-					<onup>33101</onup>
+					<onup>8</onup>
 					<ondown condition="System.HasAddon(script.extendedinfo)">RunScript(script.extendedinfo,info=extendedactorinfo,name=$INFO[Container(50).ListItem.Label])</ondown>
 					<viewtype label="">list</viewtype>
 					<pagecontrol>61</pagecontrol>
@@ -204,33 +221,34 @@
 -->
                         <!--- Control Panel -->
                         <control type="group">
-                                    <description>Movie Control Panel</description>
-                                    <left>1195</left>
-                                    <top>395</top>
+                            <description>Movie Control Panel</description>
+                            <left>10</left>
+                            <top>10</top>
                             <control type="image">
                                 <left>0</left>
                                 <top>0</top>
-                                <width>80</width>
+                                <width>70</width>
                                 <height>320</height>
-                                <texture background="false">RecentAddedBack.png</texture>
+                                <texture border="10" background="false">RecentAddedBack.png</texture>
                             </control>
                             <control type="grouplist" id="33102">
-                                    <left>15</left>
-                                    <top>15</top>
-                                    <onleft>33101</onleft>
-                                    <onright>33101</onright>
+                                    <left>10</left>
+                                    <top>10</top>
+                                    <onleft>-</onleft>
+                                    <onright>-</onright>
                                     <onup>-</onup>
                                     <ondown>-</ondown>
                                     <control type="button" id="8">
                                         <description>Play button</description>
                                         <width>50</width>
                                         <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2">icon_system.png</texturefocus>
+                                        <texturefocus colordiffuse="7F000077" border="2">icon_player.png</texturefocus>
                                         <texturenofocus border="2">icon_player.png</texturenofocus>
                                         <onclick>noop</onclick>
                                     </control>
                                     <control type="button" id="33202">
                                         <width>50</width>
+                                        <onright>50</onright>
                                         <aspectratio aligny="top">keep</aspectratio>
                                         <texturefocus border="2">icon_system.png</texturefocus>
                                         <texturenofocus border="2">DefaultArtist.png</texturenofocus>
@@ -248,8 +266,8 @@
                         <!--- Movie Plot and Details -->
                         <control type="group">
 				<description>Movie Plot Panel</description>
-                                <left>5</left>
-                                <top>360</top>
+                                <left>802</left>
+                                <top>397</top>
                                 <control type="image">
                                     <left>0</left>
                                     <top>0</top>
