@@ -21,7 +21,7 @@
 #include "GUIExtPanelContainer.h"
 #include "GUIListItem.h"
 #include "GUIInfoManager.h"
-#include "Key.h"
+#include "input/Key.h"
 
 #include "utils/log.h"
 #include "guilib/GUILabelControl.h"

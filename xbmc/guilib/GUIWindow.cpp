@@ -45,6 +45,9 @@
 
 using namespace std;
 
+// list of actions *not* supported - vector init
+const std::vector<std::string> CGUIWindow::ONUNLOAD_DISALLOWED_ACTIONS = {"ActivateWindow"};
+
 bool CGUIWindow::icompare::operator()(const std::string &s1, const std::string &s2) const
 {
   return StringUtils::CompareNoCase(s1, s2) < 0;

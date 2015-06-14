@@ -270,7 +270,7 @@ void CGUIDialogVideoInfo::OnInitWindow()
   // Load video settings
   // FIXME: Is it better to reopen the database, which has been done right before,
   // or to duplicate code in LoadVideoSettings? Both are suboptimal.
-  g_application.LoadVideoSettings(m_movieItem->GetPath());
+  g_application.LoadVideoSettings(*m_movieItem);
 
   CONTROL_ENABLE_ON_CONDITION(CONTROL_BTN_REFRESH, (CProfilesManager::Get().GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser) && !StringUtils::StartsWithNoCase(m_movieItem->GetVideoInfoTag()->m_strIMDBNumber, "xx"));
   CONTROL_ENABLE_ON_CONDITION(CONTROL_BTN_GET_THUMB, (CProfilesManager::Get().GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser) && !StringUtils::StartsWithNoCase(m_movieItem->GetVideoInfoTag()->m_strIMDBNumber.c_str() + 2, "plugin"));
@@ -527,7 +527,7 @@ void CGUIDialogVideoInfo::Update()
     for (int i = 0; i < audioStreamCount; ++i)
     {
       std::string strItem;
-      CStdString strLanguage;
+      std::string strLanguage;
 
       SPlayerAudioStreamInfo info;
       m_pPlayer->GetAudioStreamInfo(i, info);
@@ -549,8 +549,8 @@ void CGUIDialogVideoInfo::Update()
       SPlayerSubtitleStreamInfo info;
       m_pPlayer->GetSubtitleStreamInfo(i, info);
 
-      CStdString strItem;
-      CStdString strLanguage;
+      std::string strItem;
+      std::string strLanguage;
 
       if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
         strLanguage = g_localizeStrings.Get(13205); // Unknown

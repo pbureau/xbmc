@@ -3578,13 +3578,13 @@ void CApplication::UpdateFileState()
   }
 }
 
-void CApplication::SaveVideoSettings(const std::string &path)
+void CApplication::SaveVideoSettings(const CFileItem& item)
 {
   CVideoDatabase dbs;
   if (dbs.Open())
   {
-    CLog::Log(LOGDEBUG, "Saving settings for %s", path.c_str());
-    dbs.SetVideoSettings(path, CMediaSettings::Get().GetCurrentVideoSettings());
+    CLog::Log(LOGDEBUG, "Saving settings for %s", item.GetPath().c_str());
+    dbs.SetVideoSettings(item.GetPath(), CMediaSettings::Get().GetCurrentVideoSettings());
     dbs.Close();
   }
 }

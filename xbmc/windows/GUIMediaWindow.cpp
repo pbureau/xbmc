@@ -763,19 +763,6 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   if (m_vecItems->GetLabel().empty())
     m_vecItems->SetLabel(CUtil::GetTitleFromPath(m_vecItems->GetPath(), true));
 
-  for (int i=0; i < items.Size(); i++)
-  {
-    //items[i]->SetLabel("toto");
-    CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
-            CURL::GetRedacted(items[i]->GetPath()).c_str(),
-            items[i]->HasArt("thumb"),
-            items[i]->HasArt("poster"),
-            items[i]->HasArt("fanart"),
-            items[i]->HasArt("icon"),
-            items[i]->GetLabel().c_str(),
-            items[i]->GetArt("fanart").c_str());
-  }
- 
   // check the given path for filter data
   UpdateFilterPath(strDirectory, *m_vecItems, updateFilterPath);
     

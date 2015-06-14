@@ -110,7 +110,7 @@ PlayBackRet CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOpt
 
 int CApplicationPlayer::PreloadFileInfo(const CFileItem& file, const CPlayerOptions &options)
 {
-  boost::shared_ptr<IPlayer> player = GetInternal();
+  std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
     return player->PreloadFileInfo(file, options);
   else 
