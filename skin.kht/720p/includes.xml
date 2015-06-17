@@ -178,7 +178,8 @@
 				<height>45</height>
 				<label>1036</label>
 				<font>-</font>
-				<onclick>back</onclick>
+				<onclick>Container.Update(musicdb://artists/,replace)</onclick>
+                                <onclick>Container.SetViewMode(50)</onclick>
 				<texturefocus border="5">floor_buttonFO.png</texturefocus>
 				<texturenofocus border="5">floor_button.png</texturenofocus>
 				<onleft>50</onleft>

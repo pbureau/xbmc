@@ -13,7 +13,7 @@
 				<onright>60</onright>
 				<onup>50</onup>
 				<ondown>50</ondown>
-				<viewtype label="535">list</viewtype>
+				<viewtype label="blabla100">list</viewtype>
 				<pagecontrol>60</pagecontrol>
 				<scrolltime>200</scrolltime>
 				<itemlayout height="40" width="580">
@@ -247,10 +247,22 @@
 			</control>
 		</control>
 	</include>
-	<include name="ThumbnailView">
+	<include name="AllAlbumsView">
 		<control type="group">
 			<visible>Control.IsVisible(500)</visible>
 			<include>VisibleFadeEffect</include>
+					<control type="label">
+						<left>10</left>
+						<top>0</top>
+						<width>60</width>
+						<height>40</height>
+						<font>font13</font>
+						<textcolor>white</textcolor>
+						<selectedcolor>selected</selectedcolor>
+						<align>left</align>
+						<aligny>center</aligny>
+						<label>tototo</label>
+					</control>
 			<control type="panel" id="500">
 				<left>90</left>
 				<top>80</top>
@@ -260,7 +272,7 @@
 				<onright>60</onright>
 				<onup>500</onup>
 				<ondown>500</ondown>
-				<viewtype label="21371">list</viewtype>
+				<viewtype label="Albums View">icon</viewtype>
 				<pagecontrol>60</pagecontrol>
 				<scrolltime>200</scrolltime>
 				<preloaditems>2</preloaditems>
@@ -512,7 +524,7 @@
 			</control>
 		</control>
 	</include>
-	<include name="FullWidthList">
+	<include name="AllSongsView">
 		<control type="group">
 			<visible>Control.IsVisible(51)</visible>
 			<include>VisibleFadeEffect</include>
@@ -525,7 +537,7 @@
 				<onright>60</onright>
 				<onup>51</onup>
 				<ondown>51</ondown>
-				<viewtype label="537">list</viewtype>
+				<viewtype label="All Songs">list</viewtype>
 				<pagecontrol>60</pagecontrol>
 				<scrolltime>200</scrolltime>
 				<itemlayout height="40" width="1080">

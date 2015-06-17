@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <includes>
-	<include name="MusicInfoListView">
+	<include name="AllPlaylistView">
 		<control type="group">
 			<visible>Control.IsVisible(506)</visible>
 			<include>VisibleFadeEffect</include>
@@ -13,7 +13,7 @@
 				<onright>60</onright>
 				<onup>506</onup>
 				<ondown>506</ondown>
-				<viewtype label="$LOCALIZE[544]">list</viewtype>
+				<viewtype label="Playlist View">list</viewtype>
 				<pagecontrol>60</pagecontrol>
 				<scrolltime>200</scrolltime>
 				<visible>Window.IsVisible(MusicFiles) | Window.IsVisible(MusicPlaylist) |  Container.Content(Songs) | Container.Content(Albums)</visible>
@@ -710,7 +710,7 @@
 			</control>
 		</control>
 	</include>
-	<include name="ArtistMediaListView">
+	<include name="AllArtistsView">
 		<control type="group">
 			<visible>Control.IsVisible(512)</visible>
 			<include>VisibleFadeEffect</include>
@@ -723,7 +723,7 @@
 				<onright>60</onright>
 				<onup>512</onup>
 				<ondown>512</ondown>
-				<viewtype label="$LOCALIZE[544]">list</viewtype>
+				<viewtype label="Artists View">list</viewtype>
 				<pagecontrol>60</pagecontrol>
 				<scrolltime>200</scrolltime>
 				<visible>Container.Content(Artists)</visible>

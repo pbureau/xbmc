@@ -26,7 +26,7 @@
                         <!--- Subtitle Selection Panel -->
                         <control type="group">
                                 <description>Subtitle Selection Panel</description>
-                                <visible>Control.HasFocus(33203)</visible>
+                                <visible>Control.HasFocus(33203) | Control.HasFocus(14)</visible>
                                 <left>80</left>
                                 <top>110</top>
                                 <control type="image">
@@ -36,16 +36,16 @@
                                     <height>50</height>
                                     <texture background="false" border="10">RecentAddedBack.png</texture>
                                 </control>
-                                <control type="spincontrolex" id="33101">
+                                <control type="spincontrolex" id="14">
                                         <description>change location button</description>
                                         <left>5</left>
                                         <top>5</top>
                                         <font>font12</font>
                                         <include>ButtonCommonValues</include>
-                                        <onleft>50</onleft>
-                                        <onright>33102</onright>
-                                        <onup>33102</onup>
-                                        <ondown>33102</ondown>
+                                        <onleft>-</onleft>
+                                        <onright>-</onright>
+                                        <onup>33202</onup>
+                                        <ondown>-</ondown>
                                 </control>
                         </control>
                         <!--- Movie Techn Info Panel -->
@@ -256,6 +256,7 @@
                                     </control>
                                     <control type="button" id="33203">
                                         <width>50</width>
+                                        <onright>14</onright>
                                         <aspectratio aligny="top">keep</aspectratio>
                                         <texturefocus border="2">icon_system.png</texturefocus>
                                         <texturenofocus border="2">icon_favourites.png</texturenofocus>
