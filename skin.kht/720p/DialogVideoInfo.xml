@@ -2,6 +2,7 @@
 <window>
 	<defaultcontrol always="true">8</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
+        <zorder>0</zorder>
 <!--
 	<onload condition="Skin.HasSetting(ActivateTvTunes) + System.HasAddon(script.tvtunes)">RunScript(script.tvtunes,backend=True)</onload>
 -->
@@ -23,6 +24,18 @@
 				<texture border="15,0,0,0" flipx="true">MediaBladeSub.png</texture>
 			</control>
 -->
+                        <control type="spincontrolex" id="15">
+                                <description>change location button</description>
+                                <left>700</left>
+                                <top>150</top>
+                                <font>font12</font>
+                                <include>ButtonCommonValues</include>
+                                <onleft>33102</onleft>
+                                <onright>33102</onright>
+                                <onup>14</onup>
+                                <ondown>33102</ondown>
+                        </control>
+
                         <!--- Subtitle Selection Panel -->
                         <control type="group">
                                 <description>Subtitle Selection Panel</description>
@@ -241,10 +254,20 @@
                                     <control type="button" id="8">
                                         <description>Play button</description>
                                         <width>50</width>
+                                        <visible>!ListItem.IsPlaying</visible>
                                         <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus colordiffuse="7F000077" border="2">icon_player.png</texturefocus>
+                                        <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
                                         <texturenofocus border="2">icon_player.png</texturenofocus>
                                         <onclick>noop</onclick>
+                                    </control>
+                                    <control type="button" id="33201">
+                                        <description>Resume button</description>
+                                        <width>50</width>
+                                        <visible>ListItem.IsPlaying</visible>
+                                        <aspectratio aligny="top">keep</aspectratio>
+                                        <texturefocus border="2">icon_system.png</texturefocus>
+                                        <texturenofocus border="2">icon_player.png</texturenofocus>
+                                        <onclick>RunScript(special://masterprofile/resumeFullscreen.py)</onclick>
                                     </control>
                                     <control type="button" id="33202">
                                         <width>50</width>

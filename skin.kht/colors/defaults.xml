@@ -9,4 +9,5 @@
 	<color name="selected">FFEB9E17</color>
 	<color name="invalid">FFFF0000</color>
         <color name="labelheader">FF6db9e5</color>
+        <color name="bluefocus">FF07a2ff</color>
 </colors>

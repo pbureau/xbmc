@@ -31,7 +31,6 @@
                               <width>180</width>
                               <height>180</height>
                               <texture>$INFO[ListItem.Thumb]</texture>
-                              <colordiffuse>8F563467</colordiffuse>
                           </control>
                           <control type="label" description="label_unfocused">
                               <top>180</top>
@@ -39,7 +38,7 @@
                               <height>20</height>
                               <font>size30</font>
                               <align>center</align>
-                              <textcolor>blue</textcolor>
+                              <textcolor>white</textcolor>
                               <label>[B]$INFO[ListItem.label][/B]</label>
                           </control>
                       </itemlayout>
@@ -48,6 +47,7 @@
                               <width>180</width>
                               <height>180</height>
                               <texture>$INFO[ListItem.Thumb]</texture>
+                              <colordiffuse>bluefocus</colordiffuse>
                           </control>
                           <control type="label" description="label_focused">
                               <top>180</top>
@@ -55,7 +55,7 @@
                               <height>20</height>
                               <font>size30</font>
                               <align>center</align>
-                              <textcolor>white</textcolor>
+                              <textcolor>blue</textcolor>
                               <label>[B]$INFO[ListItem.label][/B]</label>
                           </control>
                       </focusedlayout>
