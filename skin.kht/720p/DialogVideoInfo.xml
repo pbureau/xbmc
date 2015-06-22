@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">8</defaultcontrol>
+	<defaultcontrol always="true">33102</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
         <zorder>0</zorder>
 <!--
@@ -45,7 +45,7 @@
                                 <control type="image">
                                     <left>0</left>
                                     <top>0</top>
-                                    <width>300</width>
+                                    <width>500</width>
                                     <height>50</height>
                                     <texture background="false" border="10">RecentAddedBack.png</texture>
                                 </control>
@@ -53,6 +53,7 @@
                                         <description>change location button</description>
                                         <left>5</left>
                                         <top>5</top>
+                                        <width>400</width>
                                         <font>font12</font>
                                         <include>ButtonCommonValues</include>
                                         <onleft>-</onleft>
@@ -134,7 +135,8 @@
 					<height>200</height>
 					<onleft>50</onleft>
 					<onright>50</onright>
-					<onup>8</onup>
+					<onup condition="!ListItem.IsPlaying">8</onup>
+					<onup condition="ListItem.IsPlaying">33201</onup>
 					<ondown condition="System.HasAddon(script.extendedinfo)">RunScript(script.extendedinfo,info=extendedactorinfo,name=$INFO[Container(50).ListItem.Label])</ondown>
 					<viewtype label="">list</viewtype>
 					<pagecontrol>61</pagecontrol>
@@ -265,7 +267,7 @@
                                         <width>50</width>
                                         <visible>ListItem.IsPlaying</visible>
                                         <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2">icon_system.png</texturefocus>
+                                        <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
                                         <texturenofocus border="2">icon_player.png</texturenofocus>
                                         <onclick>RunScript(special://masterprofile/resumeFullscreen.py)</onclick>
                                     </control>
@@ -273,15 +275,15 @@
                                         <width>50</width>
                                         <onright>50</onright>
                                         <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2">icon_system.png</texturefocus>
-                                        <texturenofocus border="2">DefaultArtist.png</texturenofocus>
+                                        <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
+                                        <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
                                         <onclick>noop</onclick>
                                     </control>
                                     <control type="button" id="33203">
                                         <width>50</width>
                                         <onright>14</onright>
                                         <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2">icon_system.png</texturefocus>
+                                        <texturefocus border="2" colordiffuse="bluefocus">icon_favourites.png</texturefocus>
                                         <texturenofocus border="2">icon_favourites.png</texturenofocus>
                                         <onclick>noop</onclick>
                                     </control>
