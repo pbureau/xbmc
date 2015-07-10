@@ -8,6 +8,12 @@
                         <style>uppercase bold</style>
                         <size>25</size>
                 </font>
+                <font>
+                        <name>font16_bold</name>
+                        <filename>RobotoCondensed-Uppercase.ttf</filename>
+                        <style>bold</style>
+                        <size>25</size>
+                </font>
 		<!-- Normal Fonts -->
 		<font>
 			<name>font10</name>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">500</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
 	<onload condition="!Skin.HasSetting(FirstTimeRun)">ActivateWindow(1112)</onload>
+	<defaultcontrol always="true">35000</defaultcontrol>
 <!--
 	<views>50,51,500,550,551,509,506,511,512,513</views>
 -->
@@ -12,15 +12,31 @@
 <!--
 		<include>ContentPanelBackgrounds</include>
 -->
-		<control type="group">
+                <control type="button" id="2201">
+                    <description>Select allAlbums view</description>
+                    <textwidth>235</textwidth>
+                    <onclick>ReplaceWindow(music,artists)</onclick>
+                    <onclick>Container.SetViewMode(512)</onclick>
+                    <label>tototo</label>
+                </control>
+		<control type="group" id="35000">
+                      <left>60</left>
+                      <top>60</top>
+                      <control type="image">
+                          <left>0</left>
+                          <top>0</top>
+                          <width>1150</width>
+                          <height>600</height>
+                          <texture background="false" border="10">RecentAddedBack.png</texture>
+                      </control>
 <!--
 			<include>Window_OpenClose_Animation</include>		
 -->
 			<include>AllAlbumsView</include> view id = 500
 			<include>AllSongsView</include>  view id = 51 
 			<include>AllArtistsView</include>  view id = 512
-			<include>AllPlaylistView</include>  view id = 506
 <!--
+			<include>AllPlaylistView</include>  view id = 506
 			<include>MusicInfoListView</include>  view id = 506 
 			<include>AlbumWrapView2_Fanart</include>  view id = 509 
 			<include>MusicVideoInfoListView</include>  view id = 511 
@@ -33,9 +49,7 @@
 <!--
 		<include>CommonPageCount</include>
 		<include>CommonNowPlaying</include>
--->
 		<include>MainWindowMouseButtons</include>
-<!--
 		<include>BehindDialogFadeOut</include>
 		<include>ScrollOffsetLabel</include>
 -->

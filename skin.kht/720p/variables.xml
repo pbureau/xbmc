@@ -19,6 +19,13 @@
 		<value condition="System.GetBool(videolibrary.showunwatchedplots)">$INFO[ListItem.Tagline,[COLOR labelheader],[/COLOR] - ]$INFO[ListItem.Plot]</value>
 		<value>$INFO[ListItem.Plot]</value>
 	</variable>
+	<variable name="MusicPlotVar">
+		<value condition="!IsEmpty(ListItem.Property(Album_Description))">$INFO[ListItem.Property(Album_Description)]</value>
+		<value condition="!IsEmpty(ListItem.Property(Artist_Description))">$INFO[ListItem.Property(Artist_Description)]</value>
+		<value condition="!IsEmpty(ListItem.Property(Addon.Description))">$INFO[ListItem.Property(Addon.Description)]$INFO[ListItem.Property(Addon.Disclaimer), -- [COLOR labelheader],[/COLOR]]</value>
+		<value condition="!IsEmpty(ListItem.Comment)">$INFO[ListItem.Comment]</value>
+		<value>$INFO[ListItem.Plot]</value>
+	</variable>
 	<variable name="SourceFlagVar">
 		<value condition="[SubString(ListItem.filename,PDTV) | SubString(ListItem.filename,sdtv) | SubString(ListItem.filename,sd tv)]">sdtv</value>
 		<value condition="[SubString(ListItem.Filename,hdtv) | SubString(ListItem.Filename,hd tv)]">hdtv</value>

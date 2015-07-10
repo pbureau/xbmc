@@ -67,6 +67,7 @@ void CGUIViewControl::SetCurrentView(int viewMode, bool bRefresh /* = false */)
 {
   // grab the previous control
   CGUIControl *previousView = NULL;
+  int previousViewMode = m_currentView;
   if (m_currentView >= 0 && m_currentView < (int)m_visibleViews.size())
     previousView = m_visibleViews[m_currentView];
 
@@ -103,7 +104,7 @@ void CGUIViewControl::SetCurrentView(int viewMode, bool bRefresh /* = false */)
   if (!bRefresh && pNewView == previousView)
     return; // no need to actually update anything (other than visibility above)
 
-//  CLog::Log(LOGDEBUG,"SetCurrentView: Oldview: %i, Newview :%i", m_currentView, viewMode);
+  CLog::Log(LOGDEBUG,"SetCurrentView: OldView: %i NewView: %i, New view mode : 0x%x", previousViewMode, m_currentView, viewMode);
 
   bool hasFocus(false);
   int item = -1;
