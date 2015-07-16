@@ -18,7 +18,7 @@
 			<visible>Control.IsVisible(500)</visible>
 			<include>VisibleFadeEffect</include>
                         <!-- Main Panel - Cover grid -->
-			<control type="extendedpanel" id="500">
+			<control type="panel" id="500">
 				<left>80</left>
 				<top>80</top>
 				<width>860</width>
