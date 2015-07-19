@@ -50,8 +50,6 @@
 			<filename>Roboto-Regular.ttf</filename>
 			<size>18</size>
 		</font>
-
-
 		<!-- Title Fonts -->
 		<font>
 			<name>font10_title</name>
@@ -88,7 +86,6 @@
 			<filename>Roboto-Bold.ttf</filename>
 			<size>35</size>
 		</font>
-
 		<font>
 			<name>font_MainMenu</name>
 			<filename>Roboto-Bold.ttf</filename>
@@ -100,7 +97,6 @@
 			<size>80</size>
 		</font>
 	</fontset>
-
 	<fontset id="Massive" idloc="15110">
 		<!-- Normal Fonts -->
 		<font>
@@ -138,8 +134,6 @@
 			<filename>Roboto-Regular.ttf</filename>
 			<size>25</size>
 		</font>
-		
-		
 		<!-- Title Fonts -->
 		<font>
 			<name>font10_title</name>
@@ -187,7 +181,6 @@
 			<size>80</size>
 		</font>
 	</fontset>
-	
 	<fontset id="DefaultNoCaps" idloc="31391"> 
 		<!-- Normal Fonts -->
 		<font>
@@ -225,8 +218,6 @@
 			<filename>Roboto-Regular.ttf</filename>
 			<size>18</size>
 		</font>
-
-
 		<!-- Title Fonts -->
 		<font>
 			<name>font10_title</name>
@@ -263,7 +254,6 @@
 			<filename>Roboto-Bold.ttf</filename>
 			<size>35</size>
 		</font>
-
 		<font>
 			<name>font_MainMenu</name>
 			<filename>Roboto-Bold.ttf</filename>
@@ -275,7 +265,6 @@
 			<size>80</size>
 		</font>
 	</fontset>
-
 	<fontset id="Arial" idloc="31392"> 
 		<!-- Arial Font better for non English -->
 		<font>
@@ -313,8 +302,6 @@
 			<filename>arial.ttf</filename>
 			<size>16</size>
 		</font>
-
-
 		<!-- Title Fonts -->
 		<font>
 			<name>font10_title</name>
@@ -358,7 +345,6 @@
 			<size>33</size>
 			<style>bold</style>
 		</font>
-
 		<font>
 			<name>font_MainMenu</name>
 			<filename>arial.ttf</filename>

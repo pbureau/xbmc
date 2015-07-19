@@ -10837,7 +10837,7 @@ msgstr ""
 #: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
 #: xbmc/playlists/SmartPlaylist.cpp
 msgctxt "#20339"
-msgid "directed by"
+msgid "Directed by"
 msgstr ""
 
 #: xbmc/video/windows/GUIWindowVideoBase.cpp

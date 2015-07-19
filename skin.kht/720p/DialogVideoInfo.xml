@@ -24,21 +24,35 @@
 				<texture border="15,0,0,0" flipx="true">MediaBladeSub.png</texture>
 			</control>
 -->
-                        <control type="spincontrolex" id="15">
+
+                        <!--- Subtitles Selection Panel 
+                        <control type="group">
+                            <description>Subtitle Selection Panel</description>
+                            <visible>Control.HasFocus(33204) | Control.HasFocus(15)</visible>
+                            <left>80</left>
+                            <top>160</top>
+                            <control type="image">
+                                <left>0</left>
+                                <top>0</top>
+                                <width>500</width>
+                                <height>50</height>
+                                <texture background="false" border="10">RecentAddedBack.png</texture>
+                            </control>
+                            <control type="spincontrolex" id="15">
                                 <description>change location button</description>
-                                <left>700</left>
-                                <top>150</top>
+                                <left>5</left>
+                                <top>5</top>
                                 <font>font12</font>
                                 <include>ButtonCommonValues</include>
                                 <onleft>33102</onleft>
                                 <onright>33102</onright>
                                 <onup>14</onup>
                                 <ondown>33102</ondown>
-                        </control>
-
-                        <!--- Subtitle Selection Panel -->
+                            </control>
+                        </control> -->
+                        <!--- Audiostream Selection Panel 
                         <control type="group">
-                                <description>Subtitle Selection Panel</description>
+                                <description>Audiostream Selection Panel</description>
                                 <visible>Control.HasFocus(33203) | Control.HasFocus(14)</visible>
                                 <left>80</left>
                                 <top>110</top>
@@ -56,12 +70,12 @@
                                         <width>400</width>
                                         <font>font12</font>
                                         <include>ButtonCommonValues</include>
-                                        <onleft>-</onleft>
+                                        <onleft>33203</onleft>
                                         <onright>-</onright>
                                         <onup>33202</onup>
-                                        <ondown>-</ondown>
+                                        <ondown>33204</ondown>
                                 </control>
-                        </control>
+                        </control> -->
                         <!--- Movie Techn Info Panel -->
                         <control type="group">
                                 <description>Movie Technical Information Panel</description>
@@ -115,6 +129,176 @@
                                     </control>
                             </control>
                         </control>
+                        <!--- Audio Stream selection list -->
+                        <control type="group">
+                            <description>audiostream selection list</description>
+                            <visible>Control.HasFocus(33203) | Control.HasFocus(52)</visible>
+                            <left>80</left>
+                            <top>110</top>
+                            <control type="image">
+                                <left>0</left>
+                                <top>0</top>
+                                <width>530</width>
+                                <height>230</height>
+                                <texture background="false" border="10">RecentAddedBack.png</texture>
+                            </control>
+                            <control type="list" id="52">
+                                <left>20</left>
+                                <top>10</top>
+                                <pagecontrol>5</pagecontrol>
+                                <scrolltime tween="quadratic" easing="out">300</scrolltime>
+                                <onleft>33203</onleft>
+                                <onright>-</onright>
+                                <onup>33202</onup>
+                                <ondown>33204</ondown>
+                                <itemlayout height="40" width="500">
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>500</width>
+                                        <height>40</height>
+                                        <texture border="5">MenuItemNF.png</texture>
+                                    </control>
+                                    <control type="image">
+                                        <left>5</left>
+                                        <top>5</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <texture border="5">icon_search.png</texture>
+                                        <visible>ListItem.IsSelected</visible>
+                                    </control>
+                                    <control type="label">
+                                        <left>40</left>
+                                        <top>0</top>
+                                        <width>450</width>
+                                        <height>40</height>
+                                        <align>left</align>
+                                        <aligny>center</aligny>
+                                        <font>font12</font>
+                                        <textcolor>grey</textcolor>
+                                        <shadowcolor>shadow</shadowcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <label>$INFO[ListItem.Label]</label>
+                                    </control>
+                                </itemlayout>
+                                <focusedlayout height="40" width="500">
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>500</width>
+                                        <height>40</height>
+                                        <texture border="5">MenuItemFO.png</texture>
+                                        <visible>Control.HasFocus(52)</visible>
+                                    </control>
+                                    <control type="image">
+                                        <left>5</left>
+                                        <top>5</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <visible>ListItem.IsSelected</visible>
+                                        <texture border="5">icon_search.png</texture>
+                                    </control>
+                                    <control type="label">
+                                        <left>40</left>
+                                        <top>0</top>
+                                        <width>450</width>
+                                        <height>40</height>
+                                        <align>left</align>
+                                        <aligny>center</aligny>
+                                        <font>font12</font>
+                                        <textcolor>grey</textcolor>
+                                        <shadowcolor>shadow</shadowcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <label>$INFO[ListItem.Label]</label>
+                                    </control>
+                                </focusedlayout>
+                            </control>
+                        </control>
+                        <!--- Subtitles selection list -->
+                        <control type="group">
+                            <description>subtitles selection list</description>
+                            <left>80</left>
+                            <top>160</top>
+                            <visible>Control.HasFocus(33204) | Control.HasFocus(51)</visible>
+                            <control type="image">
+                                <left>0</left>
+                                <top>0</top>
+                                <width>530</width>
+                                <height>430</height>
+                                <texture background="false" border="10">RecentAddedBack.png</texture>
+                            </control>
+                            <control type="list" id="51">
+                                <left>20</left>
+                                <top>10</top>
+                                <onleft>33204</onleft>
+                                <onright>-</onright>
+                                <onup>-</onup>
+                                <ondown>-</ondown>
+                                <pagecontrol>5</pagecontrol>
+                                <scrolltime tween="quadratic" easing="out">300</scrolltime>
+                                <itemlayout height="40" width="300">
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>300</width>
+                                        <height>40</height>
+                                        <texture border="5">MenuItemNF.png</texture>
+                                    </control>
+                                    <control type="image">
+                                        <left>5</left>
+                                        <top>5</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <texture border="5">icon_search.png</texture>
+                                        <visible>ListItem.IsSelected</visible>
+                                    </control>
+                                    <control type="label">
+                                        <left>40</left>
+                                        <top>0</top>
+                                        <width>300</width>
+                                        <height>40</height>
+                                        <align>left</align>
+                                        <aligny>center</aligny>
+                                        <font>font12</font>
+                                        <textcolor>grey</textcolor>
+                                        <shadowcolor>shadow</shadowcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <label>$INFO[ListItem.Label]</label>
+                                    </control>
+                                </itemlayout>
+                                <focusedlayout height="40" width="300">
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>300</width>
+                                        <height>40</height>
+                                        <texture border="5">MenuItemFO.png</texture>
+                                        <visible>Control.HasFocus(51)</visible>
+                                    </control>
+                                    <control type="image">
+                                        <left>5</left>
+                                        <top>5</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <visible>ListItem.IsSelected</visible>
+                                        <texture border="5">icon_search.png</texture>
+                                    </control>
+                                    <control type="label">
+                                        <left>40</left>
+                                        <top>0</top>
+                                        <width>300</width>
+                                        <height>40</height>
+                                        <align>left</align>
+                                        <aligny>center</aligny>
+                                        <font>font12</font>
+                                        <textcolor>grey</textcolor>
+                                        <shadowcolor>shadow</shadowcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <label>$INFO[ListItem.Label]</label>
+                                    </control>
+                                </focusedlayout>
+                            </control>
+                        </control>
                         <!--- Cast Information Panel -->
                         <control type="group">
                                 <description>Cast information Panel</description>
@@ -137,7 +321,7 @@
 					<onright>50</onright>
 					<onup condition="!ListItem.IsPlaying">8</onup>
 					<onup condition="ListItem.IsPlaying">33201</onup>
-					<ondown condition="System.HasAddon(script.extendedinfo)">RunScript(script.extendedinfo,info=extendedactorinfo,name=$INFO[Container(50).ListItem.Label])</ondown>
+                    <ondown>33203</ondown>
 					<viewtype label="">list</viewtype>
 					<pagecontrol>61</pagecontrol>
 					<scrolltime tween="quadratic" easing="out">300</scrolltime>
@@ -281,10 +465,18 @@
                                     </control>
                                     <control type="button" id="33203">
                                         <width>50</width>
-                                        <onright>14</onright>
+                                        <onright>52</onright>
                                         <aspectratio aligny="top">keep</aspectratio>
                                         <texturefocus border="2" colordiffuse="bluefocus">icon_favourites.png</texturefocus>
                                         <texturenofocus border="2">icon_favourites.png</texturenofocus>
+                                        <onclick>noop</onclick>
+                                    </control>
+                                    <control type="button" id="33204">
+                                        <width>50</width>
+                                        <onright>51</onright>
+                                        <aspectratio aligny="top">keep</aspectratio>
+                                        <texturefocus border="2" colordiffuse="bluefocus">OSDSubtitlesNF.png</texturefocus>
+                                        <texturenofocus border="2">OSDSubtitlesNF.png</texturenofocus>
                                         <onclick>noop</onclick>
                                     </control>
                             </control>

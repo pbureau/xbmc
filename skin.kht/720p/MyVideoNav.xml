@@ -17,22 +17,15 @@
 		<control type="group">
 			<visible>Control.IsVisible(500)</visible>
 			<include>VisibleFadeEffect</include>
-                                    <control type="button" id="33202">
-                                        <width>50</width>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2">icon_favourites.png</texturefocus>
-                                        <texturenofocus border="2">icon_system.png</texturenofocus>
-                                        <onclick>ActivateWindow(systeminfo)</onclick>
-                                    </control>
                         <!-- Main Panel - Cover grid -->
-			<control type="panel" id="500">
+			<control type="extendedpanel" id="500">
 				<left>80</left>
 				<top>80</top>
 				<width>860</width>
 				<height>558</height>
 				<onleft>2</onleft>
 				<onright>60</onright>
-				<onup>33202</onup>
+                <onup>-</onup>
 				<ondown>-</ondown>
 				<viewtype label="21371">icons</viewtype>
 				<pagecontrol>60</pagecontrol>
