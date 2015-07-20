@@ -23,9 +23,7 @@
 #include "guilib/LocalizeStrings.h"
 #include "FileItem.h"
 #include "utils/StringUtils.h"
-#include "utils/log.h"
-
-using namespace std;
+#include <string>
 
 #define STACK_LIST 450
 
@@ -99,7 +97,6 @@ void CGUIDialogFileStacking::OnInitWindow()
       CFileItemPtr item(new CFileItem(label));
       m_stackItems->Add(item);
     }
-    CLog::Log(LOGDEBUG,"CGUIDialogFileStacking::OnInitWindow");
     CGUIMessage msg(GUI_MSG_LABEL_BIND, GetID(), STACK_LIST, 0, 0, m_stackItems);
     OnMessage(msg);
   }

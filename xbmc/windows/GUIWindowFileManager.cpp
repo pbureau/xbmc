@@ -21,7 +21,7 @@
 #include "system.h"
 #include "GUIWindowFileManager.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "Util.h"
 #include "filesystem/Directory.h"
 #include "filesystem/ZipManager.h"
@@ -58,9 +58,9 @@
 #include "Autorun.h"
 #include "URL.h"
 
-using namespace std;
 using namespace XFILE;
 using namespace PLAYLIST;
+using namespace KODI::MESSAGING;
 
 #define ACTION_COPY                     1
 #define ACTION_MOVE                     2
@@ -592,7 +592,7 @@ void CGUIWindowFileManager::OnStart(CFileItem *pItem)
   if (pItem->IsPlayList())
   {
     std::string strPlayList = pItem->GetPath();
-    unique_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
+    std::unique_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
     if (NULL != pPlayList.get())
     {
       if (!pPlayList->Load(strPlayList))

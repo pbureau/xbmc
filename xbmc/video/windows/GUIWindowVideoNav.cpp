@@ -34,7 +34,7 @@
 #include "filesystem/Directory.h"
 #include "FileItem.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/MediaSettings.h"
@@ -56,7 +56,7 @@
 
 using namespace XFILE;
 using namespace VIDEODATABASEDIRECTORY;
-using namespace std;
+using namespace KODI::MESSAGING;
 
 #define CONTROL_BTNVIEWASICONS     2
 #define CONTROL_BTNSORTBY          3
@@ -366,7 +366,7 @@ bool CGUIWindowVideoNav::GetDirectory(const std::string &strDirectory, CFileItem
         // grab the show thumb
         CVideoInfoTag details;
         m_database.GetTvShowInfo("", details, params.GetTvShowId());
-        map<string, string> art;
+        std::map<std::string, std::string> art;
         if (m_database.GetArtForItem(details.m_iDbId, details.m_type, art))
         {
           items.AppendArt(art, details.m_type);
@@ -1057,7 +1057,7 @@ bool CGUIWindowVideoNav::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
                                                                         m_vecItems->Get(itemNumber)->GetVideoInfoTag()->m_strTitle),
                                                                         song))
       {
-        CApplicationMessenger::Get().PlayFile(song);
+        CApplicationMessenger::Get().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(song)));
       }
       return true;
     }

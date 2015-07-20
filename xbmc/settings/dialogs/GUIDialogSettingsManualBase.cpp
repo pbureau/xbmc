@@ -18,6 +18,9 @@
  *
  */
 
+#include <string>
+#include <vector>
+
 #include "GUIDialogSettingsManualBase.h"
 #include "settings/SettingAddon.h"
 #include "settings/SettingPath.h"
@@ -27,8 +30,6 @@
 #include "settings/lib/SettingsManager.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
-
-using namespace std;
 
 CGUIDialogSettingsManualBase::CGUIDialogSettingsManualBase(int windowId, const std::string &xmlFile)
     : CGUIDialogSettingsManagerBase(windowId, xmlFile),
@@ -96,7 +97,7 @@ CSettingGroup* CGUIDialogSettingsManualBase::AddGroup(CSettingCategory *category
 
   size_t groups = category->GetGroups().size();
 
-  CSettingGroup *group = new CSettingGroup(StringUtils::Format("%zu", groups + 1), m_settingsManager);
+  CSettingGroup *group = new CSettingGroup(StringUtils::Format("%" PRIuS, groups + 1), m_settingsManager);
   if (group == NULL)
     return NULL;
 
