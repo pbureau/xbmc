@@ -35,6 +35,7 @@ class IBackgroundLoaderObserver
 public:
   virtual ~IBackgroundLoaderObserver() {}
   virtual void OnItemLoaded(CFileItem* pItem) = 0;
+  virtual void OnLoaderFinish() {}
 };
 
 class CBackgroundInfoLoader : public IRunnable

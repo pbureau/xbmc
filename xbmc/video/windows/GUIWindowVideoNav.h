@@ -59,6 +59,10 @@ public:
    */
   static void LoadVideoInfo(CFileItemList &items, CVideoDatabase &database, bool allowReplaceLabels = true);
 
+  /*! \brief Observer function to call when video background loader is completed
+   */
+  virtual void OnLoaderFinish(void);
+
 protected:
   /*! \brief Load video information from the database for these items
    Useful for grabbing information for file listings, from watched status to full metadata

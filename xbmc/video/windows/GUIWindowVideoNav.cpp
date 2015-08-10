@@ -85,6 +85,14 @@ CGUIWindowVideoNav::~CGUIWindowVideoNav(void)
 {
 }
 
+/*********************************************************************************/
+void CGUIWindowVideoNav::OnLoaderFinish(void)
+{
+  //CLog::Log(LOGDEBUG, "WindowVideoNav::%s", __FUNCTION__);
+}
+
+/*********************************************************************************/
+
 bool CGUIWindowVideoNav::OnAction(const CAction &action)
 {
   if (action.GetID() == ACTION_TOGGLE_WATCHED)
@@ -104,87 +112,86 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
 {
   switch (message.GetMessage())
   {
-  case GUI_MSG_WINDOW_RESET:
-    m_vecItems->SetPath("");
-    break;
-  case GUI_MSG_WINDOW_DEINIT:
-    if (m_thumbLoader.IsLoading())
-      m_thumbLoader.StopThread();
-    break;
-  case GUI_MSG_WINDOW_INIT:
-    {
-      /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
-      m_rootDir.AllowNonLocalSources(false);
-
-      SetProperty("flattened", CSettings::Get().GetBool("myvideos.flatten"));
-      if (message.GetNumStringParams() && StringUtils::EqualsNoCase(message.GetStringParam(0), "Files") &&
-          CMediaSourceSettings::Get().GetSources("video")->empty())
+    case GUI_MSG_WINDOW_RESET:
+      m_vecItems->SetPath("");
+      break;
+    case GUI_MSG_WINDOW_DEINIT:
+      if (m_thumbLoader.IsLoading())
+        m_thumbLoader.StopThread();
+      break;
+    case GUI_MSG_WINDOW_INIT:
       {
-        message.SetStringParam("");
-      }
-      
-      if (!CGUIWindowVideoBase::OnMessage(message))
-        return false;
+        /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
+        m_rootDir.AllowNonLocalSources(false);
 
-      return true;
-    }
-    break;
-
-  case GUI_MSG_CLICKED:
-    {
-      int iControl = message.GetSenderId();
-      if (iControl == CONTROL_BTNPARTYMODE)
-      {
-        if (g_partyModeManager.IsEnabled())
-          g_partyModeManager.Disable();
-        else
+        SetProperty("flattened", CSettings::Get().GetBool("myvideos.flatten"));
+        if (message.GetNumStringParams() && StringUtils::EqualsNoCase(message.GetStringParam(0), "Files") &&
+            CMediaSourceSettings::Get().GetSources("video")->empty())
         {
-          if (!g_partyModeManager.Enable(PARTYMODECONTEXT_VIDEO))
+          message.SetStringParam("");
+        }
+
+        if (!CGUIWindowVideoBase::OnMessage(message))
+          return false;
+
+        return true;
+      }
+      break;
+    case GUI_MSG_CLICKED:
+      {
+        int iControl = message.GetSenderId();
+        if (iControl == CONTROL_BTNPARTYMODE)
+        {
+          if (g_partyModeManager.IsEnabled())
+            g_partyModeManager.Disable();
+          else
           {
-            SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
-            return false;
+            if (!g_partyModeManager.Enable(PARTYMODECONTEXT_VIDEO))
+            {
+              SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
+              return false;
+            }
+
+            // Playlist directory is the root of the playlist window
+            if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistvideo://");
+
+            return true;
           }
+          UpdateButtons();
+        }
 
-          // Playlist directory is the root of the playlist window
-          if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistvideo://");
-
+        if (iControl == CONTROL_BTNSEARCH)
+        {
+          OnSearch();
+        }
+        else if (iControl == CONTROL_BTNSHOWMODE)
+        {
+          CMediaSettings::Get().CycleWatchedMode(m_vecItems->GetContent());
+          CSettings::Get().Save();
+          OnFilterItems(GetProperty("filter").asString());
           return true;
         }
-        UpdateButtons();
+        else if (iControl == CONTROL_BTNSHOWALL)
+        {
+          if (CMediaSettings::Get().GetWatchedMode(m_vecItems->GetContent()) == WatchedModeAll)
+            CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeUnwatched);
+          else
+            CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeAll);
+          CSettings::Get().Save();
+          OnFilterItems(GetProperty("filter").asString());
+          return true;
+        }
+        else if (iControl == CONTROL_UPDATE_LIBRARY)
+        {
+          if (!g_application.IsVideoScanning())
+            OnScan("");
+          else
+            g_application.StopVideoScan();
+          return true;
+        }
       }
-
-      if (iControl == CONTROL_BTNSEARCH)
-      {
-        OnSearch();
-      }
-      else if (iControl == CONTROL_BTNSHOWMODE)
-      {
-        CMediaSettings::Get().CycleWatchedMode(m_vecItems->GetContent());
-        CSettings::Get().Save();
-        OnFilterItems(GetProperty("filter").asString());
-        return true;
-      }
-      else if (iControl == CONTROL_BTNSHOWALL)
-      {
-        if (CMediaSettings::Get().GetWatchedMode(m_vecItems->GetContent()) == WatchedModeAll)
-          CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeUnwatched);
-        else
-          CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeAll);
-        CSettings::Get().Save();
-        OnFilterItems(GetProperty("filter").asString());
-        return true;
-      }
-      else if (iControl == CONTROL_UPDATE_LIBRARY)
-      {
-        if (!g_application.IsVideoScanning())
-          OnScan("");
-        else
-          g_application.StopVideoScan();
-        return true;
-      }
-    }
-    break;
-    // update the display
+      break;
+      // update the display
     case GUI_MSG_REFRESH_THUMBS:
       Refresh();
       break;

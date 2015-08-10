@@ -87,6 +87,8 @@ void CBackgroundInfoLoader::Run()
     }
 
     OnLoaderFinish();
+    if (m_pObserver)
+      m_pObserver->OnLoaderFinish();
     m_bIsLoading = false;
   }
   catch (...)
