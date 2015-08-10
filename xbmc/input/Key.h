@@ -380,6 +380,7 @@
 #define ACTION_ANALOG_MOVE_X            601 // analog thumbstick move, horizontal axis; see ACTION_ANALOG_MOVE
 #define ACTION_ANALOG_MOVE_Y            602 // analog thumbstick move, vertical axis; see ACTION_ANALOG_MOVE
 
+#define ACTION_AUTO_INFO                610 // display information on the currently playing movie
 
 // The NOOP action can be specified to disable an input event. This is
 // useful in user keyboard.xml etc to disable actions specified in the

@@ -133,7 +133,45 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
 
         if (!CGUIWindowVideoBase::OnMessage(message))
           return false;
+        /*
+           CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::%s : n params is %d", __FUNCTION__, message.GetNumStringParams());
+           for(int i=0; i<message.GetNumStringParams(); i++)
+           CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::%s : params %d is %s", __FUNCTION__, i, message.GetStringParam(i).c_str());
+         */
 
+        /* Check if we should jump to the currently playing movie Info Dialog */
+        if( message.GetNumStringParams()>1 && StringUtils::EqualsNoCase(message.GetStringParam(1), "AutoInfo"))
+        {
+          CGUIMessage m(ACTION_AUTO_INFO, GetID(), 0);
+          CApplicationMessenger::Get().SendGUIMessage(m, GetID(), false);
+        }
+
+        return true;
+      }
+      break;
+    case ACTION_AUTO_INFO:
+      {
+        CLog::Log(LOGDEBUG, "WindowVideoNav::%s : Action Received", __FUNCTION__);
+        /* Search for the currently playing item */
+        CGUIInfoBool m_isPlaying;
+        int          itemSelected = -1;
+        m_isPlaying.Parse("listitem.isplaying", 0);
+        for (int i = 0; i < m_vecItems->Size(); i++)
+        {
+          //CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::%s : item: %d", 
+          //__FUNCTION__, i);
+          CFileItemPtr pItem = m_vecItems->Get(i);
+          m_isPlaying.Update(pItem.get());
+          if(m_isPlaying)
+          {
+            itemSelected = i;
+            //CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::%s : select item: %d", 
+            //__FUNCTION__, i);
+          }
+        }
+        /* Start info dialog for selected movie */
+        if(itemSelected >= 0)
+          OnSelect(itemSelected);
         return true;
       }
       break;
