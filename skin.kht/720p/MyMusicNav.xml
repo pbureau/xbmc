@@ -6,7 +6,7 @@
 <!--
 	<views>50,51,500,550,551,509,506,511,512,513</views>
 -->
-	<views>512,51,500</views>
+	<views>512,51,500,506,509</views>
 	<controls>
 		<include>CommonBackground</include>
 <!--
@@ -54,6 +54,8 @@
 			<include>AllAlbumsView</include> view id = 500
 			<include>AllSongsView</include>  view id = 51 
 			<include>AllArtistsView</include>  view id = 512
+			<include>OneArtistView</include>  view id = 506
+			<include>OneAlbumView</include>  view id = 509
 <!--
 			<include>AllPlaylistView</include>  view id = 506
 			<include>MusicInfoListView</include>  view id = 506 
