@@ -297,7 +297,7 @@ void CGUIDialogVideoBookmarks::OnRefreshList()
     std::string cachefile = CTextureCache::Get().GetCachedPath(CTextureCache::Get().GetCacheFile(chapterPath)+".jpg");
     if (XFILE::CFile::Exists(cachefile))
       item->SetArt("thumb", cachefile);
-    else if (i > m_jobsStarted && CSettings::Get().GetBool("myvideos.extractchapterthumbs"))
+    else if (i > m_jobsStarted && CSettings::Get().GetBool(CSettings::SETTING_MYVIDEOS_EXTRACTCHAPTERTHUMBS))
     {
       CFileItem item(m_filePath, false);
       CJob* job = new CThumbExtractor(item, m_filePath, true, chapterPath, pos * 1000, false);
@@ -328,7 +328,7 @@ void CGUIDialogVideoBookmarks::OnRefreshList()
   }
 
   m_viewControl.SetItems(*m_vecItems);
-  m_viewControl.SetSelectedItem(selectedItemIndex);;
+  m_viewControl.SetSelectedItem(selectedItemIndex);
 }
 
 void CGUIDialogVideoBookmarks::Update()

@@ -376,7 +376,7 @@ void* CAirTunesServer::AudioOutputFunctions::audio_init(void *cls, int bits, int
 
   CApplicationMessenger::Get().SendMsg(TMSG_MEDIA_STOP);
 
-  CFileItem *item = new CFileItem();;
+  CFileItem *item = new CFileItem();
   item->SetPath(pipe->GetName());
   item->SetMimeType("audio/x-xbmc-pcm");
   m_streamStarted = true;
@@ -465,7 +465,7 @@ void  CAirTunesServer::AudioOutputFunctions::audio_set_volume(void *cls, void *s
 #ifdef HAS_AIRPLAY
   CAirPlayServer::backupVolume();
 #endif
-  if (CSettings::Get().GetBool("services.airplayvolumecontrol"))
+  if (CSettings::Get().GetBool(CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL))
     g_application.SetVolume(volPercent, false);//non-percent volume 0.0-1.0
 }
 

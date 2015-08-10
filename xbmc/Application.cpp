@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team XBMC
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -33,6 +33,7 @@
 #include "cores/IPlayer.h"
 #include "cores/dvdplayer/DVDFileInfo.h"
 #include "cores/AudioEngine/AEFactory.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "PlayListPlayer.h"
 #include "Autorun.h"
@@ -244,6 +245,7 @@ using namespace PVR;
 using namespace EPG;
 using namespace PERIPHERALS;
 using namespace KODI::MESSAGING;
+using namespace ActiveAE;
 
 using namespace XbmcThreads;
 
@@ -261,7 +263,6 @@ CApplication::CApplication(void)
   , m_progressTrackingVideoResumeBookmark(*new CBookmark)
   , m_progressTrackingItem(new CFileItem)
   , m_musicInfoScanner(new CMusicInfoScanner)
-  , m_playerController(new CPlayerController)
   , m_fallbackLanguageLoaded(false)
 {
   m_network = NULL;
@@ -303,7 +304,6 @@ CApplication::CApplication(void)
   m_Autorun = new CAutorun();
 #endif
 
-  m_splash = NULL;
   m_threadID = 0;
   m_progressTrackingPlayCountUpdate = false;
   m_currentStackPosition = 0;
@@ -330,7 +330,6 @@ CApplication::~CApplication(void)
 #endif
 
   delete m_dpms;
-  delete m_playerController;
   delete m_pInertialScrollingHandler;
   delete m_pPlayer;
 
@@ -346,13 +345,13 @@ bool CApplication::OnEvent(XBMC_Event& newEvent)
         CApplicationMessenger::Get().PostMsg(TMSG_QUIT);
       break;
     case XBMC_VIDEORESIZE:
-      if (!g_application.m_bInitializing &&
+      if (g_windowManager.Initialized() &&
           !g_advancedSettings.m_fullScreen)
       {
         g_Windowing.SetWindowResolution(newEvent.resize.w, newEvent.resize.h);
         g_graphicsContext.SetVideoResolution(RES_WINDOW, true);
-        CSettings::Get().SetInt("window.width", newEvent.resize.w);
-        CSettings::Get().SetInt("window.height", newEvent.resize.h);
+        CSettings::Get().SetInt(CSettings::SETTING_WINDOW_WIDTH, newEvent.resize.w);
+        CSettings::Get().SetInt(CSettings::SETTING_WINDOW_HEIGHT, newEvent.resize.h);
         CSettings::Get().Save();
       }
       break;
@@ -444,6 +443,13 @@ bool CApplication::Create()
 {
   SetupNetwork();
   Preflight();
+
+  // here we register all global classes for the CApplicationMessenger, 
+  // after that we can send messages to the corresponding modules
+  CApplicationMessenger::Get().RegisterReceiver(this);
+  CApplicationMessenger::Get().RegisterReceiver(&g_playlistPlayer);
+  CApplicationMessenger::Get().RegisterReceiver(&g_infoManager);
+  CApplicationMessenger::Get().RegisterReceiver(&g_AEDSPManager);
 
   for (int i = RES_HDTV_1080i; i <= RES_PAL60_16x9; i++)
   {
@@ -633,8 +639,8 @@ bool CApplication::Create()
 
   CLog::Log(LOGINFO, "creating subdirectories");
   CLog::Log(LOGINFO, "userdata folder: %s", CProfilesManager::Get().GetProfileUserDataFolder().c_str());
-  CLog::Log(LOGINFO, "recording folder: %s", CSettings::Get().GetString("audiocds.recordingpath").c_str());
-  CLog::Log(LOGINFO, "screenshots folder: %s", CSettings::Get().GetString("debug.screenshotpath").c_str());
+  CLog::Log(LOGINFO, "recording folder: %s", CSettings::Get().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH).c_str());
+  CLog::Log(LOGINFO, "screenshots folder: %s", CSettings::Get().GetString(CSettings::SETTING_DEBUG_SCREENSHOTPATH).c_str());
   CDirectory::Create(CProfilesManager::Get().GetUserDataFolder());
   CDirectory::Create(CProfilesManager::Get().GetProfileUserDataFolder());
   CProfilesManager::Get().CreateProfileFolders();
@@ -652,16 +658,19 @@ bool CApplication::Create()
     return false;
   }
 
+  // start AudioDSP engine with a blocking message
+  CApplicationMessenger::Get().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON);
+
   // restore AE's previous volume state
   SetHardwareVolume(m_volumeLevel);
   CAEFactory::SetMute     (m_muted);
-  CAEFactory::SetSoundMode(CSettings::Get().GetInt("audiooutput.guisoundmode"));
+  CAEFactory::SetSoundMode(CSettings::Get().GetInt(CSettings::SETTING_AUDIOOUTPUT_GUISOUNDMODE));
 
   // initialize m_replayGainSettings
-  m_replayGainSettings.iType = CSettings::Get().GetInt("musicplayer.replaygaintype");
-  m_replayGainSettings.iPreAmp = CSettings::Get().GetInt("musicplayer.replaygainpreamp");
-  m_replayGainSettings.iNoGainPreAmp = CSettings::Get().GetInt("musicplayer.replaygainnogainpreamp");
-  m_replayGainSettings.bAvoidClipping = CSettings::Get().GetBool("musicplayer.replaygainavoidclipping");
+  m_replayGainSettings.iType = CSettings::Get().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINTYPE);
+  m_replayGainSettings.iPreAmp = CSettings::Get().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINPREAMP);
+  m_replayGainSettings.iNoGainPreAmp = CSettings::Get().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINNOGAINPREAMP);
+  m_replayGainSettings.bAvoidClipping = CSettings::Get().GetBool(CSettings::SETTING_MUSICPLAYER_REPLAYGAINAVOIDCLIPPING);
 
   // initialize the addon database (must be before the addon manager is init'd)
   CDatabaseManager::Get().Initialize(true);
@@ -777,7 +786,7 @@ bool CApplication::CreateGUI()
   }
 
   // update the window resolution
-  g_Windowing.SetWindowResolution(CSettings::Get().GetInt("window.width"), CSettings::Get().GetInt("window.height"));
+  g_Windowing.SetWindowResolution(CSettings::Get().GetInt(CSettings::SETTING_WINDOW_WIDTH), CSettings::Get().GetInt(CSettings::SETTING_WINDOW_HEIGHT));
 
   if (g_advancedSettings.m_startFullScreen && CDisplaySettings::Get().GetCurrentResolution() == RES_WINDOW)
   {
@@ -802,20 +811,7 @@ bool CApplication::CreateGUI()
     CDisplaySettings::Get().SetCurrentResolution(RES_DESKTOP, true);
 
   if (g_advancedSettings.m_splashImage)
-  {
-    std::string strUserSplash = "special://home/media/Splash.png";
-    if (CFile::Exists(strUserSplash))
-    {
-      CLog::Log(LOGINFO, "load user splash image: %s", CSpecialProtocol::TranslatePath(strUserSplash).c_str());
-      m_splash = new CSplash(strUserSplash);
-    }
-    else
-    {
-      CLog::Log(LOGINFO, "load default splash image: %s", CSpecialProtocol::TranslatePath("special://xbmc/media/Splash.png").c_str());
-      m_splash = new CSplash("special://xbmc/media/Splash.png");
-    }
-    m_splash->Show();
-  }
+    CSplash::Get().Show();
 
   // The key mappings may already have been loaded by a peripheral
   CLog::Log(LOGINFO, "load keymapping");
@@ -827,6 +823,7 @@ bool CApplication::CreateGUI()
             info.iWidth,
             info.iHeight,
             info.strMode.c_str());
+
   g_windowManager.Initialize();
 
   return true;
@@ -1130,10 +1127,6 @@ bool CApplication::Initialize()
     CDirectory::Create("special://xbmc/sounds");
   }
 
-  CApplicationMessenger::Get().RegisterReceveiver(this);
-  CApplicationMessenger::Get().RegisterReceveiver(&g_playlistPlayer);
-  CApplicationMessenger::Get().RegisterReceveiver(&g_infoManager);
-
   // load the language and its translated strings
   if (!LoadLanguage(false))
     return false;
@@ -1160,23 +1153,26 @@ bool CApplication::Initialize()
   bool uiInitializationFinished = true;
   if (g_windowManager.Initialized())
   {
-    CSettings::Get().GetSetting("powermanagement.displaysoff")->SetRequirementsMet(m_dpms->IsSupported());
+    CSettings::Get().GetSetting(CSettings::SETTING_POWERMANAGEMENT_DISPLAYSOFF)->SetRequirementsMet(m_dpms->IsSupported());
 
     g_windowManager.CreateWindows();
     /* window id's 3000 - 3100 are reserved for python */
 
+    // initialize splash window after splash screen disappears
+    // because we need a real window in the background which gets
+    // rendered while we load the main window or enter the master lock key
+    if (g_advancedSettings.m_splashImage)
+      g_windowManager.ActivateWindow(WINDOW_SPLASH);
+
     // Make sure we have at least the default skin
-    std::string defaultSkin = ((const CSettingString*)CSettings::Get().GetSetting("lookandfeel.skin"))->GetDefault();
-    if (!LoadSkin(CSettings::Get().GetString("lookandfeel.skin")) && !LoadSkin(defaultSkin))
+    std::string defaultSkin = ((const CSettingString*)CSettings::Get().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN))->GetDefault();
+    if (!LoadSkin(CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN)) && !LoadSkin(defaultSkin))
     {
       CLog::Log(LOGERROR, "Default skin '%s' not found! Terminating..", defaultSkin.c_str());
       return false;
     }
 
-    if (g_advancedSettings.m_splashImage)
-      SAFE_DELETE(m_splash);
-
-    if (CSettings::Get().GetBool("masterlock.startuplock") &&
+    if (CSettings::Get().GetBool(CSettings::SETTING_MASTERLOCK_STARTUPLOCK) &&
         CProfilesManager::Get().GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE &&
        !CProfilesManager::Get().GetMasterProfile().getLockCode().empty())
     {
@@ -1198,19 +1194,18 @@ bool CApplication::Initialize()
 #endif
       ADDON::CAddonMgr::Get().StartServices(false);
 
-      // let's start the PVR manager and decide if the PVR manager handle the startup window activation
-      if (StartPVRManager())
-        uiInitializationFinished = false;
-      else
-      {
-        int firstWindow = g_SkinInfo->GetFirstWindow();
-        // the startup window is considered part of the initialization as it most likely switches to the final window
-        uiInitializationFinished = firstWindow != WINDOW_STARTUP_ANIM;
+      // start the PVR manager
+      StartPVRManager();
 
-        g_windowManager.ActivateWindow(firstWindow);
-      }
+      // activate the configured start window
+      int firstWindow = g_SkinInfo->GetFirstWindow();
+      g_windowManager.ActivateWindow(firstWindow);
+
+      // the startup window is considered part of the initialization as it most likely switches to the final window
+      uiInitializationFinished = firstWindow != WINDOW_STARTUP_ANIM;
 
       CStereoscopicsManager::Get().Initialize();
+      CApplicationMessenger::Get().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON); // send a blocking message to active AudioDSP engine
     }
 
   }
@@ -1242,6 +1237,7 @@ bool CApplication::Initialize()
 
   // register action listeners
   RegisterActionListener(&CSeekHandler::Get());
+  RegisterActionListener(&CPlayerController::Get());
 
   CLog::Log(LOGNOTICE, "initialize done");
 
@@ -1251,7 +1247,7 @@ bool CApplication::Initialize()
   ResetScreenSaver();
 
 #ifdef HAS_SDL_JOYSTICK
-  CInputManager::Get().SetEnabledJoystick(CSettings::Get().GetBool("input.enablejoystick") &&
+  CInputManager::Get().SetEnabledJoystick(CSettings::Get().GetBool(CSettings::SETTING_INPUT_ENABLEJOYSTICK) &&
                     CPeripheralImon::GetCountOfImonsConflictWithDInput() == 0 );
 #endif
 
@@ -1272,37 +1268,37 @@ bool CApplication::StartServer(enum ESERVERS eServer, bool bStart, bool bWait/* 
   {
     case ES_WEBSERVER:
       // the callback will take care of starting/stopping webserver
-      ret = CSettings::Get().SetBool("services.webserver", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_WEBSERVER, bStart);
       break;
 
     case ES_AIRPLAYSERVER:
       // the callback will take care of starting/stopping airplay
-      ret = CSettings::Get().SetBool("services.airplay", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_AIRPLAY, bStart);
       break;
 
     case ES_JSONRPCSERVER:
       // the callback will take care of starting/stopping jsonrpc server
-      ret = CSettings::Get().SetBool("services.esenabled", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_ESENABLED, bStart);
       break;
 
     case ES_UPNPSERVER:
       // the callback will take care of starting/stopping upnp server
-      ret = CSettings::Get().SetBool("services.upnpserver", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_UPNPSERVER, bStart);
       break;
 
     case ES_UPNPRENDERER:
       // the callback will take care of starting/stopping upnp renderer
-      ret = CSettings::Get().SetBool("services.upnprenderer", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_UPNPRENDERER, bStart);
       break;
 
     case ES_EVENTSERVER:
       // the callback will take care of starting/stopping event server
-      ret = CSettings::Get().SetBool("services.esenabled", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_ESENABLED, bStart);
       break;
 
     case ES_ZEROCONF:
       // the callback will take care of starting/stopping zeroconf
-      ret = CSettings::Get().SetBool("services.zeroconf", bStart);
+      ret = CSettings::Get().SetBool(CSettings::SETTING_SERVICES_ZEROCONF, bStart);
       break;
 
     default:
@@ -1314,18 +1310,12 @@ bool CApplication::StartServer(enum ESERVERS eServer, bool bStart, bool bWait/* 
   return ret;
 }
 
-bool CApplication::StartPVRManager()
+void CApplication::StartPVRManager()
 {
-  if (!CSettings::Get().GetBool("pvrmanager.enabled"))
-    return false;
+  if (!CSettings::Get().GetBool(CSettings::SETTING_PVRMANAGER_ENABLED))
+    return;
 
-  int firstWindowId = 0;
-  if (g_PVRManager.IsPVRWindow(g_SkinInfo->GetStartWindow()))
-    firstWindowId = g_SkinInfo->GetFirstWindow();
-
-  g_PVRManager.Start(true, firstWindowId);
-
-  return (firstWindowId > 0);
+  g_PVRManager.Start(true);
 }
 
 void CApplication::StopPVRManager()
@@ -1364,42 +1354,42 @@ void CApplication::OnSettingChanged(const CSetting *setting)
     return;
 
   const std::string &settingId = setting->GetId();
-  if (settingId == "lookandfeel.skin" ||
-      settingId == "lookandfeel.font" ||
-      settingId == "lookandfeel.skincolors")
+  if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN ||
+      settingId == CSettings::SETTING_LOOKANDFEEL_FONT ||
+      settingId == CSettings::SETTING_LOOKANDFEEL_SKINCOLORS)
   {
     // if the skin changes and the current theme is not the default one, reset
     // the theme to the default value (which will also change lookandfeel.skincolors
     // which in turn will reload the skin.  Similarly, if the current skin font is not
     // the default, reset it as well.
-    if (settingId == "lookandfeel.skin" && CSettings::Get().GetString("lookandfeel.skintheme") != "SKINDEFAULT")
+    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME) != "SKINDEFAULT")
     {
-      CSettings::Get().SetString("lookandfeel.skintheme", "SKINDEFAULT");
+      CSettings::Get().SetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME, "SKINDEFAULT");
       return;
     }
-    if (settingId == "lookandfeel.skin" && CSettings::Get().GetString("lookandfeel.font") != "Default")
+    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_FONT) != "Default")
     {
-      CSettings::Get().SetString("lookandfeel.font", "Default");
+      CSettings::Get().SetString(CSettings::SETTING_LOOKANDFEEL_FONT, "Default");
       return;
     }
 
     // Reset sounds setting if new skin doen't provide sounds
-    if (settingId == "lookandfeel.skin" && CSettings::Get().GetString("lookandfeel.soundskin") == "SKINDEFAULT")
+    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SOUNDSKIN) == "SKINDEFAULT")
     {
       ADDON::AddonPtr addon;
       if (CAddonMgr::Get().GetAddon(((CSettingString*)setting)->GetValue(), addon, ADDON_SKIN))
       {
         if (!CDirectory::Exists(URIUtils::AddFileToFolder(addon->Path(), "sounds")))
-          CSettings::Get().GetSetting("lookandfeel.soundskin")->Reset();
+          CSettings::Get().GetSetting(CSettings::SETTING_LOOKANDFEEL_SOUNDSKIN)->Reset();
       }
     }
 
       std::string builtin("ReloadSkin");
-      if (settingId == "lookandfeel.skin" && !m_skinReverting)
+      if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && !m_skinReverting)
         builtin += "(confirm)";
       CApplicationMessenger::Get().PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, builtin);
     }
-  else if (settingId == "lookandfeel.skintheme")
+  else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINTHEME)
   {
     // also set the default color theme
     std::string colorTheme = ((CSettingString*)setting)->GetValue();
@@ -1411,39 +1401,55 @@ void CApplication::OnSettingChanged(const CSetting *setting)
     // if yes, it will trigger a call to ReloadSkin() in
     // it's OnSettingChanged() callback
     // if no we have to call ReloadSkin() ourselves
-    if (!StringUtils::EqualsNoCase(colorTheme, CSettings::Get().GetString("lookandfeel.skincolors")))
-      CSettings::Get().SetString("lookandfeel.skincolors", colorTheme);
+    if (!StringUtils::EqualsNoCase(colorTheme, CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS)))
+      CSettings::Get().SetString(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS, colorTheme);
     else
       CApplicationMessenger::Get().SendMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, "ReloadSkin");
   }
-  else if (settingId == "lookandfeel.skinzoom")
+  else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINZOOM)
   {
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_WINDOW_RESIZE);
     g_windowManager.SendThreadMessage(msg);
   }
   else if (StringUtils::StartsWithNoCase(settingId, "audiooutput."))
   {
+    if (settingId == CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED)
+    {
+      if (((CSettingBool *) setting)->GetValue())
+      {
+        CApplicationMessenger::Get().PostMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON);
+        CApplicationMessenger::Get().PostMsg(TMSG_MEDIA_RESTART); // send non blocking media restart message
+      }
+      else
+      {
+        CAEFactory::OnSettingsChange(settingId);
+        CApplicationMessenger::Get().PostMsg(TMSG_MEDIA_RESTART); // send non blocking media restart message
+        CApplicationMessenger::Get().PostMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_OFF);
+      }
+      return;
+    }
+
     // AE is master of audio settings and needs to be informed first
     CAEFactory::OnSettingsChange(settingId);
 
-    if (settingId == "audiooutput.guisoundmode")
+    if (settingId == CSettings::SETTING_AUDIOOUTPUT_GUISOUNDMODE)
     {
       CAEFactory::SetSoundMode(((CSettingInt*)setting)->GetValue());
     }
     // this tells player whether to open an audio stream passthrough or PCM
     // if this is changed, audio stream has to be reopened
-    else if (settingId == "audiooutput.passthrough")
+    else if (settingId == CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH)
     {
       CApplicationMessenger::Get().PostMsg(TMSG_MEDIA_RESTART);
     }
   }
-  else if (StringUtils::EqualsNoCase(settingId, "musicplayer.replaygaintype"))
+  else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINTYPE))
     m_replayGainSettings.iType = ((CSettingInt*)setting)->GetValue();
-  else if (StringUtils::EqualsNoCase(settingId, "musicplayer.replaygainpreamp"))
+  else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINPREAMP))
     m_replayGainSettings.iPreAmp = ((CSettingInt*)setting)->GetValue();
-  else if (StringUtils::EqualsNoCase(settingId, "musicplayer.replaygainnogainpreamp"))
+  else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINNOGAINPREAMP))
     m_replayGainSettings.iNoGainPreAmp = ((CSettingInt*)setting)->GetValue();
-  else if (StringUtils::EqualsNoCase(settingId, "musicplayer.replaygainavoidclipping"))
+  else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINAVOIDCLIPPING))
     m_replayGainSettings.bAvoidClipping = ((CSettingBool*)setting)->GetValue();
 }
 
@@ -1453,25 +1459,25 @@ void CApplication::OnSettingAction(const CSetting *setting)
     return;
 
   const std::string &settingId = setting->GetId();
-  if (settingId == "lookandfeel.skinsettings")
+  if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINSETTINGS)
     g_windowManager.ActivateWindow(WINDOW_SKIN_SETTINGS);
-  else if (settingId == "screensaver.preview")
+  else if (settingId == CSettings::SETTING_SCREENSAVER_PREVIEW)
     ActivateScreenSaver(true);
-  else if (settingId == "screensaver.settings")
+  else if (settingId == CSettings::SETTING_SCREENSAVER_SETTINGS)
   {
     AddonPtr addon;
-    if (CAddonMgr::Get().GetAddon(CSettings::Get().GetString("screensaver.mode"), addon, ADDON_SCREENSAVER))
+    if (CAddonMgr::Get().GetAddon(CSettings::Get().GetString(CSettings::SETTING_SCREENSAVER_MODE), addon, ADDON_SCREENSAVER))
       CGUIDialogAddonSettings::ShowAndGetInput(addon);
   }
-  else if (settingId == "audiocds.settings")
+  else if (settingId == CSettings::SETTING_AUDIOCDS_SETTINGS)
   {
     AddonPtr addon;
-    if (CAddonMgr::Get().GetAddon(CSettings::Get().GetString("audiocds.encoder"), addon, ADDON_AUDIOENCODER))
+    if (CAddonMgr::Get().GetAddon(CSettings::Get().GetString(CSettings::SETTING_AUDIOCDS_ENCODER), addon, ADDON_AUDIOENCODER))
       CGUIDialogAddonSettings::ShowAndGetInput(addon);
   }
-  else if (settingId == "videoscreen.guicalibration")
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_GUICALIBRATION)
     g_windowManager.ActivateWindow(WINDOW_SCREEN_CALIBRATION);
-  else if (settingId == "videoscreen.testpattern")
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_TESTPATTERN)
     g_windowManager.ActivateWindow(WINDOW_TEST_PATTERN);
 }
 
@@ -1482,7 +1488,7 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
 
   const std::string &settingId = setting->GetId();
 #if defined(HAS_LIBAMCODEC)
-  if (settingId == "videoplayer.useamcodec")
+  if (settingId == CSettings::SETTING_VIDEOPLAYER_USEAMCODEC)
   {
     // Do not permit amcodec to be used on non-aml platforms.
     // The setting will be hidden but the default value is true,
@@ -1502,7 +1508,7 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
   }
 #endif
 #if defined(TARGET_DARWIN_OSX)
-  if (settingId == "audiooutput.audiodevice")
+  if (settingId == CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)
   {
     CSettingString *audioDevice = (CSettingString*)setting;
     // Gotham and older didn't enumerate audio devices per stream on osx
@@ -1538,7 +1544,7 @@ void CApplication::ReloadSkin(bool confirm/*=false*/)
   CGUIMessage msg(GUI_MSG_LOAD_SKIN, -1, g_windowManager.GetActiveWindow());
   g_windowManager.SendMessage(msg);
 
-  std::string newSkin = CSettings::Get().GetString("lookandfeel.skin");
+  std::string newSkin = CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN);
   if (LoadSkin(newSkin))
   {
     /* The Reset() or SetString() below will cause recursion, so the m_skinReverting boolean is set so as to not prompt the
@@ -1550,20 +1556,20 @@ void CApplication::ReloadSkin(bool confirm/*=false*/)
       {
         m_skinReverting = true;
         if (oldSkin.empty())
-          CSettings::Get().GetSetting("lookandfeel.skin")->Reset();
+          CSettings::Get().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN)->Reset();
         else
-          CSettings::Get().SetString("lookandfeel.skin", oldSkin);
+          CSettings::Get().SetString(CSettings::SETTING_LOOKANDFEEL_SKIN, oldSkin);
       }
     }
   }
   else
   {
     // skin failed to load - we revert to the default only if we didn't fail loading the default
-    std::string defaultSkin = ((CSettingString*)CSettings::Get().GetSetting("lookandfeel.skin"))->GetDefault();
+    std::string defaultSkin = ((CSettingString*)CSettings::Get().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN))->GetDefault();
     if (newSkin != defaultSkin)
     {
       m_skinReverting = true;
-      CSettings::Get().GetSetting("lookandfeel.skin")->Reset();
+      CSettings::Get().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN)->Reset();
       CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Error, g_localizeStrings.Get(24102), g_localizeStrings.Get(24103));
     }
   }
@@ -1672,15 +1678,15 @@ bool CApplication::LoadSkin(const SkinPtr& skin)
   g_graphicsContext.SetMediaDir(skin->Path());
   g_directoryCache.ClearSubPaths(skin->Path());
 
-  g_colorManager.Load(CSettings::Get().GetString("lookandfeel.skincolors"));
+  g_colorManager.Load(CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS));
 
-  g_fontManager.LoadFonts(CSettings::Get().GetString("lookandfeel.font"));
+  g_fontManager.LoadFonts(CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_FONT));
 
   // load in the skin strings
   std::string langPath = URIUtils::AddFileToFolder(skin->Path(), "language");
   URIUtils::AddSlashAtEnd(langPath);
 
-  g_localizeStrings.LoadSkinStrings(langPath, CSettings::Get().GetString("locale.language"));
+  g_localizeStrings.LoadSkinStrings(langPath, CSettings::Get().GetString(CSettings::SETTING_LOCALE_LANGUAGE));
 
   g_SkinInfo->LoadIncludes();
 
@@ -1918,7 +1924,7 @@ void CApplication::Render()
 
   MEASURE_FUNCTION;
 
-  int vsync_mode = CSettings::Get().GetInt("videoscreen.vsync");
+  int vsync_mode = CSettings::Get().GetInt(CSettings::SETTING_VIDEOSCREEN_VSYNC);
 
   bool hasRendered = false;
   bool limitFrames = false;
@@ -2378,9 +2384,6 @@ bool CApplication::OnAction(const CAction &action)
       if (m_pPlayer->CanRecord())
         m_pPlayer->Record(!m_pPlayer->IsRecording());
     }
-
-    if (m_playerController->OnAction(action))
-      return true;
   }
 
 
@@ -2424,8 +2427,8 @@ bool CApplication::OnAction(const CAction &action)
 
   if (action.GetID() == ACTION_TOGGLE_DIGITAL_ANALOG)
   {
-    bool passthrough = CSettings::Get().GetBool("audiooutput.passthrough");
-    CSettings::Get().SetBool("audiooutput.passthrough", !passthrough);
+    bool passthrough = CSettings::Get().GetBool(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH);
+    CSettings::Get().SetBool(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH, !passthrough);
 
     if (g_windowManager.GetActiveWindow() == WINDOW_SETTINGS_SYSTEM)
     {
@@ -2503,7 +2506,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   
   case TMSG_SHUTDOWN:
   {
-    switch (CSettings::Get().GetInt("powermanagement.shutdownstate"))
+    switch (CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))
     {
     case POWERSTATE_SHUTDOWN:
       CApplicationMessenger::Get().PostMsg(TMSG_SHUTDOWN);
@@ -2568,11 +2571,6 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     ShowVolumeBar(&action);
   }
   break;
-
-  case TMSG_SPLASH_MESSAGE:
-    if (GetSplash())
-      GetSplash()->Show(pMsg->strParam);
-    break;
 
   case TMSG_DISPLAY_SETUP:
     *static_cast<bool*>(pMsg->lpVoid) = InitWindow();
@@ -2750,7 +2748,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     {
       if (items.Size() == 0)
       {
-        CSettings::Get().SetString("screensaver.mode", "screensaver.xbmc.builtin.dim");
+        CSettings::Get().SetString(CSettings::SETTING_SCREENSAVER_MODE, "screensaver.xbmc.builtin.dim");
         g_application.ActivateScreenSaver();
       }
       else
@@ -2945,6 +2943,7 @@ void CApplication::Stop(int exitCode)
     if (CVideoLibraryQueue::Get().IsRunning())
       CVideoLibraryQueue::Get().CancelAllJobs();
 
+    CApplicationMessenger::Get().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_OFF); // send a blocking message to deactivate AudioDSP engine
     CApplicationMessenger::Get().Cleanup();
 
     CLog::Log(LOGNOTICE, "stop player");
@@ -2997,6 +2996,7 @@ void CApplication::Stop(int exitCode)
 
     // unregister action listeners
     UnregisterActionListener(&CSeekHandler::Get());
+    UnregisterActionListener(&CPlayerController::Get());
 
     // stop all remaining scripts; must be done after skin has been unloaded,
     // not before some windows still need it when deinitializing during skin
@@ -3266,6 +3266,7 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
 
     // Switch to default options
     CMediaSettings::Get().GetCurrentVideoSettings() = CMediaSettings::Get().GetDefaultVideoSettings();
+    CMediaSettings::Get().GetCurrentAudioSettings() = CMediaSettings::Get().GetDefaultAudioSettings();
     // see if we have saved options in the database
 
     m_pPlayer->SetPlaySpeed(1, g_application.m_muted);
@@ -3457,6 +3458,7 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   if (m_pKaraokeMgr)
     m_pKaraokeMgr->Stop();
 #endif
+
 
   {
     CSingleLock lock(m_playStateMutex);
@@ -3747,7 +3749,7 @@ void CApplication::OnPlayBackSeek(int iTime, int seekOffset)
 
   CVariant param;
   CJSONUtils::MillisecondsToTimeObject(iTime, param["player"]["time"]);
-  CJSONUtils::MillisecondsToTimeObject(seekOffset, param["player"]["seekoffset"]);;
+  CJSONUtils::MillisecondsToTimeObject(seekOffset, param["player"]["seekoffset"]);
   param["player"]["playerid"] = g_playlistPlayer.GetCurrentPlaylist();
   param["player"]["speed"] = m_pPlayer->GetPlaySpeed();
   CAnnouncementManager::Get().Announce(Player, "xbmc", "OnSeek", m_itemCurrentFile, param);
@@ -3782,7 +3784,8 @@ void CApplication::SaveFileState(bool bForeground /* = false */)
       *m_stackFileItemToUpdate,
       m_progressTrackingVideoResumeBookmark,
       m_progressTrackingPlayCountUpdate,
-      CMediaSettings::Get().GetCurrentVideoSettings());
+      CMediaSettings::Get().GetCurrentVideoSettings(),
+      CMediaSettings::Get().GetCurrentAudioSettings());
   
   if (bForeground)
   {
@@ -3909,7 +3912,6 @@ void CApplication::StopPlaying()
     if( m_pKaraokeMgr )
       m_pKaraokeMgr->Stop();
 #endif
-
     m_pPlayer->CloseFile();
 
     // turn off visualisation window when stopping
@@ -4019,7 +4021,7 @@ bool CApplication::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
   {
     if (m_iScreenSaveLock == 0)
       if (CProfilesManager::Get().GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE &&
-          (CProfilesManager::Get().UsingLoginScreen() || CSettings::Get().GetBool("masterlock.startuplock")) &&
+          (CProfilesManager::Get().UsingLoginScreen() || CSettings::Get().GetBool(CSettings::SETTING_MASTERLOCK_STARTUPLOCK)) &&
           CProfilesManager::Get().GetCurrentProfile().getLockMode() != LOCK_MODE_EVERYONE &&
           m_screenSaver->ID() != "screensaver.xbmc.builtin.dim" && m_screenSaver->ID() != "screensaver.xbmc.builtin.black" && !m_screenSaver->ID().empty() && m_screenSaver->ID() != "visualization")
       {
@@ -4068,10 +4070,10 @@ void CApplication::CheckScreenSaverAndDPMS()
 
   bool maybeScreensaver =
       !m_dpmsIsActive && !m_bScreenSave
-      && !CSettings::Get().GetString("screensaver.mode").empty();
+      && !CSettings::Get().GetString(CSettings::SETTING_SCREENSAVER_MODE).empty();
   bool maybeDPMS =
       !m_dpmsIsActive && m_dpms->IsSupported()
-      && CSettings::Get().GetInt("powermanagement.displaysoff") > 0;
+      && CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_DISPLAYSOFF) > 0;
 
   // Has the screen saver window become active?
   if (maybeScreensaver && g_windowManager.IsWindowActive(WINDOW_SCREENSAVER))
@@ -4093,7 +4095,7 @@ void CApplication::CheckScreenSaverAndDPMS()
   if ((m_pPlayer->IsPlayingVideo() && !m_pPlayer->IsPaused())
       // * Are we playing some music in fullscreen vis?
       || (m_pPlayer->IsPlayingAudio() && g_windowManager.GetActiveWindow() == WINDOW_VISUALISATION
-          && !CSettings::Get().GetString("musicplayer.visualisation").empty()))
+          && !CSettings::Get().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION).empty()))
   {
     ResetScreenSaverTimer();
     return;
@@ -4103,13 +4105,13 @@ void CApplication::CheckScreenSaverAndDPMS()
 
   // DPMS has priority (it makes the screensaver not needed)
   if (maybeDPMS
-      && elapsed > CSettings::Get().GetInt("powermanagement.displaysoff") * 60)
+      && elapsed > CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_DISPLAYSOFF) * 60)
   {
     ToggleDPMS(false);
     WakeUpScreenSaver();
   }
   else if (maybeScreensaver
-           && elapsed > CSettings::Get().GetInt("screensaver.time") * 60)
+           && elapsed > CSettings::Get().GetInt(CSettings::SETTING_SCREENSAVER_TIME) * 60)
   {
     ActivateScreenSaver();
   }
@@ -4120,7 +4122,7 @@ void CApplication::CheckScreenSaverAndDPMS()
 // the type of screensaver displayed
 void CApplication::ActivateScreenSaver(bool forceType /*= false */)
 {
-  if (m_pPlayer->IsPlayingAudio() && CSettings::Get().GetBool("screensaver.usemusicvisinstead") && !CSettings::Get().GetString("musicplayer.visualisation").empty())
+  if (m_pPlayer->IsPlayingAudio() && CSettings::Get().GetBool(CSettings::SETTING_SCREENSAVER_USEMUSICVISINSTEAD) && !CSettings::Get().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION).empty())
   { // just activate the visualisation if user toggled the usemusicvisinstead option
     g_windowManager.ActivateWindow(WINDOW_VISUALISATION);
     return;
@@ -4130,7 +4132,7 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
 
   // Get Screensaver Mode
   m_screenSaver.reset();
-  if (!CAddonMgr::Get().GetAddon(CSettings::Get().GetString("screensaver.mode"), m_screenSaver))
+  if (!CAddonMgr::Get().GetAddon(CSettings::Get().GetString(CSettings::SETTING_SCREENSAVER_MODE), m_screenSaver))
     m_screenSaver.reset(new CScreenSaver(""));
 
   CAnnouncementManager::Get().Announce(GUI, "xbmc", "OnScreensaverActivated");
@@ -4140,7 +4142,7 @@ void CApplication::ActivateScreenSaver(bool forceType /*= false */)
   if (!forceType)
   {
     // set to Dim in the case of a dialog on screen or playing video
-    if (g_windowManager.HasModalDialog() || (m_pPlayer->IsPlayingVideo() && CSettings::Get().GetBool("screensaver.usedimonpause")) || g_PVRManager.IsRunningChannelScan())
+    if (g_windowManager.HasModalDialog() || (m_pPlayer->IsPlayingVideo() && CSettings::Get().GetBool(CSettings::SETTING_SCREENSAVER_USEDIMONPAUSE)) || g_PVRManager.IsRunningChannelScan())
     {
       if (!CAddonMgr::Get().GetAddon("screensaver.xbmc.builtin.dim", m_screenSaver))
         m_screenSaver.reset(new CScreenSaver(""));
@@ -4176,7 +4178,7 @@ void CApplication::CheckShutdown()
   }
 
   float elapsed = m_shutdownTimer.IsRunning() ? m_shutdownTimer.GetElapsedSeconds() : 0.f;
-  if ( elapsed > CSettings::Get().GetInt("powermanagement.shutdowntime") * 60 )
+  if ( elapsed > CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNTIME) * 60 )
   {
     // Since it is a sleep instead of a shutdown, let's set everything to reset when we wake up.
     m_shutdownTimer.Stop();
@@ -4217,6 +4219,9 @@ bool CApplication::OnMessage(CGUIMessage& message)
       }
       else if (message.GetParam1() == GUI_MSG_UI_READY)
       {
+        // remove splash window
+        g_windowManager.Delete(WINDOW_SPLASH);
+
         if (m_fallbackLanguageLoaded)
           CGUIDialogOK::ShowAndGetInput(CVariant{24133}, CVariant{24134});
 
@@ -4263,7 +4268,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
       {
         // Start our cdg parser as appropriate
 #ifdef HAS_KARAOKE
-        if (m_pKaraokeMgr && CSettings::Get().GetBool("karaoke.enabled") && !m_itemCurrentFile->IsInternetStream())
+        if (m_pKaraokeMgr && CSettings::Get().GetBool(CSettings::SETTING_KARAOKE_ENABLED) && !m_itemCurrentFile->IsInternetStream())
         {
           m_pKaraokeMgr->Stop();
           if (m_itemCurrentFile->IsMusicDb())
@@ -4598,9 +4603,9 @@ void CApplication::ProcessSlow()
 
   // Check if we need to shutdown (if enabled).
 #if defined(TARGET_DARWIN)
-  if (CSettings::Get().GetInt("powermanagement.shutdowntime") && g_advancedSettings.m_fullScreen)
+  if (CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNTIME) && g_advancedSettings.m_fullScreen)
 #else
-  if (CSettings::Get().GetInt("powermanagement.shutdowntime"))
+  if (CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNTIME))
 #endif
   {
     CheckShutdown();
@@ -4655,7 +4660,7 @@ void CApplication::ProcessSlow()
   g_mediaManager.ProcessEvents();
 
   if (!m_pPlayer->IsPlayingVideo() &&
-      CSettings::Get().GetInt("general.addonupdates") != AUTO_UPDATES_NEVER)
+      CSettings::Get().GetInt(CSettings::SETTING_GENERAL_ADDONUPDATES) != AUTO_UPDATES_NEVER)
     CAddonInstaller::Get().UpdateRepos();
 
   CAEFactory::GarbageCollect();
@@ -5062,16 +5067,16 @@ PLAYERCOREID CApplication::GetCurrentPlayer()
 
 void CApplication::UpdateLibraries()
 {
-  if (CSettings::Get().GetBool("videolibrary.updateonstartup"))
+  if (CSettings::Get().GetBool(CSettings::SETTING_VIDEOLIBRARY_UPDATEONSTARTUP))
   {
     CLog::LogF(LOGNOTICE, "Starting video library startup scan");
-    StartVideoScan("", !CSettings::Get().GetBool("videolibrary.backgroundupdate"));
+    StartVideoScan("", !CSettings::Get().GetBool(CSettings::SETTING_VIDEOLIBRARY_BACKGROUNDUPDATE));
   }
 
-  if (CSettings::Get().GetBool("musiclibrary.updateonstartup"))
+  if (CSettings::Get().GetBool(CSettings::SETTING_MUSICLIBRARY_UPDATEONSTARTUP))
   {
     CLog::LogF(LOGNOTICE, "Starting music library startup scan");
-    StartMusicScan("", !CSettings::Get().GetBool("musiclibrary.backgroundupdate"));
+    StartMusicScan("", !CSettings::Get().GetBool(CSettings::SETTING_MUSICLIBRARY_BACKGROUNDUPDATE));
   }
 }
 
@@ -5134,9 +5139,9 @@ void CApplication::StartMusicScan(const std::string &strDirectory, bool userInit
 
   if (!flags)
   { // setup default flags
-    if (CSettings::Get().GetBool("musiclibrary.downloadinfo"))
+    if (CSettings::Get().GetBool(CSettings::SETTING_MUSICLIBRARY_DOWNLOADINFO))
       flags |= CMusicInfoScanner::SCAN_ONLINE;
-    if (!userInitiated || CSettings::Get().GetBool("musiclibrary.backgroundupdate"))
+    if (!userInitiated || CSettings::Get().GetBool(CSettings::SETTING_MUSICLIBRARY_BACKGROUNDUPDATE))
       flags |= CMusicInfoScanner::SCAN_BACKGROUND;
   }
 
@@ -5253,10 +5258,10 @@ CPerformanceStats &CApplication::GetPerformanceStats()
 bool CApplication::SetLanguage(const std::string &strLanguage)
 {
   // nothing to be done if the language hasn't changed
-  if (strLanguage == CSettings::Get().GetString("locale.language"))
+  if (strLanguage == CSettings::Get().GetString(CSettings::SETTING_LOCALE_LANGUAGE))
     return true;
 
-  return CSettings::Get().SetString("locale.language", strLanguage);
+  return CSettings::Get().SetString(CSettings::SETTING_LOCALE_LANGUAGE, strLanguage);
 }
 
 bool CApplication::LoadLanguage(bool reload)
@@ -5266,8 +5271,8 @@ bool CApplication::LoadLanguage(bool reload)
     return false;
 
   // set the proper audio and subtitle languages
-  g_langInfo.SetAudioLanguage(CSettings::Get().GetString("locale.audiolanguage"));
-  g_langInfo.SetSubtitleLanguage(CSettings::Get().GetString("locale.subtitlelanguage"));
+  g_langInfo.SetAudioLanguage(CSettings::Get().GetString(CSettings::SETTING_LOCALE_AUDIOLANGUAGE));
+  g_langInfo.SetSubtitleLanguage(CSettings::Get().GetString(CSettings::SETTING_LOCALE_SUBTITLELANGUAGE));
 
   return true;
 }

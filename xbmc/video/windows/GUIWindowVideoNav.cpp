@@ -112,27 +112,27 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
 {
   switch (message.GetMessage())
   {
-    case GUI_MSG_WINDOW_RESET:
-      m_vecItems->SetPath("");
-      break;
-    case GUI_MSG_WINDOW_DEINIT:
-      if (m_thumbLoader.IsLoading())
-        m_thumbLoader.StopThread();
-      break;
-    case GUI_MSG_WINDOW_INIT:
+  case GUI_MSG_WINDOW_RESET:
+    m_vecItems->SetPath("");
+    break;
+  case GUI_MSG_WINDOW_DEINIT:
+    if (m_thumbLoader.IsLoading())
+      m_thumbLoader.StopThread();
+    break;
+  case GUI_MSG_WINDOW_INIT:
+    {
+      /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
+      m_rootDir.AllowNonLocalSources(false);
+
+      SetProperty("flattened", CSettings::Get().GetBool(CSettings::SETTING_MYVIDEOS_FLATTEN));
+      if (message.GetNumStringParams() && StringUtils::EqualsNoCase(message.GetStringParam(0), "Files") &&
+          CMediaSourceSettings::Get().GetSources("video")->empty())
       {
-        /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
-        m_rootDir.AllowNonLocalSources(false);
-
-        SetProperty("flattened", CSettings::Get().GetBool("myvideos.flatten"));
-        if (message.GetNumStringParams() && StringUtils::EqualsNoCase(message.GetStringParam(0), "Files") &&
-            CMediaSourceSettings::Get().GetSources("video")->empty())
-        {
-          message.SetStringParam("");
-        }
-
-        if (!CGUIWindowVideoBase::OnMessage(message))
-          return false;
+        message.SetStringParam("");
+      }
+      
+      if (!CGUIWindowVideoBase::OnMessage(message))
+        return false;
         /*
            CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::%s : n params is %d", __FUNCTION__, message.GetNumStringParams());
            for(int i=0; i<message.GetNumStringParams(); i++)
@@ -146,9 +146,9 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
           CApplicationMessenger::Get().SendGUIMessage(m, GetID(), false);
         }
 
-        return true;
-      }
-      break;
+      return true;
+    }
+    break;
     case ACTION_AUTO_INFO:
       {
         CLog::Log(LOGDEBUG, "WindowVideoNav::%s : Action Received", __FUNCTION__);
@@ -175,61 +175,61 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
         return true;
       }
       break;
-    case GUI_MSG_CLICKED:
+  case GUI_MSG_CLICKED:
+    {
+      int iControl = message.GetSenderId();
+      if (iControl == CONTROL_BTNPARTYMODE)
       {
-        int iControl = message.GetSenderId();
-        if (iControl == CONTROL_BTNPARTYMODE)
+        if (g_partyModeManager.IsEnabled())
+          g_partyModeManager.Disable();
+        else
         {
-          if (g_partyModeManager.IsEnabled())
-            g_partyModeManager.Disable();
-          else
+          if (!g_partyModeManager.Enable(PARTYMODECONTEXT_VIDEO))
           {
-            if (!g_partyModeManager.Enable(PARTYMODECONTEXT_VIDEO))
-            {
-              SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
-              return false;
-            }
-
-            // Playlist directory is the root of the playlist window
-            if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistvideo://");
-
-            return true;
+            SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
+            return false;
           }
-          UpdateButtons();
-        }
 
-        if (iControl == CONTROL_BTNSEARCH)
-        {
-          OnSearch();
-        }
-        else if (iControl == CONTROL_BTNSHOWMODE)
-        {
-          CMediaSettings::Get().CycleWatchedMode(m_vecItems->GetContent());
-          CSettings::Get().Save();
-          OnFilterItems(GetProperty("filter").asString());
+          // Playlist directory is the root of the playlist window
+          if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistvideo://");
+
           return true;
         }
-        else if (iControl == CONTROL_BTNSHOWALL)
-        {
-          if (CMediaSettings::Get().GetWatchedMode(m_vecItems->GetContent()) == WatchedModeAll)
-            CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeUnwatched);
-          else
-            CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeAll);
-          CSettings::Get().Save();
-          OnFilterItems(GetProperty("filter").asString());
-          return true;
-        }
-        else if (iControl == CONTROL_UPDATE_LIBRARY)
-        {
-          if (!g_application.IsVideoScanning())
-            OnScan("");
-          else
-            g_application.StopVideoScan();
-          return true;
-        }
+        UpdateButtons();
       }
-      break;
-      // update the display
+
+      if (iControl == CONTROL_BTNSEARCH)
+      {
+        OnSearch();
+      }
+      else if (iControl == CONTROL_BTNSHOWMODE)
+      {
+        CMediaSettings::Get().CycleWatchedMode(m_vecItems->GetContent());
+        CSettings::Get().Save();
+        OnFilterItems(GetProperty("filter").asString());
+        return true;
+      }
+      else if (iControl == CONTROL_BTNSHOWALL)
+      {
+        if (CMediaSettings::Get().GetWatchedMode(m_vecItems->GetContent()) == WatchedModeAll)
+          CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeUnwatched);
+        else
+          CMediaSettings::Get().SetWatchedMode(m_vecItems->GetContent(), WatchedModeAll);
+        CSettings::Get().Save();
+        OnFilterItems(GetProperty("filter").asString());
+        return true;
+      }
+      else if (iControl == CONTROL_UPDATE_LIBRARY)
+      {
+        if (!g_application.IsVideoScanning())
+          OnScan("");
+        else
+          g_application.StopVideoScan();
+        return true;
+      }
+    }
+    break;
+    // update the display
     case GUI_MSG_REFRESH_THUMBS:
       Refresh();
       break;
@@ -245,7 +245,7 @@ SelectFirstUnwatchedItem CGUIWindowVideoNav::GetSettingSelectFirstUnwatchedItem(
 
     if (nodeType == NODE_TYPE_SEASONS || nodeType == NODE_TYPE_EPISODES)
     {
-      int iValue = CSettings::Get().GetInt("videolibrary.tvshowsselectfirstunwatcheditem");
+      int iValue = CSettings::Get().GetInt(CSettings::SETTING_VIDEOLIBRARY_TVSHOWSSELECTFIRSTUNWATCHEDITEM);
       if (iValue >= SelectFirstUnwatchedItem::NEVER && iValue <= SelectFirstUnwatchedItem::ALWAYS)
         return (SelectFirstUnwatchedItem)iValue;
     }
@@ -256,7 +256,7 @@ SelectFirstUnwatchedItem CGUIWindowVideoNav::GetSettingSelectFirstUnwatchedItem(
 
 IncludeAllSeasonsAndSpecials CGUIWindowVideoNav::GetSettingIncludeAllSeasonsAndSpecials()
 {
-  int iValue = CSettings::Get().GetInt("videolibrary.tvshowsincludeallseasonsandspecials");
+  int iValue = CSettings::Get().GetInt(CSettings::SETTING_VIDEOLIBRARY_TVSHOWSINCLUDEALLSEASONSANDSPECIALS);
   if (iValue >= IncludeAllSeasonsAndSpecials::NEITHER && iValue <= IncludeAllSeasonsAndSpecials::SPECIALS)
     return (IncludeAllSeasonsAndSpecials)iValue;
 
@@ -363,7 +363,7 @@ bool CGUIWindowVideoNav::GetDirectory(const std::string &strDirectory, CFileItem
       dir.GetQueryParams(items.GetPath(),params);
       VIDEODATABASEDIRECTORY::NODE_TYPE node = dir.GetDirectoryChildType(items.GetPath());
 
-      int iFlatten = CSettings::Get().GetInt("videolibrary.flattentvshows");
+      int iFlatten = CSettings::Get().GetInt(CSettings::SETTING_VIDEOLIBRARY_FLATTENTVSHOWS);
       int itemsSize = items.GetObjectCount();
       int firstIndex = items.Size() - itemsSize;
 
@@ -552,8 +552,8 @@ void CGUIWindowVideoNav::LoadVideoInfo(CFileItemList &items, CVideoDatabase &dat
     Similarly, we assign the "clean" library labels to the item only if the "Replace filenames with library titles"
     setting is enabled.
     */
-  const bool stackItems    = items.GetProperty("isstacked").asBoolean() || (StackingAvailable(items) && CSettings::Get().GetBool("myvideos.stackvideos"));
-  const bool replaceLabels = allowReplaceLabels && CSettings::Get().GetBool("myvideos.replacelabels");
+  const bool stackItems    = items.GetProperty("isstacked").asBoolean() || (StackingAvailable(items) && CSettings::Get().GetBool(CSettings::SETTING_MYVIDEOS_STACKVIDEOS));
+  const bool replaceLabels = allowReplaceLabels && CSettings::Get().GetBool(CSettings::SETTING_MYVIDEOS_REPLACELABELS);
 
   CFileItemList dbItems;
   /* NOTE: In the future when GetItemsForPath returns all items regardless of whether they're "in the library"
@@ -995,7 +995,7 @@ void CGUIWindowVideoNav::GetContextButtons(int itemNumber, CContextButtons &butt
 
       if (!m_vecItems->IsVideoDb() && !m_vecItems->IsVirtualDirectoryRoot())
       { // non-video db items, file operations are allowed
-        if ((CSettings::Get().GetBool("filelists.allowfiledeletion") &&
+        if ((CSettings::Get().GetBool(CSettings::SETTING_FILELISTS_ALLOWFILEDELETION) &&
             CUtil::SupportsWriteFileOperations(item->GetPath())) ||
             (inPlaylists && URIUtils::GetFileName(item->GetPath()) != "PartyMode-Video.xsp"
                          && (item->IsPlayList() || item->IsSmartPlayList())))

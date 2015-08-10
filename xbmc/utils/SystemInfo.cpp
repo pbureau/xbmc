@@ -264,7 +264,7 @@ const CSysData &CSysInfoJob::GetData() const
 std::string CSysInfoJob::GetCPUFreqInfo()
 {
   double CPUFreq = GetCPUFrequency();
-  return StringUtils::Format("%4.0f MHz", CPUFreq);;
+  return StringUtils::Format("%4.0f MHz", CPUFreq);
 }
 
 CSysData::INTERNET_STATE CSysInfoJob::GetInternetState()
@@ -1226,7 +1226,7 @@ std::string CSysInfo::GetUserAgent()
 
 std::string CSysInfo::GetDeviceName()
 {
-  std::string friendlyName = CSettings::Get().GetString("services.devicename");
+  std::string friendlyName = CSettings::Get().GetString(CSettings::SETTING_SERVICES_DEVICENAME);
   if (StringUtils::EqualsNoCase(friendlyName, CCompileInfo::GetAppName()))
   {
     std::string hostname("[unknown]");

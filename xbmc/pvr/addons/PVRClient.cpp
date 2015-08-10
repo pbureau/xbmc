@@ -118,7 +118,7 @@ void CPVRClient::OnPreUnInstall()
 
 void CPVRClient::OnPostUnInstall()
 {
-  if (CSettings::Get().GetBool("pvrmanager.enabled"))
+  if (CSettings::Get().GetBool(CSettings::SETTING_PVRMANAGER_ENABLED))
     PVR::CPVRManager::Get().Start(true);
 }
 
@@ -1823,6 +1823,21 @@ bool CPVRClient::CanSeekStream(void) const
     try
     {
       bReturn = m_pStruct->CanSeekStream();
+    }
+    catch (std::exception &e) { LogException(e, __FUNCTION__); }
+  }
+  return bReturn;
+}
+
+bool CPVRClient::IsTimeshifting(void) const
+{
+  bool bReturn(false);
+  if (IsPlaying())
+  {
+    try
+    {
+      if (m_pStruct->IsTimeshifting)
+        bReturn = m_pStruct->IsTimeshifting();
     }
     catch (std::exception &e) { LogException(e, __FUNCTION__); }
   }

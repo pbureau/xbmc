@@ -70,7 +70,7 @@
       <myvideo>ActivateWindow(MyVideos)</myvideo>
       <mymusic>ActivateWindow(MyMusic)</mymusic>
       <mypictures>ActivateWindow(MyPictures)</mypictures>
-      <mytv>ActivateWindow(TVChannels)</mytv>
+      <mytv>ActivateWindow(Videos,TvShows)</mytv>
       <guide>ActivateWindow(TVGuide)</guide>
       <livetv>ActivateWindow(TVChannels)</livetv>
       <liveradio>ActivateWindow(RadioChannels)</liveradio>
@@ -577,16 +577,20 @@
     <remote>
       <left>StepBack</left>
       <right>StepForward</right>
-      <up>ChannelUp</up>
-      <down>ChannelDown</down>
+      <up>Up</up>
+      <down>Down</down>
+      <pageplus>ChannelUp</pageplus>
+      <pageminus>ChannelDown</pageminus>
     </remote>
   </FullscreenLiveTV>
   <FullscreenRadio>
     <remote>
       <left>StepBack</left>
       <right>StepForward</right>
-      <up>ChannelUp</up>
-      <down>ChannelDown</down>
+      <up>Up</up>
+      <down>Down</down>
+      <pageplus>ChannelUp</pageplus>
+      <pageminus>ChannelDown</pageminus>
     </remote>
   </FullscreenRadio>
   <PVROSDChannels>

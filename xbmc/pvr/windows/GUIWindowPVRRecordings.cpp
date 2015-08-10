@@ -36,6 +36,7 @@
 #include "threads/SingleLock.h"
 #include "pvr/addons/PVRClients.h"
 #include "video/windows/GUIWindowVideoNav.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 
 using namespace PVR;
 
@@ -115,6 +116,9 @@ void CGUIWindowPVRRecordings::GetContextButtons(int itemNumber, CContextButtons 
   CFileItemPtr pItem = m_vecItems->Get(itemNumber);
 
   bool isDeletedRecording = false;
+
+  if (ActiveAE::CActiveAEDSP::Get().IsProcessing())
+    buttons.Add(CONTEXT_BUTTON_ACTIVE_ADSP_SETTINGS, 15047);  /* if something is played and dsp is active, allow settings selection */
 
   if (pItem->HasPVRRecordingInfoTag())
   {
@@ -201,6 +205,7 @@ bool CGUIWindowPVRRecordings::OnContextButton(int itemNumber, CONTEXT_BUTTON but
       OnContextButtonDeleteAll(pItem.get(), button) ||
       OnContextButtonInfo(pItem.get(), button) ||
       OnContextButtonMarkWatched(pItem, button) ||
+      OnContextButtonActiveAEDSPSettings(pItem.get(), button) ||
       CGUIWindowPVRBase::OnContextButton(itemNumber, button);
 }
 
@@ -236,6 +241,9 @@ void CGUIWindowPVRRecordings::UpdateButtons(void)
 
 bool CGUIWindowPVRRecordings::OnMessage(CGUIMessage &message)
 {
+  if (!IsValidMessage(message))
+    return false;
+  
   bool bReturn = false;
   switch (message.GetMessage())
   {
@@ -294,6 +302,9 @@ bool CGUIWindowPVRRecordings::OnMessage(CGUIMessage &message)
       switch(message.GetParam1())
       {
         case ObservableMessageTimers:
+        case ObservableMessageEpg:
+        case ObservableMessageEpgContainer:
+        case ObservableMessageEpgActiveItem:
         case ObservableMessageCurrentItem:
         {
           if (IsActive())

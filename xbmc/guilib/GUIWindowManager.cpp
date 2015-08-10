@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team XBMC
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -67,6 +67,7 @@
 #include "windows/GUIWindowScreensaver.h"
 #include "windows/GUIWindowScreensaverDim.h"
 #include "pictures/GUIWindowSlideShow.h"
+#include "windows/GUIWindowSplash.h"
 #include "windows/GUIWindowStartup.h"
 #include "video/windows/GUIWindowFullScreen.h"
 #include "video/dialogs/GUIDialogVideoOSD.h"
@@ -136,6 +137,8 @@
 #include "dialogs/GUIDialogPlayEject.h"
 #include "dialogs/GUIDialogMediaFilter.h"
 #include "video/dialogs/GUIDialogSubtitles.h"
+#include "settings/dialogs/GUIDialogAudioDSPManager.h"
+#include "settings/dialogs/GUIDialogAudioDSPSettings.h"
 
 #ifdef HAS_KARAOKE
 #include "music/karaoke/GUIDialogKaraokeSongSelector.h"
@@ -166,11 +169,12 @@ CGUIWindowManager::~CGUIWindowManager(void)
 void CGUIWindowManager::Initialize()
 {
   m_tracker.SelectAlgorithm();
+
   m_initialized = true;
 
   LoadNotOnDemandWindows();
 
-  CApplicationMessenger::Get().RegisterReceveiver(this);
+  CApplicationMessenger::Get().RegisterReceiver(this);
 }
 
 void CGUIWindowManager::CreateWindows()
@@ -276,6 +280,9 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIDialogPVRChannelsOSD);
   Add(new CGUIDialogPVRGuideOSD);
 
+  Add(new ActiveAE::CGUIDialogAudioDSPManager);
+  Add(new ActiveAE::CGUIDialogAudioDSPSettings);
+
   Add(new CGUIDialogSelect);
   Add(new CGUIDialogMusicInfo);
   Add(new CGUIDialogOK);
@@ -295,12 +302,14 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIWindowScreensaver);
   Add(new CGUIWindowWeather);
   Add(new CGUIWindowStartup);
+  Add(new CGUIWindowSplash);
 }
 
 bool CGUIWindowManager::DestroyWindows()
 {
   try
   {
+    Delete(WINDOW_SPLASH);
     Delete(WINDOW_MUSIC_PLAYLIST);
     Delete(WINDOW_MUSIC_PLAYLIST_EDITOR);
     Delete(WINDOW_MUSIC_FILES);
@@ -371,6 +380,9 @@ bool CGUIWindowManager::DestroyWindows()
     Delete(WINDOW_DIALOG_PVR_OSD_CHANNELS);
     Delete(WINDOW_DIALOG_PVR_OSD_GUIDE);
     Delete(WINDOW_DIALOG_OSD_TELETEXT);
+
+    Delete(WINDOW_DIALOG_AUDIO_DSP_MANAGER);
+    Delete(WINDOW_DIALOG_AUDIO_DSP_OSD_SETTINGS);
 
     Delete(WINDOW_DIALOG_TEXT_VIEWER);
     Delete(WINDOW_DIALOG_PLAY_EJECT);
@@ -736,7 +748,7 @@ void CGUIWindowManager::ActivateWindow_Internal(int iWindowID, const vector<stri
   // virtual music window which returns the last open music window (aka the music start window)
   if (iWindowID == WINDOW_MUSIC)
   {
-    iWindowID = CSettings::Get().GetInt("mymusic.startwindow");
+    iWindowID = CSettings::Get().GetInt(CSettings::SETTING_MYMUSIC_STARTWINDOW);
     // ensure the music virtual window only returns music files and music library windows
     if (iWindowID != WINDOW_MUSIC_NAV)
       iWindowID = WINDOW_MUSIC_FILES;

@@ -104,6 +104,8 @@
 #define WINDOW_DIALOG_EXT_PROGRESS        10151
 #define WINDOW_DIALOG_MEDIA_FILTER        10152
 #define WINDOW_DIALOG_SUBTITLES           10153
+#define WINDOW_DIALOG_AUDIO_DSP_MANAGER   10154
+#define WINDOW_DIALOG_AUDIO_DSP_OSD_SETTINGS 10155
 
 #define WINDOW_MUSIC_PLAYLIST             10500
 #define WINDOW_MUSIC_FILES                10501
@@ -157,6 +159,7 @@
 #define WINDOW_DIALOG_VIDEO_OVERLAY       12904
 #define WINDOW_VIDEO_TIME_SEEK            12905 // virtual window for time seeking during fullscreen video
 
+#define WINDOW_SPLASH                     12997 // splash window
 #define WINDOW_START                      12998 // first window to load
 #define WINDOW_STARTUP_ANIM               12999 // for startup animations
 

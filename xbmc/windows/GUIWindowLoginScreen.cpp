@@ -49,6 +49,7 @@
 #include "view/ViewState.h"
 #include "pvr/PVRManager.h"
 #include "ContextMenuManager.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 
 using namespace KODI::MESSAGING;
 
@@ -240,7 +241,7 @@ bool CGUIWindowLoginScreen::OnPopupMenu(int iItem)
   if (choice == 2)
   {
     if (g_passwordManager.CheckLock(CProfilesManager::Get().GetMasterProfile().getLockMode(),CProfilesManager::Get().GetMasterProfile().getLockCode(),20075))
-      g_passwordManager.iMasterLockRetriesLeft = CSettings::Get().GetInt("masterlock.maxretries");
+      g_passwordManager.iMasterLockRetriesLeft = CSettings::Get().GetInt(CSettings::SETTING_MASTERLOCK_MAXRETRIES);
     else // be inconvenient
       CApplicationMessenger::Get().PostMsg(TMSG_SHUTDOWN);
 
@@ -256,7 +257,7 @@ bool CGUIWindowLoginScreen::OnPopupMenu(int iItem)
     m_vecItems->Get(iItem)->Select(bSelect);
 
   if (choice >= CONTEXT_BUTTON_FIRST_ADDON)
-    return CContextMenuManager::Get().Execute(choice, pItem);
+    return CContextMenuManager::Get().OnClick(choice, pItem);
   return false;
 }
 
@@ -277,6 +278,9 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
 
   // stop PVR related services
   g_application.StopPVRManager();
+
+  // stop audio DSP services with a blocking message
+  CApplicationMessenger::Get().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_OFF);
 
   if (profile != 0 || !CProfilesManager::Get().IsMasterProfile())
   {
@@ -331,6 +335,9 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
 
   g_application.UpdateLibraries();
   CStereoscopicsManager::Get().Initialize();
+
+  // start audio DSP related services with a blocking message
+  CApplicationMessenger::Get().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON);
 
   // if the user interfaces has been fully initialized let everyone know
   if (uiInitializationFinished)

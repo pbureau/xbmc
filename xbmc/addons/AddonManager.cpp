@@ -41,6 +41,8 @@
 #ifdef HAS_SCREENSAVER
 #include "ScreenSaver.h"
 #endif
+#include "DllAudioDSP.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 #ifdef HAS_PVRCLIENTS
 #include "pvr/addons/PVRClient.h"
 #endif
@@ -51,7 +53,7 @@
 #include "Repository.h"
 #include "Skin.h"
 #include "Service.h"
-#include "ContextItemAddon.h"
+#include "ContextMenuAddon.h"
 #include "Util.h"
 #include "addons/Webinterface.h"
 
@@ -120,6 +122,7 @@ AddonPtr CAddonMgr::Factory(const cp_extension_t *props)
     case ADDON_VIZ:
     case ADDON_SCREENSAVER:
     case ADDON_PVRDLL:
+    case ADDON_ADSPDLL:
     case ADDON_AUDIOENCODER:
     case ADDON_AUDIODECODER:
       { // begin temporary platform handling for Dlls
@@ -141,17 +144,8 @@ AddonPtr CAddonMgr::Factory(const cp_extension_t *props)
         { // built in audio encoder
           return AddonPtr(new CAudioEncoder(props));
         }
-        std::string tograb;
-#if defined(TARGET_ANDROID)
-          tograb = "@library_android";
-#elif defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
-          tograb = "@library_linux";
-#elif defined(TARGET_WINDOWS) && defined(HAS_DX)
-          tograb = "@library_windx";
-#elif defined(TARGET_DARWIN)
-          tograb = "@library_osx";
-#endif
-        value = GetExtValue(props->plugin->extensions->configuration, tograb.c_str());
+
+        value = GetPlatformLibraryName(props->plugin->extensions->configuration);
         if (value.empty())
           break;
         if (type == ADDON_VIZ)
@@ -165,6 +159,10 @@ AddonPtr CAddonMgr::Factory(const cp_extension_t *props)
 #ifdef HAS_PVRCLIENTS
           return AddonPtr(new PVR::CPVRClient(props));
 #endif
+        }
+        else if (type == ADDON_ADSPDLL)
+        {
+          return AddonPtr(new ActiveAE::CActiveAEDSPAddon(props));
         }
         else if (type == ADDON_AUDIOENCODER)
           return AddonPtr(new CAudioEncoder(props));
@@ -186,7 +184,7 @@ AddonPtr CAddonMgr::Factory(const cp_extension_t *props)
     case ADDON_REPOSITORY:
       return AddonPtr(new CRepository(props));
     case ADDON_CONTEXT_ITEM:
-      return AddonPtr(new CContextItemAddon(props));
+      return AddonPtr(new CContextMenuAddon(props));
     default:
       break;
   }
@@ -558,31 +556,31 @@ bool CAddonMgr::GetDefault(const TYPE &type, AddonPtr &addon)
   switch (type)
   {
   case ADDON_VIZ:
-    setting = CSettings::Get().GetString("musicplayer.visualisation");
+    setting = CSettings::Get().GetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION);
     break;
   case ADDON_SCREENSAVER:
-    setting = CSettings::Get().GetString("screensaver.mode");
+    setting = CSettings::Get().GetString(CSettings::SETTING_SCREENSAVER_MODE);
     break;
   case ADDON_SCRAPER_ALBUMS:
-    setting = CSettings::Get().GetString("musiclibrary.albumsscraper");
+    setting = CSettings::Get().GetString(CSettings::SETTING_MUSICLIBRARY_ALBUMSSCRAPER);
     break;
   case ADDON_SCRAPER_ARTISTS:
-    setting = CSettings::Get().GetString("musiclibrary.artistsscraper");
+    setting = CSettings::Get().GetString(CSettings::SETTING_MUSICLIBRARY_ARTISTSSCRAPER);
     break;
   case ADDON_SCRAPER_MOVIES:
-    setting = CSettings::Get().GetString("scrapers.moviesdefault");
+    setting = CSettings::Get().GetString(CSettings::SETTING_SCRAPERS_MOVIESDEFAULT);
     break;
   case ADDON_SCRAPER_MUSICVIDEOS:
-    setting = CSettings::Get().GetString("scrapers.musicvideosdefault");
+    setting = CSettings::Get().GetString(CSettings::SETTING_SCRAPERS_MUSICVIDEOSDEFAULT);
     break;
   case ADDON_SCRAPER_TVSHOWS:
-    setting = CSettings::Get().GetString("scrapers.tvshowsdefault");
+    setting = CSettings::Get().GetString(CSettings::SETTING_SCRAPERS_TVSHOWSDEFAULT);
     break;
   case ADDON_WEB_INTERFACE:
-    setting = CSettings::Get().GetString("services.webskin");
+    setting = CSettings::Get().GetString(CSettings::SETTING_SERVICES_WEBSKIN);
     break;
   case ADDON_RESOURCE_LANGUAGE:
-    setting = CSettings::Get().GetString("locale.language");
+    setting = CSettings::Get().GetString(CSettings::SETTING_LOCALE_LANGUAGE);
     break;
   default:
     return false;
@@ -595,28 +593,28 @@ bool CAddonMgr::SetDefault(const TYPE &type, const std::string &addonID)
   switch (type)
   {
   case ADDON_VIZ:
-    CSettings::Get().SetString("musicplayer.visualisation",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_MUSICPLAYER_VISUALISATION,addonID);
     break;
   case ADDON_SCREENSAVER:
-    CSettings::Get().SetString("screensaver.mode",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_SCREENSAVER_MODE,addonID);
     break;
   case ADDON_SCRAPER_ALBUMS:
-    CSettings::Get().SetString("musiclibrary.albumsscraper",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_MUSICLIBRARY_ALBUMSSCRAPER,addonID);
     break;
   case ADDON_SCRAPER_ARTISTS:
-    CSettings::Get().SetString("musiclibrary.artistsscraper",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_MUSICLIBRARY_ARTISTSSCRAPER,addonID);
     break;
   case ADDON_SCRAPER_MOVIES:
-    CSettings::Get().SetString("scrapers.moviesdefault",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_SCRAPERS_MOVIESDEFAULT,addonID);
     break;
   case ADDON_SCRAPER_MUSICVIDEOS:
-    CSettings::Get().SetString("scrapers.musicvideosdefault",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_SCRAPERS_MUSICVIDEOSDEFAULT,addonID);
     break;
   case ADDON_SCRAPER_TVSHOWS:
-    CSettings::Get().SetString("scrapers.tvshowsdefault",addonID);
+    CSettings::Get().SetString(CSettings::SETTING_SCRAPERS_TVSHOWSDEFAULT,addonID);
     break;
   case ADDON_RESOURCE_LANGUAGE:
-    CSettings::Get().SetString("locale.language", addonID);
+    CSettings::Get().SetString(CSettings::SETTING_LOCALE_LANGUAGE, addonID);
     break;
   default:
     return false;
@@ -716,7 +714,8 @@ bool CAddonMgr::CanAddonBeDisabled(const std::string& ID)
     return false;
 
   // installed PVR addons can always be disabled
-  if (localAddon->Type() == ADDON_PVRDLL)
+  if (localAddon->Type() == ADDON_PVRDLL ||
+      localAddon->Type() == ADDON_ADSPDLL)
     return true;
 
   // installed audio decoder addons can always be disabled
@@ -848,6 +847,8 @@ AddonPtr CAddonMgr::AddonFromProps(AddonProps& addonProps)
       return AddonPtr(new CAddonLibrary(addonProps));
     case ADDON_PVRDLL:
       return AddonPtr(new PVR::CPVRClient(addonProps));
+    case ADDON_ADSPDLL:
+      return AddonPtr(new ActiveAE::CActiveAEDSPAddon(addonProps));
     case ADDON_AUDIOENCODER:
       return AddonPtr(new CAudioEncoder(addonProps));
     case ADDON_AUDIODECODER:
@@ -861,7 +862,7 @@ AddonPtr CAddonMgr::AddonFromProps(AddonProps& addonProps)
     case ADDON_REPOSITORY:
       return AddonPtr(new CRepository(addonProps));
     case ADDON_CONTEXT_ITEM:
-      return AddonPtr(new CContextItemAddon(addonProps));
+      return AddonPtr(new CContextMenuAddon(addonProps));
     default:
       break;
   }
@@ -892,9 +893,13 @@ bool CAddonMgr::PlatformSupportsAddon(const cp_plugin_info_t *plugin) const
 #if defined(TARGET_ANDROID)
       if (*platform == "android")
 #elif defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
-      if (*platform == "linux")
+      if (*platform == "linux"
+#if defined(TARGET_FREEBSD)
+        || *platform == "freebsd"
+#endif
+        )
 #elif defined(TARGET_WINDOWS) && defined(HAS_DX)
-      if (*platform == "windx")
+      if (*platform == "windx" || *platform == "windows")
 #elif defined(TARGET_DARWIN_OSX)
 // Remove this after Frodo and add an architecture filter
 // in addition to platform.
@@ -948,7 +953,7 @@ const cp_extension_t *CAddonMgr::GetExtension(const cp_plugin_info_t *props, con
   return NULL;
 }
 
-std::string CAddonMgr::GetExtValue(cp_cfg_element_t *base, const char *path)
+std::string CAddonMgr::GetExtValue(cp_cfg_element_t *base, const char *path) const
 {
   const char *value = "";
   if (base && (value = m_cpluff->lookup_cfg_value(base, path)))
@@ -967,6 +972,35 @@ bool CAddonMgr::GetExtList(cp_cfg_element_t *base, const char *path, vector<std:
     return false;
   StringUtils::Tokenize(all, result, ' ');
   return true;
+}
+
+std::string CAddonMgr::GetPlatformLibraryName(cp_cfg_element_t *base) const
+{
+  std::string libraryName;
+#if defined(TARGET_ANDROID)
+  libraryName = GetExtValue(base, "@library_android");
+#elif defined(TARGET_LINUX) || defined(TARGET_FREEBSD)
+#if defined(TARGET_FREEBSD)
+  libraryName = GetExtValue(base, "@library_freebsd");
+  if (libraryName.empty())
+#elif defined(TARGET_RASPBERRY_PI)
+  libraryName = GetExtValue(base, "@library_rbpi");
+  if (libraryName.empty())
+#endif
+  libraryName = GetExtValue(base, "@library_linux");
+#elif defined(TARGET_WINDOWS) && defined(HAS_DX)
+  libraryName = GetExtValue(base, "@library_windx");
+  if (libraryName.empty())
+    libraryName = GetExtValue(base, "@library_windows");
+#elif defined(TARGET_DARWIN)
+#if defined(TARGET_DARWIN_IOS)
+  libraryName = GetExtValue(base, "@library_ios");
+  if (libraryName.empty())
+#endif
+  libraryName = GetExtValue(base, "@library_osx");
+#endif
+
+  return libraryName;
 }
 
 AddonPtr CAddonMgr::GetAddonFromDescriptor(const cp_plugin_info_t *info,

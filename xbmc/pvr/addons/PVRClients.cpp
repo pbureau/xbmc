@@ -263,12 +263,21 @@ bool CPVRClients::GetClientName(int iClientId, std::string &strName) const
 std::vector<SBackend> CPVRClients::GetBackendProperties() const
 {
   std::vector<SBackend> backendProperties;
-  CSingleLock lock(m_critSection);
+  std::vector<PVR_CLIENT> clients;
 
-  for (const auto &entry : m_clientMap)
   {
-    const auto &client = entry.second;
-    
+    CSingleLock lock(m_critSection);
+
+    for (PVR_CLIENTMAP_CITR itr = m_clientMap.begin(); itr != m_clientMap.end(); itr++)
+    {
+      PVR_CLIENT client = itr->second;
+      if (client)
+        clients.push_back(client);
+    }
+  }
+
+  for (const auto &client : clients)
+  {
     if (!client->ReadyToUse())
       continue;
 
@@ -1400,7 +1409,7 @@ bool CPVRClients::UpdateAddons(void)
     // Please visit http://kodi.wiki/view/PVR to learn more.
     m_bNoAddonWarningDisplayed = true;
     CGUIDialogOK::ShowAndGetInput(CVariant{19271}, CVariant{19272});
-    CSettings::Get().SetBool("pvrmanager.enabled", false);
+    CSettings::Get().SetBool(CSettings::SETTING_PVRMANAGER_ENABLED, false);
     CGUIMessage msg(GUI_MSG_UPDATE, WINDOW_SETTINGS_MYPVR, 0);
     g_windowManager.SendThreadMessage(msg, WINDOW_SETTINGS_MYPVR);
   }
@@ -1694,6 +1703,14 @@ time_t CPVRClients::GetPlayingTime() const
   }
 
   return time;
+}
+
+bool CPVRClients::IsTimeshifting(void) const
+{
+  PVR_CLIENT client;
+  if (GetPlayingClient(client))
+    return client->IsTimeshifting();
+  return false;
 }
 
 time_t CPVRClients::GetBufferTimeStart() const

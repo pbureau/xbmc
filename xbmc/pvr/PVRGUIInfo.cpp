@@ -80,6 +80,7 @@ void CPVRGUIInfo::ResetProperties(void)
   m_bIsPlayingEncryptedStream   = false;
   m_bHasTVChannels              = false;
   m_bHasRadioChannels           = false;
+  m_bIsTimeshifting             = false;
 
   ResetPlayingTag();
   ClearQualityInfo(m_qualityInfo);
@@ -130,6 +131,11 @@ void CPVRGUIInfo::ToggleShowInfo(void)
   {
     m_ToggleShowInfo.SetInfinite();
     g_infoManager.SetShowInfo(false);
+    g_PVRManager.UpdateCurrentChannel();
+  }
+  else if (!g_infoManager.GetShowInfo()) // channel infos (no longer) displayed?
+  {
+    g_PVRManager.UpdateCurrentChannel();
   }
 }
 
@@ -184,6 +190,10 @@ void CPVRGUIInfo::Process(void)
     Sleep(0);
 
     if (!m_bStop)
+      UpdateTimeshift();
+    Sleep(0);
+
+    if (!m_bStop)
       UpdateTimersToggle();
     Sleep(0);
 
@@ -212,7 +222,7 @@ void CPVRGUIInfo::UpdateQualityData(void)
   ClearQualityInfo(qualityInfo);
 
   PVR_CLIENT client;
-  if (CSettings::Get().GetBool("pvrplayback.signalquality") &&
+  if (CSettings::Get().GetBool(CSettings::SETTING_PVRPLAYBACK_SIGNALQUALITY) &&
       g_PVRClients->GetPlayingClient(client))
   {
     client->SignalQuality(qualityInfo);
@@ -248,6 +258,34 @@ void CPVRGUIInfo::UpdateMisc(void)
   m_bHasTVChannels            = bHasTVChannels;
   m_bHasRadioChannels         = bHasRadioChannels;
   m_strPlayingTVGroup         = strPlayingTVGroup;
+}
+
+void CPVRGUIInfo::UpdateTimeshift(void)
+{
+  bool bStarted = g_PVRManager.IsStarted();
+
+  bool bIsTimeshifting = bStarted && g_PVRClients->IsTimeshifting();
+  CDateTime tmp;
+  time_t iTimeshiftStartTime = g_PVRClients->GetBufferTimeStart();
+  tmp.SetFromUTCDateTime(iTimeshiftStartTime);
+  std::string strTimeshiftStartTime = tmp.GetAsLocalizedTime("", false);
+
+  time_t iTimeshiftEndTime = g_PVRClients->GetBufferTimeEnd();
+  tmp.SetFromUTCDateTime(iTimeshiftEndTime);
+  std::string strTimeshiftEndTime = tmp.GetAsLocalizedTime("", false);
+
+  time_t iTimeshiftPlayTime = g_PVRClients->GetPlayingTime();
+  tmp.SetFromUTCDateTime(iTimeshiftPlayTime);
+  std::string strTimeshiftPlayTime = tmp.GetAsLocalizedTime("", true);
+
+  CSingleLock lock(m_critSection);
+  m_bIsTimeshifting = bIsTimeshifting;
+  m_iTimeshiftStartTime = iTimeshiftStartTime;
+  m_iTimeshiftEndTime = iTimeshiftEndTime;
+  m_iTimeshiftPlayTime = iTimeshiftPlayTime;
+  m_strTimeshiftStartTime = strTimeshiftStartTime;
+  m_strTimeshiftEndTime = strTimeshiftEndTime;
+  m_strTimeshiftPlayTime = strTimeshiftPlayTime;
 }
 
 bool CPVRGUIInfo::TranslateCharInfo(DWORD dwInfo, std::string &strValue) const
@@ -362,6 +400,15 @@ bool CPVRGUIInfo::TranslateCharInfo(DWORD dwInfo, std::string &strValue) const
   case PVR_TOTAL_DISKSPACE:
     CharInfoTotalDiskSpace(strValue);
     break;
+  case PVR_TIMESHIFT_START_TIME:
+    CharInfoTimeshiftStartTime(strValue);
+    break;
+  case PVR_TIMESHIFT_END_TIME:
+    CharInfoTimeshiftEndTime(strValue);
+    break;
+  case PVR_TIMESHIFT_PLAY_TIME:
+    CharInfoTimeshiftPlayTime(strValue);
+    break;
   default:
     strValue.clear();
     bReturn = false;
@@ -405,6 +452,9 @@ bool CPVRGUIInfo::TranslateBoolInfo(DWORD dwInfo) const
   case PVR_ACTUAL_STREAM_ENCRYPTED:
     bReturn = m_bIsPlayingEncryptedStream;
     break;
+  case PVR_IS_TIMESHIFTING:
+    bReturn = m_bIsTimeshifting;
+    break;
   default:
     break;
   }
@@ -431,6 +481,11 @@ int CPVRGUIInfo::TranslateIntInfo(DWORD dwInfo) const
       iReturn = static_cast<int>(100 * backend.diskUsed / backend.diskTotal);
     else
       iReturn = 0xFF;
+  }
+  else if (dwInfo == PVR_TIMESHIFT_PROGRESS)
+  {
+    iReturn = static_cast<int>(static_cast<float>(m_iTimeshiftPlayTime - m_iTimeshiftStartTime) /
+                               (m_iTimeshiftEndTime - m_iTimeshiftStartTime) * 100);
   }
 
   return iReturn;
@@ -479,6 +534,21 @@ void CPVRGUIInfo::CharInfoNextTimerDateTime(std::string &strValue) const
 void CPVRGUIInfo::CharInfoPlayingDuration(std::string &strValue) const
 {
   strValue = StringUtils::SecondsToTimeString(m_iDuration / 1000, TIME_FORMAT_GUESS).c_str();
+}
+
+void CPVRGUIInfo::CharInfoTimeshiftStartTime(std::string &strValue) const
+{
+  strValue = m_strTimeshiftStartTime;
+}
+
+void CPVRGUIInfo::CharInfoTimeshiftEndTime(std::string &strValue) const
+{
+  strValue = m_strTimeshiftEndTime;
+}
+
+void CPVRGUIInfo::CharInfoTimeshiftPlayTime(std::string &strValue) const
+{
+  strValue = m_strTimeshiftPlayTime;
 }
 
 void CPVRGUIInfo::CharInfoPlayingTime(std::string &strValue) const
@@ -682,7 +752,14 @@ void CPVRGUIInfo::UpdateBackendCache(void)
 
   // Update the backend information for all backends once per iteration
   if (m_iCurrentActiveClient == 0)
-    m_backendProperties = g_PVRClients->GetBackendProperties();
+  {
+    std::vector<SBackend> backendProperties;
+    {
+      CSingleExit exit(m_critSection);
+      backendProperties = g_PVRClients->GetBackendProperties();
+    }
+    m_backendProperties = backendProperties;
+  }
 
   // Get the properties for the currently active backend
   const auto &backend = GetCurrentActiveBackend();

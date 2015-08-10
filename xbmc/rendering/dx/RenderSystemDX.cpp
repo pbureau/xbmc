@@ -409,9 +409,6 @@ bool CRenderSystemDX::IsFormatSupport(DXGI_FORMAT format, unsigned int usage)
 
 bool CRenderSystemDX::DestroyRenderSystem()
 {
-  if (m_pSwapChain)
-    m_pSwapChain->SetFullscreenState(false, NULL);
-
   DeleteDevice();
 
   SAFE_RELEASE(m_pOutput);
@@ -449,7 +446,11 @@ void CRenderSystemDX::DeleteDevice()
   SAFE_RELEASE(m_depthStencilState);
   SAFE_RELEASE(m_depthStencilView);
   SAFE_RELEASE(m_pRenderTargetView);
-  SAFE_RELEASE(m_pSwapChain);
+  if (m_pSwapChain)
+  {
+    m_pSwapChain->SetFullscreenState(false, NULL);
+    SAFE_RELEASE(m_pSwapChain);
+  }
   SAFE_RELEASE(m_pSwapChain1);
   SAFE_RELEASE(m_pD3DDev);
   if (m_pContext && m_pContext != m_pImdContext)
@@ -495,10 +496,10 @@ void CRenderSystemDX::OnDeviceReset()
   { // we're back
     for (std::vector<ID3DResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
       (*i)->OnResetDevice();
-
-    g_renderManager.Flush();
-    g_windowManager.SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_RENDERER_RESET);
   }
+
+  g_renderManager.Flush();
+  g_windowManager.SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_RENDERER_RESET);
 }
 
 bool CRenderSystemDX::CreateDevice()
@@ -1051,7 +1052,7 @@ bool CRenderSystemDX::CreateStates()
 	m_pContext->OMSetDepthStencilState(m_depthStencilState, 0);
 
   D3D11_RASTERIZER_DESC rasterizerState;
-  rasterizerState.CullMode = D3D11_CULL_BACK; 
+  rasterizerState.CullMode = D3D11_CULL_NONE; 
   rasterizerState.FillMode = D3D11_FILL_SOLID;// DEBUG - D3D11_FILL_WIREFRAME
   rasterizerState.FrontCounterClockwise = false;
   rasterizerState.DepthBias = 0;
@@ -1078,7 +1079,7 @@ bool CRenderSystemDX::CreateStates()
   blendState.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA; // D3D11_BLEND_INV_SRC_ALPHA;
   blendState.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
   blendState.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-  blendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+  blendState.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
   blendState.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
   blendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
@@ -1410,7 +1411,7 @@ bool CRenderSystemDX::TestRender()
     0, D3DFVF_CUSTOMVERTEX,
     D3DPOOL_DEFAULT, &pVB, NULL ) ) )
   {
-    return false;;
+    return false;
   }
 
   // Now we fill the vertex buffer. To do this, we need to Lock() the VB to

@@ -280,7 +280,7 @@ bool CBuiltins::IsSystemPowerdownCommand(const std::string& execString)
   }
   else if (execute == "shutdown")
   {
-    switch (CSettings::Get().GetInt("powermanagement.shutdownstate"))
+    switch (CSettings::Get().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))
     {
       case POWERSTATE_SHUTDOWN:
       case POWERSTATE_SUSPEND:
@@ -787,7 +787,7 @@ int CBuiltins::Execute(const std::string& execString)
       else
         items.Sort(SortByLabel, SortOrderAscending);
 
-      int playlist = containsVideo? PLAYLIST_VIDEO : PLAYLIST_MUSIC;;
+      int playlist = containsVideo? PLAYLIST_VIDEO : PLAYLIST_MUSIC;
       if (containsMusic && containsVideo) //mixed content found in the folder
       {
         for (int i = items.Size() - 1; i >= 0; i--) //remove music entries
@@ -1295,11 +1295,11 @@ int CBuiltins::Execute(const std::string& execString)
     int iTheme = -1;
 
     // find current theme
-    if (!StringUtils::EqualsNoCase(CSettings::Get().GetString("lookandfeel.skintheme"), "SKINDEFAULT"))
+    if (!StringUtils::EqualsNoCase(CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME), "SKINDEFAULT"))
     {
       for (unsigned int i=0;i<vecTheme.size();++i)
       {
-        std::string strTmpTheme(CSettings::Get().GetString("lookandfeel.skintheme"));
+        std::string strTmpTheme(CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME));
         URIUtils::RemoveExtension(strTmpTheme);
         if (StringUtils::EqualsNoCase(vecTheme[i], strTmpTheme))
         {
@@ -1323,12 +1323,12 @@ int CBuiltins::Execute(const std::string& execString)
     if (iTheme != -1 && iTheme < (int)vecTheme.size())
       strSkinTheme = vecTheme[iTheme];
 
-    CSettings::Get().SetString("lookandfeel.skintheme", strSkinTheme);
+    CSettings::Get().SetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME, strSkinTheme);
     // also set the default color theme
     std::string colorTheme(URIUtils::ReplaceExtension(strSkinTheme, ".xml"));
     if (StringUtils::EqualsNoCase(colorTheme, "Textures.xml"))
       colorTheme = "defaults.xml";
-    CSettings::Get().SetString("lookandfeel.skincolors", colorTheme);
+    CSettings::Get().SetString(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS, colorTheme);
     g_application.ReloadSkin();
   }
   else if (execute == "skin.setstring"  || execute == "skin.setimage" ||
@@ -1593,7 +1593,7 @@ int CBuiltins::Execute(const std::string& execString)
     if (params.size() > 1)
       singleFile = StringUtils::EqualsNoCase(params[1], "true");
     else
-      singleFile = CGUIDialogYesNo::ShowAndGetInput(CVariant{iHeading}, CVariant{20426}, cancelled, CVariant{20428}, CVariant{20429});
+      singleFile = !CGUIDialogYesNo::ShowAndGetInput(CVariant{iHeading}, CVariant{20426}, cancelled, CVariant{20428}, CVariant{20429});
 
     if (cancelled)
         return -1;
@@ -1852,8 +1852,8 @@ int CBuiltins::Execute(const std::string& execString)
   }
   else if (execute == "toggledebug")
   {
-    bool debug = CSettings::Get().GetBool("debug.showloginfo");
-    CSettings::Get().SetBool("debug.showloginfo", !debug);
+    bool debug = CSettings::Get().GetBool(CSettings::SETTING_DEBUG_SHOWLOGINFO);
+    CSettings::Get().SetBool(CSettings::SETTING_DEBUG_SHOWLOGINFO, !debug);
     g_advancedSettings.SetDebugMode(!debug);
   }
   //TODO deprecated. To be replaced by pvr.startmanager

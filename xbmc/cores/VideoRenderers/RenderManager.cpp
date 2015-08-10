@@ -776,7 +776,7 @@ float CXBMCRenderManager::GetMaximumFPS()
 {
   float fps;
 
-  if (CSettings::Get().GetInt("videoscreen.vsync") != VSYNC_DISABLED)
+  if (CSettings::Get().GetInt(CSettings::SETTING_VIDEOSCREEN_VSYNC) != VSYNC_DISABLED)
   {
     fps = (float)g_VideoReferenceClock.GetRefreshRate();
     if (fps <= 0) fps = g_graphicsContext.GetFPS();
@@ -1148,7 +1148,7 @@ int CXBMCRenderManager::WaitForBuffer(volatile bool& bStop, int timeout)
   m_overlays.Release(m_free.front());
 
   // return buffer level
-  return m_queued.size() + m_discard.size();;
+  return m_queued.size() + m_discard.size();
 }
 
 void CXBMCRenderManager::PrepareNextRender()
@@ -1221,8 +1221,10 @@ void CXBMCRenderManager::DiscardBuffer()
   while(!m_queued.empty())
     requeue(m_discard, m_queued);
 
+  m_Queue[m_presentsource].timestamp = GetPresentTime();
+
   if(m_presentstep == PRESENT_READY)
-    m_presentstep   = PRESENT_IDLE;
+    m_presentstep = PRESENT_IDLE;
   m_presentevent.notifyAll();
 }
 

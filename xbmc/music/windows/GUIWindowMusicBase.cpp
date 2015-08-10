@@ -59,6 +59,7 @@
 #include "URL.h"
 #include "music/infoscanner/MusicInfoScanner.h"
 #include "guiinfo/GUIInfoLabels.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 
 
 using namespace std;
@@ -138,9 +139,9 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
 
       // save current window, unless the current window is the music playlist window
       if (GetID() != WINDOW_MUSIC_PLAYLIST &&
-          CSettings::Get().GetInt("mymusic.startwindow") != GetID())
+          CSettings::Get().GetInt(CSettings::SETTING_MYMUSIC_STARTWINDOW) != GetID())
       {
-        CSettings::Get().SetInt("mymusic.startwindow", GetID());
+        CSettings::Get().SetInt(CSettings::SETTING_MYMUSIC_STARTWINDOW, GetID());
         CSettings::Get().Save();
       }
 
@@ -167,11 +168,11 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
         if (nWindow == GetID())
           return true;
 
-        CSettings::Get().SetInt("mymusic.startwindow", nWindow);
+        CSettings::Get().SetInt(CSettings::SETTING_MYMUSIC_STARTWINDOW, nWindow);
         CSettings::Get().Save();
         g_windowManager.ChangeActiveWindow(nWindow);
 
-        CGUIMessage msg2(GUI_MSG_SETFOCUS, CSettings::Get().GetInt("mymusic.startwindow"), CONTROL_BTNTYPE);
+        CGUIMessage msg2(GUI_MSG_SETFOCUS, CSettings::Get().GetInt(CSettings::SETTING_MYMUSIC_STARTWINDOW), CONTROL_BTNTYPE);
         g_windowManager.SendMessage(msg2);
 
         return true;
@@ -199,7 +200,7 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
 
           // or be at the files window and have file deletion enabled
           else if (GetID() == WINDOW_MUSIC_FILES &&
-                   CSettings::Get().GetBool("filelists.allowfiledeletion"))
+                   CSettings::Get().GetBool(CSettings::SETTING_FILELISTS_ALLOWFILEDELETION))
           {
             OnDeleteItem(iItem);
           }
@@ -711,7 +712,7 @@ void CGUIWindowMusicBase::UpdateButtons()
   g_windowManager.SendMessage(msg2);
 
   // Select the current window as default item
-  CONTROL_SELECT_ITEM(CONTROL_BTNTYPE, CSettings::Get().GetInt("mymusic.startwindow") - WINDOW_MUSIC_FILES);
+  CONTROL_SELECT_ITEM(CONTROL_BTNTYPE, CSettings::Get().GetInt(CSettings::SETTING_MYMUSIC_STARTWINDOW) - WINDOW_MUSIC_FILES);
 
   CGUIMediaWindow::UpdateButtons();
 }
@@ -764,6 +765,8 @@ void CGUIWindowMusicBase::GetNonContextButtons(CContextButtons &buttons)
 {
   if (!m_vecItems->IsVirtualDirectoryRoot())
     buttons.Add(CONTEXT_BUTTON_GOTO_ROOT, 20128);
+  if (ActiveAE::CActiveAEDSP::Get().IsProcessing())
+    buttons.Add(CONTEXT_BUTTON_ACTIVE_ADSP_SETTINGS, 15047);
   buttons.Add(CONTEXT_BUTTON_SETTINGS, 5);
 }
 
@@ -832,6 +835,10 @@ bool CGUIWindowMusicBase::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
 
   case CONTEXT_BUTTON_GOTO_ROOT:
     Update("");
+    return true;
+
+  case CONTEXT_BUTTON_ACTIVE_ADSP_SETTINGS:
+    g_windowManager.ActivateWindow(WINDOW_DIALOG_AUDIO_DSP_OSD_SETTINGS);
     return true;
 
   case CONTEXT_BUTTON_SETTINGS:
@@ -981,7 +988,7 @@ bool CGUIWindowMusicBase::OnPlayMedia(int iItem)
     // turned on, but we still want to use the playlist player in order to handle more queued items
     // following etc.
     // Karaoke items also can be added in runtime (while the song is played), so it should be queued too.
-    if ( (CSettings::Get().GetBool("musicplayer.queuebydefault") && g_windowManager.GetActiveWindow() != WINDOW_MUSIC_PLAYLIST_EDITOR)
+    if ( (CSettings::Get().GetBool(CSettings::SETTING_MUSICPLAYER_QUEUEBYDEFAULT) && g_windowManager.GetActiveWindow() != WINDOW_MUSIC_PLAYLIST_EDITOR)
        || pItem->IsKaraoke() )
     {
       // TODO: Should the playlist be cleared if nothing is already playing?
@@ -1066,7 +1073,7 @@ void CGUIWindowMusicBase::UpdateThumb(const CAlbum &album, const std::string &pa
 void CGUIWindowMusicBase::OnRetrieveMusicInfo(CFileItemList& items)
 {
   if (items.GetFolderCount()==items.Size() || items.IsMusicDb() ||
-     (!CSettings::Get().GetBool("musicfiles.usetags") && !items.IsCDDA()))
+     (!CSettings::Get().GetBool(CSettings::SETTING_MUSICFILES_USETAGS) && !items.IsCDDA()))
   {
     return;
   }
@@ -1188,9 +1195,9 @@ void CGUIWindowMusicBase::OnInitWindow()
       if (CGUIDialogYesNo::ShowAndGetInput(CVariant{799}, CVariant{800}))
       {
         int flags = CMusicInfoScanner::SCAN_RESCAN;
-        if (CSettings::Get().GetBool("musiclibrary.downloadinfo"))
+        if (CSettings::Get().GetBool(CSettings::SETTING_MUSICLIBRARY_DOWNLOADINFO))
           flags |= CMusicInfoScanner::SCAN_ONLINE;
-        if (CSettings::Get().GetBool("musiclibrary.backgroundupdate"))
+        if (CSettings::Get().GetBool(CSettings::SETTING_MUSICLIBRARY_BACKGROUNDUPDATE))
           flags |= CMusicInfoScanner::SCAN_BACKGROUND;
         g_application.StartMusicScan("", true, flags);
         CMediaSettings::Get().SetMusicNeedsUpdate(0); // once is enough (user may interrupt, but that's up to them)

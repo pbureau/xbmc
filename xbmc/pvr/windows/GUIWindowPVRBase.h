@@ -64,6 +64,7 @@ namespace PVR
     virtual bool OnMessage(CGUIMessage& message);
     virtual bool OnContextButton(int itemNumber, CONTEXT_BUTTON button);
     virtual bool OnContextButton(const CFileItem &item, CONTEXT_BUTTON button) { return false; };
+    virtual bool OnContextButtonActiveAEDSPSettings(CFileItem *item, CONTEXT_BUTTON button);
     virtual void UpdateButtons(void);
     virtual bool OnAction(const CAction &action);
     virtual bool OnBack(int actionID);
@@ -97,6 +98,7 @@ namespace PVR
     virtual void ShowRecordingInfo(CFileItem *item);
     virtual bool UpdateEpgForChannel(CFileItem *item);
     virtual void UpdateSelectedItemPath();
+    virtual bool IsValidMessage(CGUIMessage& message);
     void CheckResumeRecording(CFileItem *item);
 
     /*!
@@ -117,5 +119,6 @@ namespace PVR
 
   private:
     CPVRChannelGroupPtr m_group;
+    XbmcThreads::EndTime m_refreshTimeout;
   };
 }
