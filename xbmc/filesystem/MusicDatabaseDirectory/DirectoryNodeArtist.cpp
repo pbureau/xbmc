@@ -33,7 +33,8 @@ CDirectoryNodeArtist::CDirectoryNodeArtist(const std::string& strName, CDirector
 
 NODE_TYPE CDirectoryNodeArtist::GetChildType() const
 {
-  return NODE_TYPE_ALBUM;
+  //return NODE_TYPE_ALBUM;
+  return NODE_TYPE_ONEARTIST;
 }
 
 std::string CDirectoryNodeArtist::GetLocalizedName() const

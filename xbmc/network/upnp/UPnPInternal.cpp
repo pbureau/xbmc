@@ -483,6 +483,7 @@ BuildObject(CFileItem&                    item,
                   }
                   break;
                 case MUSICDATABASEDIRECTORY::NODE_TYPE_ALBUM:
+                case MUSICDATABASEDIRECTORY::NODE_TYPE_ONEARTIST:
                 case MUSICDATABASEDIRECTORY::NODE_TYPE_ALBUM_COMPILATIONS:
                 case MUSICDATABASEDIRECTORY::NODE_TYPE_ALBUM_RECENTLY_ADDED:
                 case MUSICDATABASEDIRECTORY::NODE_TYPE_YEAR_ALBUM: {

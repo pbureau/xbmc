@@ -51,7 +51,9 @@ namespace XFILE
       NODE_TYPE_YEAR,
       NODE_TYPE_YEAR_ALBUM,
       NODE_TYPE_YEAR_SONG,
-      NODE_TYPE_SINGLES
+      NODE_TYPE_SINGLES,
+      NODE_TYPE_ONEALBUM,
+      NODE_TYPE_ONEARTIST
     } NODE_TYPE;
 
     typedef struct {

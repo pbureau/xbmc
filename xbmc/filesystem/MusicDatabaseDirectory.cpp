@@ -30,6 +30,8 @@
 #include "utils/LegacyPathTranslation.h"
 #include "utils/StringUtils.h"
 
+#include "utils/log.h"
+
 using namespace std;
 using namespace XFILE;
 using namespace MUSICDATABASEDIRECTORY;
@@ -70,12 +72,16 @@ bool CMusicDatabaseDirectory::GetDirectory(const CURL& url, CFileItemList &items
 NODE_TYPE CMusicDatabaseDirectory::GetDirectoryChildType(const std::string& strPath)
 {
   std::string path = CLegacyPathTranslation::TranslateMusicDbPath(strPath);
+  CLog::Log(LOGDEBUG, "%s::%s path: %s", __FILE__, __FUNCTION__, path.c_str());
   unique_ptr<CDirectoryNode> pNode(CDirectoryNode::ParseURL(path));
 
   if (!pNode.get())
     return NODE_TYPE_NONE;
 
-  return pNode->GetChildType();
+  NODE_TYPE ntype = pNode->GetChildType();
+  CLog::Log(LOGDEBUG, "%s::%s node type: %d", __FILE__, __FUNCTION__, ntype);
+  return ntype;
+  //return pNode->GetChildType();
 }
 
 NODE_TYPE CMusicDatabaseDirectory::GetDirectoryType(const std::string& strPath)
@@ -188,6 +194,7 @@ bool CMusicDatabaseDirectory::GetLabel(const std::string& strDirectory, std::str
       strLabel = g_localizeStrings.Get(133); // Artists
       break;
     case NODE_TYPE_ALBUM:
+    case NODE_TYPE_ONEARTIST:
       strLabel = g_localizeStrings.Get(132); // Albums
       break;
     case NODE_TYPE_ALBUM_RECENTLY_ADDED:
@@ -206,6 +213,7 @@ bool CMusicDatabaseDirectory::GetLabel(const std::string& strDirectory, std::str
       strLabel = g_localizeStrings.Get(1050); // Singles
       break;
     case NODE_TYPE_SONG:
+    case NODE_TYPE_ONEALBUM:
       strLabel = g_localizeStrings.Get(134); // Songs
       break;
     case NODE_TYPE_SONG_TOP100:
@@ -235,6 +243,7 @@ bool CMusicDatabaseDirectory::ContainsSongs(const std::string &path)
 {
   MUSICDATABASEDIRECTORY::NODE_TYPE type = GetDirectoryChildType(path);
   if (type == MUSICDATABASEDIRECTORY::NODE_TYPE_SONG) return true;
+  if (type == MUSICDATABASEDIRECTORY::NODE_TYPE_ONEALBUM) return true;
   if (type == MUSICDATABASEDIRECTORY::NODE_TYPE_SINGLES) return true;
   if (type == MUSICDATABASEDIRECTORY::NODE_TYPE_ALBUM_RECENTLY_ADDED_SONGS) return true;
   if (type == MUSICDATABASEDIRECTORY::NODE_TYPE_ALBUM_RECENTLY_PLAYED_SONGS) return true;
@@ -279,6 +288,7 @@ std::string CMusicDatabaseDirectory::GetIcon(const std::string &strDirectory)
   case NODE_TYPE_TOP100:
       return "DefaultMusicTop100.png";
   case NODE_TYPE_ALBUM:
+  case NODE_TYPE_ONEARTIST:
   case NODE_TYPE_YEAR_ALBUM:
     return "DefaultMusicAlbums.png";
   case NODE_TYPE_ALBUM_RECENTLY_ADDED:
@@ -289,6 +299,7 @@ std::string CMusicDatabaseDirectory::GetIcon(const std::string &strDirectory)
     return "DefaultMusicRecentlyPlayed.png";
   case NODE_TYPE_SINGLES:
   case NODE_TYPE_SONG:
+  case NODE_TYPE_ONEALBUM:
   case NODE_TYPE_YEAR_SONG:
   case NODE_TYPE_ALBUM_COMPILATIONS_SONGS:
     return "DefaultMusicSongs.png";

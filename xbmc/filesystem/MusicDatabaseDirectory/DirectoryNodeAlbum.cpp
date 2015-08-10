@@ -32,7 +32,8 @@ CDirectoryNodeAlbum::CDirectoryNodeAlbum(const std::string& strName, CDirectoryN
 
 NODE_TYPE CDirectoryNodeAlbum::GetChildType() const
 {
-  return NODE_TYPE_SONG;
+  //return NODE_TYPE_SONG;
+  return NODE_TYPE_ONEALBUM;
 }
 
 std::string CDirectoryNodeAlbum::GetLocalizedName() const

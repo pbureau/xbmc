@@ -341,11 +341,13 @@ bool CGUIWindowMusicNav::GetDirectory(const std::string &strDirectory, CFileItem
         node == NODE_TYPE_ALBUM_RECENTLY_PLAYED ||
         node == NODE_TYPE_ALBUM_TOP100 ||
         node == NODE_TYPE_ALBUM_COMPILATIONS ||
+        node == NODE_TYPE_ONEARTIST ||
         node == NODE_TYPE_YEAR_ALBUM)
       items.SetContent("albums");
     else if (node == NODE_TYPE_ARTIST)
       items.SetContent("artists");
     else if (node == NODE_TYPE_SONG ||
+             node == NODE_TYPE_ONEALBUM ||
              node == NODE_TYPE_SONG_TOP100 ||
              node == NODE_TYPE_SINGLES ||
              node == NODE_TYPE_ALBUM_RECENTLY_ADDED_SONGS ||
@@ -525,6 +527,7 @@ void CGUIWindowMusicNav::GetContextButtons(int itemNumber, CContextButtons &butt
         childtype == NODE_TYPE_ARTIST              ||
         nodetype == NODE_TYPE_GENRE                ||
         nodetype == NODE_TYPE_ALBUM                ||
+        nodetype == NODE_TYPE_ONEARTIST            ||
         nodetype == NODE_TYPE_ALBUM_RECENTLY_ADDED ||
         nodetype == NODE_TYPE_ALBUM_COMPILATIONS)
     {

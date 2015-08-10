@@ -48,6 +48,8 @@
 #include "music/MusicDbUrl.h"
 #include "settings/Settings.h"
 
+#include "utils/log.h"
+
 using namespace std;
 using namespace XFILE::MUSICDATABASEDIRECTORY;
 
@@ -75,15 +77,16 @@ CDirectoryNode* CDirectoryNode::ParseURL(const std::string& strPath)
   vector<string> Path = StringUtils::Split(strDirectory, '/');
   Path.insert(Path.begin(), "");
 
-  CDirectoryNode* pNode=NULL;
-  CDirectoryNode* pParent=NULL;
-  NODE_TYPE NodeType=NODE_TYPE_ROOT;
+  CDirectoryNode* pNode   = NULL;
+  CDirectoryNode* pParent = NULL;
+  NODE_TYPE NodeType      = NODE_TYPE_ROOT;
 
   for (int i=0; i<(int)Path.size(); ++i)
   {
-    pNode=CDirectoryNode::CreateNode(NodeType, Path[i], pParent);
-    NodeType= pNode ? pNode->GetChildType() : NODE_TYPE_NONE;
-    pParent=pNode;
+    CLog::Log(LOGDEBUG, "%s::%s type: %d path: %s", __FILE__, __FUNCTION__, NodeType, Path[i].c_str());
+    pNode    = CDirectoryNode::CreateNode(NodeType, Path[i], pParent);
+    NodeType = pNode ? pNode->GetChildType() : NODE_TYPE_NONE;
+    pParent  = pNode;
   }
 
   // Add all the additional URL options to the last node
@@ -119,8 +122,10 @@ CDirectoryNode* CDirectoryNode::CreateNode(NODE_TYPE Type, const std::string& st
   case NODE_TYPE_ARTIST:
     return new CDirectoryNodeArtist(strName, pParent);
   case NODE_TYPE_ALBUM:
+  case NODE_TYPE_ONEARTIST:
     return new CDirectoryNodeAlbum(strName, pParent);
   case NODE_TYPE_SONG:
+  case NODE_TYPE_ONEALBUM:
     return new CDirectoryNodeSong(strName, pParent);
   case NODE_TYPE_SINGLES:
     return new CDirectoryNodeSingles(strName, pParent);
@@ -326,6 +331,7 @@ void CDirectoryNode::AddQueuingFolder(CFileItemList& items) const
 
     //  All album related nodes
   case NODE_TYPE_ALBUM:
+  case NODE_TYPE_ONEARTIST:
     if (GetType() == NODE_TYPE_OVERVIEW) return;
   case NODE_TYPE_ALBUM_RECENTLY_PLAYED:
   case NODE_TYPE_ALBUM_RECENTLY_ADDED:

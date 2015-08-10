@@ -126,6 +126,7 @@ CGUIViewStateMusicDatabase::CGUIViewStateMusicDatabase(const CFileItemList& item
   if (CSettings::Get().GetBool("filelists.ignorethewhensorting"))
     sortAttribute = SortAttributeIgnoreArticle;
 
+  CLog::Log(LOGDEBUG, "%s::%s Node type: %d", __FILE__, __FUNCTION__, NodeType);
   switch (NodeType)
   {
   case NODE_TYPE_OVERVIEW:
@@ -193,6 +194,25 @@ CGUIViewStateMusicDatabase::CGUIViewStateMusicDatabase(const CFileItemList& item
       SetSortMethod(viewState->m_sortDescription);
       SetViewAsControl(viewState->m_viewMode);
       SetSortOrder(viewState->m_sortDescription.sortOrder);
+
+      CLog::Log(LOGDEBUG, "%s::%s View mode from settings: %d", __FILE__, __FUNCTION__, viewState->m_viewMode);
+    }
+    break;
+  case NODE_TYPE_ONEARTIST:
+    {
+      // album
+      AddSortMethod(SortByAlbum, sortAttribute, 558, LABEL_MASKS("%F", "", strAlbumLeft, strAlbumRight));  // Filename, empty | Userdefined, Userdefined
+      // artist
+      AddSortMethod(SortByArtist, sortAttribute, 557, LABEL_MASKS("%F", "", strAlbumLeft, strAlbumRight));  // Filename, empty | Userdefined, Userdefined
+      // year
+      AddSortMethod(SortByYear, 562, LABEL_MASKS("%F", "", strAlbumLeft, strAlbumRight));
+
+      const CViewState *viewState = CViewStateSettings::Get().Get("musicnavoneartist");
+      SetSortMethod(viewState->m_sortDescription);
+      SetViewAsControl(viewState->m_viewMode);
+      SetSortOrder(viewState->m_sortDescription.sortOrder);
+
+      CLog::Log(LOGDEBUG, "%s::%s View mode from settings: %d", __FILE__, __FUNCTION__, viewState->m_viewMode);
     }
     break;
   case NODE_TYPE_ALBUM_RECENTLY_ADDED:
@@ -288,6 +308,32 @@ CGUIViewStateMusicDatabase::CGUIViewStateMusicDatabase(const CFileItemList& item
       SetSortOrder(viewState->m_sortDescription.sortOrder);
     }
     break;
+  case NODE_TYPE_ONEALBUM:
+    {
+      AddSortMethod(SortByTrackNumber, 554, LABEL_MASKS(strTrackLeft, strTrackRight));  // Userdefined, Userdefined| empty, empty
+      AddSortMethod(SortByTitle, sortAttribute, 556, LABEL_MASKS("%T - %A", "%D"));  // Title, Artist, Duration| empty, empty
+      AddSortMethod(SortByAlbum, sortAttribute, 558, LABEL_MASKS("%B - %T - %A", "%D"));  // Album, Title, Artist, Duration| empty, empty
+      AddSortMethod(SortByArtist, sortAttribute, 557, LABEL_MASKS("%A - %T", "%D"));  // Artist, Title, Duration| empty, empty
+      AddSortMethod(SortByLabel, sortAttribute, 551, LABEL_MASKS(strTrackLeft, strTrackRight));
+      AddSortMethod(SortByTime, 180, LABEL_MASKS("%T - %A", "%D"));  // Titel, Artist, Duration| empty, empty
+      AddSortMethod(SortByRating, 563, LABEL_MASKS("%T - %A", "%R"));  // Title - Artist, Rating
+      AddSortMethod(SortByYear, 562, LABEL_MASKS("%T - %A", "%Y")); // Title, Artist, Year
+      AddSortMethod(SortByDateAdded, 570, LABEL_MASKS("%A - %T", "%a"));  // Title - Artist, DateAdded | empty, empty
+
+      const CViewState *viewState = CViewStateSettings::Get().Get("musicnavonealbum");
+      // the "All Albums" entries always default to SortByAlbum as this is most logical - user can always
+      // change it and the change will be saved for this particular path
+      if (dir.IsAllItem(items.GetPath()))
+        SetSortMethod(SortByAlbum);
+      else
+        SetSortMethod(viewState->m_sortDescription);
+
+      AddSortMethod(SortByPlaycount, 567, LABEL_MASKS("%T - %A", "%V"));  // Titel - Artist, PlayCount
+
+      SetViewAsControl(viewState->m_viewMode);
+      SetSortOrder(viewState->m_sortDescription.sortOrder);
+    }
+    break;
   case NODE_TYPE_SONG_TOP100:
     {
       AddSortMethod(SortByNone, 576, LABEL_MASKS("%T - %A", "%V"));
@@ -319,6 +365,12 @@ void CGUIViewStateMusicDatabase::SaveViewState()
     case NODE_TYPE_ALBUM:
     case NODE_TYPE_YEAR_ALBUM:
       SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::Get().Get("musicnavalbums"));
+      break;
+    case NODE_TYPE_ONEARTIST:
+      SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::Get().Get("musicnavoneartist"));
+      break;
+    case NODE_TYPE_ONEALBUM:
+      SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::Get().Get("musicnavonealbum"));
       break;
     case NODE_TYPE_ALBUM_RECENTLY_ADDED:
     case NODE_TYPE_ALBUM_TOP100:

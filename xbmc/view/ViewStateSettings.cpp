@@ -39,6 +39,8 @@ CViewStateSettings::CViewStateSettings()
 {
   AddViewState("musicnavartists");
   AddViewState("musicnavalbums");
+  AddViewState("musicnavoneartist");
+  AddViewState("musicnavonealbum");
   AddViewState("musicnavsongs");
   AddViewState("musiclastfm");
   AddViewState("videonavactors");
