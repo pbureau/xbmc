@@ -83,6 +83,8 @@ using namespace KODI::MESSAGING;
 #define CONTROL_SPIN_SUBTITLES      15
 
 #define CONTROL_LIST                50
+#define CONTROL_LIST_SUBTITLES      51
+#define CONTROL_LIST_AUDIOSTREAM    52
 
 // predicate used by sorting and set_difference
 bool compFileItemsByDbId(const CFileItemPtr& lhs, const CFileItemPtr& rhs) 
@@ -187,43 +189,40 @@ bool CGUIDialogVideoInfo::OnMessage(CGUIMessage& message)
         std::string strDirector = StringUtils::Join(m_movieItem->GetVideoInfoTag()->m_director, g_advancedSettings.m_videoItemSeparator);
         OnSearch(strDirector);
       }
+      else if (iControl == CONTROL_LIST_AUDIOSTREAM)
+      {
+        CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
+        OnMessage(msg);
+        int iItem = msg.GetParam1();
+        SelectAudioStream(iItem, m_isPlaying);
+        // Ask the control to select the corresponding fileitem
+        CGUIMessage msgFileItem(GUI_MSG_FILEITEM_SELECT, GetID(), CONTROL_LIST_AUDIOSTREAM, iItem, 0);
+        OnMessage(msgFileItem);
+      }
+      else if (iControl == CONTROL_LIST_SUBTITLES)
+      {
+        CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
+        OnMessage(msg);
+        int iItem = msg.GetParam1();
+        // sub stream index is selected item minus 1, because of the "Disabled" entry
+        SelectSubtitleStream(iItem-1, m_isPlaying);
+        // Ask the control to select the corresponding fileitem
+        CGUIMessage msgFileItem(GUI_MSG_FILEITEM_SELECT, GetID(), CONTROL_LIST_SUBTITLES, iItem, 0);
+        OnMessage(msgFileItem);
+      }
       else if (iControl == CONTROL_SPIN_SUBTITLES)
       {
         CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
         OnMessage(msg);
         int iItem = msg.GetParam1();
-
-        // if movie is currently playing, change player stream
-        if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
-          g_application.m_pPlayer->SetSubtitle(iItem);
-        else
-        {
-          // only change the audio stream if it is different from current Settings
-          if (CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream != iItem)
-          {
-            // Set the audio stream to the one selected
-            CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream = iItem;
-          }
-        }
+        SelectSubtitleStream(iItem, m_isPlaying);
       }
       else if (iControl == CONTROL_SPIN_AUDIOSTREAM)
       {
         CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
         OnMessage(msg);
         int iItem = msg.GetParam1();
-
-        // if movie is currently playing, change player stream
-        if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
-          g_application.m_pPlayer->SetAudioStream(iItem);
-        else
-        {
-          // only change the audio stream if it is different from current Settings
-          if (CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream != iItem)
-          {
-            // Set the audio stream to the one selected
-            CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream = iItem;
-          }
-        }
+        SelectAudioStream(iItem, m_isPlaying);
       }
       else if (iControl == CONTROL_LIST)
       {
@@ -260,6 +259,54 @@ bool CGUIDialogVideoInfo::OnMessage(CGUIMessage& message)
   return CGUIDialog::OnMessage(message);
 }
 
+/***********************************************************************************/
+void CGUIDialogVideoInfo::SelectAudioStream(int iItem, bool m_isPlaying)
+{
+  // if movie is currently playing, change player stream
+  if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
+    g_application.m_pPlayer->SetAudioStream(iItem);
+  else
+  {
+    // only change the audio stream if it is different from current Settings
+    if (CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream != iItem)
+    {
+      // Set the audio stream to the one selected
+      CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream = iItem;
+    }
+  }
+}
+
+void CGUIDialogVideoInfo::SelectSubtitleStream(int iItem, bool m_isPlaying)
+{
+  // if selection is -1, disable subtitles
+  if(iItem == -1)
+  {
+    if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
+      g_application.m_pPlayer->SetSubtitleVisible(false);
+    else
+      CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleOn = false;
+  }
+  else
+  {
+    // if movie is currently playing, change player stream
+    if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
+    {
+      g_application.m_pPlayer->SetSubtitle(iItem);
+      g_application.m_pPlayer->SetSubtitleVisible(true);
+    }
+    else
+    {
+      CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleOn = true;
+      // only change the audio stream if it is different from current Settings
+      if (CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream != iItem)
+      {
+        // Set the audio stream to the one selected
+        CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream = iItem;
+      }
+    }
+  }
+}
+/***********************************************************************************/
 void CGUIDialogVideoInfo::OnInitWindow()
 {
   m_bRefresh = false;
@@ -480,9 +527,13 @@ void CGUIDialogVideoInfo::Update()
   int subtitleStream      = 0;
   int audioStreamCount    = 0;
   int subtitleStreamCount = 0;
-  std::vector< std::pair<std::string, int> > list_audio;
-  std::vector< std::pair<std::string, int> > list_subs;
+  bool subtitlesOnFlag    = false;
+  std::vector< std::pair<std::string, int> > subsList;
+  std::vector< std::pair<std::string, int> > audioList;
   CApplicationPlayer * m_pPlayer;
+  //FileItem list for the list selector control
+  CFileItemList* subsFileItemList  = new CFileItemList;
+  CFileItemList* audioFileItemList = new CFileItemList;
 
   // Check if the movie we are looking at is currently playing
   CGUIInfoBool m_isPlaying;
@@ -495,8 +546,9 @@ void CGUIDialogVideoInfo::Update()
   {
     m_pPlayer = g_application.m_pPlayer;
     // Set stream and subtitle
-    audioStream    = m_pPlayer->GetAudioStream();
-    subtitleStream = m_pPlayer->GetSubtitle();
+    audioStream     = m_pPlayer->GetAudioStream();
+    subtitleStream  = m_pPlayer->GetSubtitle();
+    subtitlesOnFlag = m_pPlayer->GetSubtitleVisible();
   }
   else
   {
@@ -509,8 +561,9 @@ void CGUIDialogVideoInfo::Update()
     // Load stream information from file
     m_pPlayer->PreloadFileInfo(*m_movieItem, options);
     // Set stream and subtitle from video settings
-    audioStream    = CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream;
-    subtitleStream = CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream;
+    audioStream     = CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream;
+    subtitleStream  = CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream;
+    subtitlesOnFlag = CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleOn;
   }
 
   if( m_pPlayer->GetCurrentPlayer() == EPC_NONE )
@@ -523,6 +576,12 @@ void CGUIDialogVideoInfo::Update()
     //CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: stream count: %d/%d", audioStream, audioStreamCount);
     //CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: sub count: %d/%d", subtitleStream, subtitleStreamCount);
 
+    // First add "Disabled" entry to the subs list
+    subsList.push_back(make_pair(g_localizeStrings.Get(13106), -1));
+    // add fileitem to the list
+    CFileItemPtr pItem(new CFileItem(g_localizeStrings.Get(13106)));
+    subsFileItemList->Add(pItem);
+
     // cycle through each audio stream and add it to our list control
     for (int i = 0; i < audioStreamCount; ++i)
     {
@@ -532,7 +591,8 @@ void CGUIDialogVideoInfo::Update()
       SPlayerAudioStreamInfo info;
       m_pPlayer->GetAudioStreamInfo(i, info);
 
-      if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+      //if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+      if (!g_LangCodeExpander.Lookup(info.language, strLanguage))
         strLanguage = g_localizeStrings.Get(13205); // Unknown
 
       if (info.name.length() == 0)
@@ -541,7 +601,11 @@ void CGUIDialogVideoInfo::Update()
         strItem = StringUtils::Format("%s - %s", strLanguage.c_str(), info.name.c_str());
 
       strItem += StringUtils::Format(" (%i/%i)", i + 1, audioStreamCount);
-      list_audio.push_back(make_pair(strItem, i));
+
+      audioList.push_back(make_pair(strItem, i));
+      // add fileitem to the list
+      CFileItemPtr pItem(new CFileItem(strItem));
+      audioFileItemList->Add(pItem);
     }
     // cycle through each subtitle and add it to our entry list
     for (int i = 0; i < subtitleStreamCount; ++i)
@@ -552,7 +616,8 @@ void CGUIDialogVideoInfo::Update()
       std::string strItem;
       std::string strLanguage;
 
-      if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+      //if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
+      if (!g_LangCodeExpander.Lookup(info.language, strLanguage))
         strLanguage = g_localizeStrings.Get(13205); // Unknown
 
       if (info.name.length() == 0)
@@ -562,25 +627,48 @@ void CGUIDialogVideoInfo::Update()
 
       strItem += StringUtils::Format(" (%i/%i)", i + 1, subtitleStreamCount);
 
-      list_subs.push_back(make_pair(strItem, i));
+      subsList.push_back(make_pair(strItem, i));
+      // add fileitem to the list
+      CFileItemPtr pItem(new CFileItem(strItem));
+      subsFileItemList->Add(pItem);
     }
   }
 
   // If the audio list is empty, 
-  if (list_audio.empty())
+  if (audioList.empty())
   {
-    list_audio.push_back(make_pair(g_localizeStrings.Get(231), -1));
+    audioList.push_back(make_pair(g_localizeStrings.Get(231), -1));
     audioStream = -1;
+    // add fileitem to the list
+    CFileItemPtr pItem(new CFileItem(g_localizeStrings.Get(231)));
+    audioFileItemList->Add(pItem);
   }
-  SET_CONTROL_LABELS(CONTROL_SPIN_AUDIOSTREAM, audioStream, &list_audio);
+  SET_CONTROL_LABELS(CONTROL_SPIN_AUDIOSTREAM, audioStream, &audioList);
 
+  BIND_LABELS_TO_FILEITEMS(CONTROL_LIST_AUDIOSTREAM, audioFileItemList);
+  SELECT_FILEITEM(CONTROL_LIST_AUDIOSTREAM, audioStream);
+
+#if 0
   // no subtitle streams - just add a "None" entry
-  if (list_subs.empty())
+  if (subsList.empty())
   {
-    list_subs.push_back(make_pair(g_localizeStrings.Get(231), -1));
-    subtitleStreamCount = -1;
+    subsList.push_back(make_pair(g_localizeStrings.Get(231), -1));
+    subtitleStream = -1;
+    // add fileitem to the list
+    CFileItemPtr pItem(new CFileItem(g_localizeStrings.Get(231)));
+    subsFileItemList->Add(pItem);
   }
-  SET_CONTROL_LABELS(CONTROL_SPIN_SUBTITLES, subtitleStream, &list_subs);
+#endif
+
+  // If subs are disabled, force selection
+  if(!subtitlesOnFlag)
+    subtitleStream = -1;
+
+  SET_CONTROL_LABELS(CONTROL_SPIN_SUBTITLES, subtitleStream, &subsList);
+
+  BIND_LABELS_TO_FILEITEMS(CONTROL_LIST_SUBTITLES, subsFileItemList);
+  // add one to selection for the "Disabled" entry
+  SELECT_FILEITEM(CONTROL_LIST_SUBTITLES, subtitleStream + 1);
 
   // tell our GUI to completely reload all controls (as some of them
   // are likely to have had this image in use so will need refreshing)
