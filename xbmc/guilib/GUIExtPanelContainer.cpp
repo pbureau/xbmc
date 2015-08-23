@@ -19,12 +19,15 @@
  */
 
 #include "GUIExtPanelContainer.h"
+#include "guiinfo/GUIInfoLabels.h"
+#include "input/Key.h"
 #include "GUIListItem.h"
 #include "GUIInfoManager.h"
-#include "input/Key.h"
+
+
+#include <cassert>
 
 #include "utils/log.h"
-#include "guilib/GUILabelControl.h"
 
 using namespace std;
 

@@ -83,7 +83,6 @@ CDirectoryNode* CDirectoryNode::ParseURL(const std::string& strPath)
 
   for (int i=0; i<(int)Path.size(); ++i)
   {
-    CLog::Log(LOGDEBUG, "%s::%s type: %d path: %s", __FILE__, __FUNCTION__, NodeType, Path[i].c_str());
     pNode    = CDirectoryNode::CreateNode(NodeType, Path[i], pParent);
     NodeType = pNode ? pNode->GetChildType() : NODE_TYPE_NONE;
     pParent  = pNode;
