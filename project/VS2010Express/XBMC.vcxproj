@@ -86,7 +86,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4089 /ignore:4254 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;DInput8.lib;DSound.lib;winmm.lib;Mpr.lib;Iphlpapi.lib;PowrProf.lib;setupapi.lib;dwmapi.lib;yajl.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;DInput8.lib;DSound.lib;winmm.lib;CrossGuidd.lib;Mpr.lib;Iphlpapi.lib;PowrProf.lib;setupapi.lib;dwmapi.lib;yajl.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <IgnoreSpecificDefaultLibraries>libcpmt;libc;msvcrt;libcmt;msvcrtd;msvcprtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>
@@ -122,7 +122,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4089 /ignore:4254 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;DInput8.lib;DSound.lib;winmm.lib;ws2_32.lib;Mpr.lib;Iphlpapi.lib;PowrProf.lib;setupapi.lib;dwmapi.lib;strmiids.lib;dxguid.lib;mfuuid.lib;comctl32.lib;yajl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;DInput8.lib;DSound.lib;winmm.lib;CrossGuidd.lib;ws2_32.lib;Mpr.lib;Iphlpapi.lib;PowrProf.lib;setupapi.lib;dwmapi.lib;strmiids.lib;dxguid.lib;mfuuid.lib;comctl32.lib;yajl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-test.exe</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
@@ -160,7 +160,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4089 /ignore:4254 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3d11.lib;DInput8.lib;DSound.lib;winmm.lib;Mpr.lib;Iphlpapi.lib;PowrProf.lib;setupapi.lib;dwmapi.lib;yajl.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;DInput8.lib;DSound.lib;winmm.lib;CrossGuid.lib;Mpr.lib;Iphlpapi.lib;PowrProf.lib;setupapi.lib;dwmapi.lib;yajl.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <IgnoreSpecificDefaultLibraries>libc;msvcrt;libci;msvcprt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>libxslt.dll;dnssd.dll;dwmapi.dll;ssh.dll;sqlite3.dll;avcodec-56.dll;avfilter-5.dll;avformat-56.dll;avutil-54.dll;postproc-53.dll;swresample-1.dll;swscale-3.dll;d3dcompiler_47.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
@@ -312,8 +312,16 @@
     <ClCompile Include="..\..\xbmc\epg\EpgInfoTag.cpp" />
     <ClCompile Include="..\..\xbmc\epg\EpgSearchFilter.cpp" />
     <ClCompile Include="..\..\xbmc\epg\GUIEPGGridContainer.cpp" />
+    <ClCompile Include="..\..\xbmc\events\AddonEvent.cpp" />
+    <ClCompile Include="..\..\xbmc\events\AddonManagementEvent.cpp" />
+    <ClCompile Include="..\..\xbmc\events\BaseEvent.cpp" />
+    <ClCompile Include="..\..\xbmc\events\EventLog.cpp" />
+    <ClCompile Include="..\..\xbmc\events\MediaLibraryEvent.cpp" />
+    <ClCompile Include="..\..\xbmc\events\windows\GUIViewStateEventLog.cpp" />
+    <ClCompile Include="..\..\xbmc\events\windows\GUIWindowEventLog.cpp" />
     <ClCompile Include="..\..\xbmc\FileItem.cpp" />
     <ClCompile Include="..\..\xbmc\FileItemListModification.cpp" />
+    <ClCompile Include="..\..\xbmc\filesystem\EventsDirectory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\AddonsDirectory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\BlurayDirectory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\BlurayFile.cpp" />
@@ -416,6 +424,9 @@
     <ClCompile Include="..\..\xbmc\filesystem\win32\Win32File.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\win32\Win32SMBFile.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\VirtualDirectory.cpp" />
+    <ClCompile Include="..\..\xbmc\filesystem\XbtDirectory.cpp" />
+    <ClCompile Include="..\..\xbmc\filesystem\XbtFile.cpp" />
+    <ClCompile Include="..\..\xbmc\filesystem\XbtManager.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\ZeroconfDirectory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\ZipDirectory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\ZipFile.cpp" />
@@ -619,7 +630,6 @@
     <ClCompile Include="..\..\xbmc\music\CueInfoLoader.cpp" />
     <ClCompile Include="..\..\xbmc\music\dialogs\GUIDialogMusicInfo.cpp" />
     <ClCompile Include="..\..\xbmc\music\dialogs\GUIDialogMusicOSD.cpp" />
-    <ClCompile Include="..\..\xbmc\music\dialogs\GUIDialogMusicOverlay.cpp" />
     <ClCompile Include="..\..\xbmc\music\dialogs\GUIDialogSongInfo.cpp" />
     <ClCompile Include="..\..\xbmc\music\dialogs\GUIDialogVisualisationPresetList.cpp" />
     <ClCompile Include="..\..\xbmc\music\GUIViewStateMusic.cpp" />
@@ -920,8 +930,20 @@
     <ClInclude Include="..\..\xbmc\DbUrl.h" />
     <ClInclude Include="..\..\xbmc\dialogs\GUIDialogMediaFilter.h" />
     <ClInclude Include="..\..\xbmc\dialogs\GUIDialogSimpleMenu.h" />
+    <ClInclude Include="..\..\xbmc\events\AddonEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\AddonManagementEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\BaseEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\EventLog.h" />
+    <ClInclude Include="..\..\xbmc\events\IEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\MediaLibraryEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\NotificationEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\UniqueEvent.h" />
+    <ClInclude Include="..\..\xbmc\events\windows\GUIViewStateEventLog.h" />
+    <ClInclude Include="..\..\xbmc\events\windows\GUIWindowEventLog.h" />
     <ClInclude Include="..\..\xbmc\FileItemListModification.h" />
+    <ClInclude Include="..\..\xbmc\filesystem\EventsDirectory.h" />
     <ClInclude Include="..\..\xbmc\filesystem\BlurayFile.h" />
+    <ClInclude Include="..\..\xbmc\filesystem\Directorization.h" />
     <ClInclude Include="..\..\xbmc\filesystem\HTTPFile.h" />
     <ClInclude Include="..\..\xbmc\filesystem\DAVCommon.h" />
     <ClInclude Include="..\..\xbmc\filesystem\DAVFile.h" />
@@ -936,6 +958,9 @@
     <ClInclude Include="..\..\xbmc\filesystem\win32\Win32SMBDirectory.h" />
     <ClInclude Include="..\..\xbmc\filesystem\win32\Win32File.h" />
     <ClInclude Include="..\..\xbmc\filesystem\win32\Win32SMBFile.h" />
+    <ClInclude Include="..\..\xbmc\filesystem\XbtDirectory.h" />
+    <ClInclude Include="..\..\xbmc\filesystem\XbtFile.h" />
+    <ClInclude Include="..\..\xbmc\filesystem\XbtManager.h" />
     <ClInclude Include="..\..\xbmc\guiinfo\GUIInfoLabels.h" />
     <ClInclude Include="..\..\xbmc\guilib\cximage.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIKeyboard.h" />
@@ -1101,6 +1126,8 @@
     <ClInclude Include="..\..\xbmc\utils\Utf8Utils.h" />
     <ClInclude Include="..\..\xbmc\utils\uXstrings.h" />
     <ClInclude Include="..\..\xbmc\utils\Vector.h" />
+    <ClInclude Include="..\..\xbmc\utils\win32\gpu_memcpy_sse4.h" />
+    <ClInclude Include="..\..\xbmc\utils\win32\memcpy_sse2.h" />
     <ClInclude Include="..\..\xbmc\utils\win32\Win32InterfaceForCLog.h" />
     <ClInclude Include="..\..\xbmc\utils\win32\Win32Log.h" />
     <ClInclude Include="..\..\xbmc\utils\XSLTUtils.h" />
@@ -1243,6 +1270,7 @@
     <ClCompile Include="..\..\xbmc\video\jobs\VideoLibraryJob.cpp" />
     <ClCompile Include="..\..\xbmc\video\jobs\VideoLibraryMarkWatchedJob.cpp" />
     <ClCompile Include="..\..\xbmc\video\jobs\VideoLibraryProgressJob.cpp" />
+    <ClCompile Include="..\..\xbmc\video\jobs\VideoLibraryRefreshingJob.cpp" />
     <ClCompile Include="..\..\xbmc\video\jobs\VideoLibraryScanningJob.cpp" />
     <ClCompile Include="..\..\xbmc\video\PlayerController.cpp" />
     <ClCompile Include="..\..\xbmc\video\videosync\VideoSyncD3D.cpp" />
@@ -1509,7 +1537,6 @@
     <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogVideoBookmarks.cpp" />
     <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogVideoInfo.cpp" />
     <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogVideoOSD.cpp" />
-    <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogVideoOverlay.cpp" />
     <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogVideoSettings.cpp" />
     <ClCompile Include="..\..\xbmc\video\FFmpegVideoDecoder.cpp" />
     <ClCompile Include="..\..\xbmc\video\GUIViewStateVideo.cpp" />
@@ -1924,7 +1951,6 @@
     <ClInclude Include="..\..\xbmc\music\Artist.h" />
     <ClInclude Include="..\..\xbmc\music\dialogs\GUIDialogMusicInfo.h" />
     <ClInclude Include="..\..\xbmc\music\dialogs\GUIDialogMusicOSD.h" />
-    <ClInclude Include="..\..\xbmc\music\dialogs\GUIDialogMusicOverlay.h" />
     <ClInclude Include="..\..\xbmc\music\dialogs\GUIDialogSongInfo.h" />
     <ClInclude Include="..\..\xbmc\music\dialogs\GUIDialogVisualisationPresetList.h" />
     <ClInclude Include="..\..\xbmc\music\GUIViewStateMusic.h" />
@@ -2083,6 +2109,7 @@
     <ClInclude Include="..\..\xbmc\video\jobs\VideoLibraryJob.h" />
     <ClInclude Include="..\..\xbmc\video\jobs\VideoLibraryMarkWatchedJob.h" />
     <ClInclude Include="..\..\xbmc\video\jobs\VideoLibraryProgressJob.h" />
+    <ClInclude Include="..\..\xbmc\video\jobs\VideoLibraryRefreshingJob.h" />
     <ClInclude Include="..\..\xbmc\video\jobs\VideoLibraryScanningJob.h" />
     <ClInclude Include="..\..\xbmc\video\PlayerController.h" />
     <ClInclude Include="..\..\xbmc\video\videosync\VideoSync.h" />
@@ -2171,7 +2198,6 @@
     <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogVideoBookmarks.h" />
     <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogVideoInfo.h" />
     <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogVideoOSD.h" />
-    <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogVideoOverlay.h" />
     <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogVideoSettings.h" />
     <ClInclude Include="..\..\xbmc\video\GUIViewStateVideo.h" />
     <ClInclude Include="..\..\xbmc\video\Teletext.h" />

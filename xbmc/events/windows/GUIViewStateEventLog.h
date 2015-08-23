@@ -1,8 +1,7 @@
 #pragma once
-
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,15 +19,23 @@
  *
  */
 
-#include "guilib/GUIDialog.h"
+#include "view/GUIViewState.h"
 
-class CGUIDialogVideoOverlay: public CGUIDialog
+class CGUIViewStateEventLog : public CGUIViewState
 {
 public:
-  CGUIDialogVideoOverlay(void);
-  virtual ~CGUIDialogVideoOverlay(void);
-  virtual void FrameMove();
+  CGUIViewStateEventLog(const CFileItemList& items);
+  ~CGUIViewStateEventLog() { }
+
+  // specializations of CGUIViewState
+  virtual bool HideExtensions() { return true; }
+  virtual bool HideParentDirItems() { return true; }
+  virtual bool DisableAddSourceButtons() { return true; }
+
 protected:
-  virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
-  virtual void SetDefaults();
+  // specializations of CGUIViewState
+  virtual void SaveViewState();
+  virtual std::string GetExtensions();
+  virtual VECSOURCES& GetSources();
 };
+

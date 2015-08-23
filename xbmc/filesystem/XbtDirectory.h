@@ -1,7 +1,6 @@
 #pragma once
-
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2015 Team XBMC
  *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -20,15 +19,26 @@
  *
  */
 
-#include "guilib/GUIDialog.h"
+#include <map>
+#include <string>
 
-class CGUIDialogMusicOverlay: public CGUIDialog
+#include "IFileDirectory.h"
+
+class CXBTFFile;
+
+namespace XFILE
+{
+class CXbtDirectory : public IFileDirectory
 {
 public:
-  CGUIDialogMusicOverlay(void);
-  virtual ~CGUIDialogMusicOverlay(void);
-  virtual bool OnMessage(CGUIMessage& message);
-protected:
-  virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
-  virtual void SetDefaults();
+  CXbtDirectory();
+  ~CXbtDirectory();
+
+  // specialization of IDirectory
+  virtual DIR_CACHE_TYPE GetCacheType(const CURL& url) const override { return DIR_CACHE_ALWAYS; };
+  virtual bool GetDirectory(const CURL& url, CFileItemList& items) override;
+
+  // specialization of IFileDirectory
+  virtual bool ContainsFiles(const CURL& url) override;
 };
+}

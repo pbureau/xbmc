@@ -19,6 +19,7 @@
  */
 
 #include "view/GUIViewState.h"
+#include "events/windows/GUIViewStateEventLog.h"
 #include "pvr/windows/GUIViewStatePVR.h"
 #include "addons/GUIViewStateAddonBrowser.h"
 #include "music/GUIViewStateMusic.h"
@@ -109,6 +110,9 @@ CGUIViewState* CGUIViewState::GetViewState(int windowId, const CFileItemList& it
   if (url.IsProtocol("androidapp"))
     return new CGUIViewStateWindowPrograms(items);
 
+  if (url.IsProtocol("activities"))
+    return new CGUIViewStateEventLog(items);
+
   if (windowId == WINDOW_MUSIC_NAV)
     return new CGUIViewStateWindowMusicNav(items);
 
@@ -168,6 +172,9 @@ CGUIViewState* CGUIViewState::GetViewState(int windowId, const CFileItemList& it
   
   if (windowId == WINDOW_ADDON_BROWSER)
     return new CGUIViewStateAddonBrowser(items);
+
+  if (windowId == WINDOW_EVENT_LOG)
+    return new CGUIViewStateEventLog(items);
 
   //  Use as fallback/default
   return new CGUIViewStateGeneral(items);
@@ -351,18 +358,18 @@ SortDescription CGUIViewState::SetNextSortMethod(int direction /* = 1 */)
 
 bool CGUIViewState::HideExtensions()
 {
-  return !CSettings::Get().GetBool(CSettings::SETTING_FILELISTS_SHOWEXTENSIONS);
+  return !CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWEXTENSIONS);
 }
 
 bool CGUIViewState::HideParentDirItems()
 {
-  return !CSettings::Get().GetBool(CSettings::SETTING_FILELISTS_SHOWPARENTDIRITEMS);
+  return !CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWPARENTDIRITEMS);
 }
 
 bool CGUIViewState::DisableAddSourceButtons()
 {
-  if (CProfilesManager::Get().GetCurrentProfile().canWriteSources() || g_passwordManager.bMasterUser)
-    return !CSettings::Get().GetBool(CSettings::SETTING_FILELISTS_SHOWADDSOURCEBUTTONS);
+  if (CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() || g_passwordManager.bMasterUser)
+    return !CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWADDSOURCEBUTTONS);
 
   return true;
 }
@@ -455,7 +462,7 @@ void CGUIViewState::AddAndroidSource(const std::string &content, const std::stri
 
 void CGUIViewState::AddLiveTVSources()
 {
-  VECSOURCES *sources = CMediaSourceSettings::Get().GetSources("video");
+  VECSOURCES *sources = CMediaSourceSettings::GetInstance().GetSources("video");
   for (IVECSOURCES it = sources->begin(); it != sources->end(); it++)
   {
     if (URIUtils::IsLiveTV((*it).strPath))
@@ -489,7 +496,7 @@ void CGUIViewState::LoadViewState(const std::string &path, int windowID)
     return;
 
   CViewState state;
-  if (db.GetViewState(path, windowID, state, CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN)) ||
+  if (db.GetViewState(path, windowID, state, CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN)) ||
       db.GetViewState(path, windowID, state, ""))
   {
     SetViewAsControl(state.m_viewMode);
@@ -508,11 +515,11 @@ void CGUIViewState::SaveViewToDb(const std::string &path, int windowID, CViewSta
   if (viewState != NULL)
     *viewState = state;
 
-  db.SetViewState(path, windowID, state, CSettings::Get().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN));
+  db.SetViewState(path, windowID, state, CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN));
   db.Close();
 
   if (viewState != NULL)
-    CSettings::Get().Save();
+    CSettings::GetInstance().Save();
 }
 
 void CGUIViewState::AddPlaylistOrder(const CFileItemList &items, LABEL_MASKS label_masks)
@@ -559,7 +566,7 @@ CGUIViewStateFromItems::CGUIViewStateFromItems(const CFileItemList &items) : CGU
   {
     CURL url(items.GetPath());
     AddonPtr addon;
-    if (CAddonMgr::Get().GetAddon(url.GetHostName(), addon, ADDON_PLUGIN))
+    if (CAddonMgr::GetInstance().GetAddon(url.GetHostName(), addon, ADDON_PLUGIN))
     {
       PluginPtr plugin = std::static_pointer_cast<CPluginSource>(addon);
       if (plugin->Provides(CPluginSource::AUDIO))

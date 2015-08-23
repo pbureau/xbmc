@@ -125,6 +125,7 @@
 #define SYSTEM_PROFILENAME          146
 #define SYSTEM_PROFILETHUMB         147
 #define SYSTEM_HAS_LOGINSCREEN      148
+#define SYSTEM_HAS_MODAL_DIALOG     149
 #define SYSTEM_HDD_SMART            150
 #define SYSTEM_HDD_TEMPERATURE      151
 #define SYSTEM_HDD_MODEL            152
@@ -328,8 +329,6 @@
 
 #define SKIN_BOOL                   600
 #define SKIN_STRING                 601
-#define SKIN_HAS_MUSIC_OVERLAY      602
-#define SKIN_HAS_VIDEO_OVERLAY      603
 #define SKIN_THEME                  604
 #define SKIN_COLOUR_THEME           605
 #define SKIN_HAS_THEME              606
@@ -664,6 +663,7 @@
 #define LISTITEM_HASTIMERSCHEDULE   (LISTITEM_START + 149)
 #define LISTITEM_TIMERTYPE          (LISTITEM_START + 150)
 #define LISTITEM_EPG_EVENT_TITLE    (LISTITEM_START + 151)
+#define LISTITEM_DATETIME           (LISTITEM_START + 152)
 
 #define LISTITEM_PROPERTY_START     (LISTITEM_START + 200)
 #define LISTITEM_PROPERTY_END       (LISTITEM_PROPERTY_START + 1000)

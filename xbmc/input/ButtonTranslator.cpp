@@ -75,6 +75,7 @@ static const ActionMapping actions[] =
     { "parentdir"                , ACTION_NAV_BACK },                   // backward compatibility
     { "parentfolder"             , ACTION_PARENT_DIR },
     { "back"                     , ACTION_NAV_BACK },
+    { "menu"                     , ACTION_MENU},
     { "previousmenu"             , ACTION_PREVIOUS_MENU },
     { "info"                     , ACTION_SHOW_INFO },
     { "pause"                    , ACTION_PAUSE },
@@ -142,13 +143,6 @@ static const ActionMapping actions[] =
     { "number7"                  , REMOTE_7 },
     { "number8"                  , REMOTE_8 },
     { "number9"                  , REMOTE_9 },
-    { "osdleft"                  , ACTION_OSD_SHOW_LEFT },
-    { "osdright"                 , ACTION_OSD_SHOW_RIGHT },
-    { "osdup"                    , ACTION_OSD_SHOW_UP },
-    { "osddown"                  , ACTION_OSD_SHOW_DOWN },
-    { "osdselect"                , ACTION_OSD_SHOW_SELECT },
-    { "osdvalueplus"             , ACTION_OSD_SHOW_VALUE_PLUS },
-    { "osdvalueminus"            , ACTION_OSD_SHOW_VALUE_MIN },
     { "smallstepback"            , ACTION_SMALL_STEP_BACK },
     { "fastforward"              , ACTION_PLAYER_FORWARD },
     { "rewind"                   , ACTION_PLAYER_REWIND },
@@ -158,8 +152,6 @@ static const ActionMapping actions[] =
     { "delete"                   , ACTION_DELETE_ITEM },
     { "copy"                     , ACTION_COPY_ITEM },
     { "move"                     , ACTION_MOVE_ITEM },
-    { "mplayerosd"               , ACTION_SHOW_MPLAYER_OSD },
-    { "hidesubmenu"              , ACTION_OSD_HIDESUBMENU },
     { "screenshot"               , ACTION_TAKE_SCREENSHOT },
     { "rename"                   , ACTION_RENAME_ITEM },
     { "togglewatched"            , ACTION_TOGGLE_WATCHED },
@@ -397,15 +389,14 @@ static const ActionMapping windows[] =
     { "videoosd"                 , WINDOW_DIALOG_VIDEO_OSD },
     { "videomenu"                , WINDOW_VIDEO_MENU },
     { "videotimeseek"            , WINDOW_VIDEO_TIME_SEEK },
-    { "musicoverlay"             , WINDOW_DIALOG_MUSIC_OVERLAY },
-    { "videooverlay"             , WINDOW_DIALOG_VIDEO_OVERLAY },
     { "startwindow"              , WINDOW_START },
     { "startup"                  , WINDOW_STARTUP_ANIM },
     { "peripherals"              , WINDOW_DIALOG_PERIPHERAL_MANAGER },
     { "peripheralsettings"       , WINDOW_DIALOG_PERIPHERAL_SETTINGS },
     { "extendedprogressdialog"   , WINDOW_DIALOG_EXT_PROGRESS },
     { "mediafilter"              , WINDOW_DIALOG_MEDIA_FILTER },
-    { "addon"                    , WINDOW_ADDON_START }
+    { "addon"                    , WINDOW_ADDON_START },
+    { "eventlog"                 , WINDOW_EVENT_LOG}
 };
 
 static const ActionMapping mousekeys[] =
@@ -612,7 +603,7 @@ bool CButtonTranslator::Load(bool AlwaysLoad)
   else
     CLog::Log(LOGDEBUG, "CButtonTranslator::Load - no system %s found, skipping", REMOTEMAP);
 
-  lircmapPath = CProfilesManager::Get().GetUserDataItem(REMOTEMAP);
+  lircmapPath = CProfilesManager::GetInstance().GetUserDataItem(REMOTEMAP);
   if(CFile::Exists(lircmapPath))
     success |= LoadLircMap(lircmapPath);
   else
