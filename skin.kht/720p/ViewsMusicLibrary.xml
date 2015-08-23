@@ -714,7 +714,7 @@
 		<control type="group">
 			<visible>Control.IsVisible(512)</visible>
 			<include>VisibleFadeEffect</include>
-                        <!-- Main Panel - Album library -->
+                        <!-- Main Panel - Artist library -->
 			<control type="panel" id="512">
 				<left>20</left>
 				<top>20</top>
@@ -838,7 +838,7 @@
 				<orientation>vertical</orientation>
 				<visible>Control.IsVisible(500)</visible>
 			</control>
-                        <!-- Right Info Panel - Album details -->
+                        <!-- Right Info Panel - Artist details -->
 			<control type="group">
                             <left>750</left>
                             <top>0</top>
@@ -864,6 +864,15 @@
                                     <label>$INFO[ListItem.Label]</label>
                                     <textoffsetx>6</textoffsetx>
                             </control>
+                            <control type="button">
+                                <top>315</top>
+                                <left>0</left>
+                                <width>380</width>
+                                <height>90</height>
+                                <label>$INFO[ListItem.Property(Artist_Genre),,[CR]]$INFO[ListItem.Property(Artist_YearsActive)]</label>
+                                <visible>Container.Content(artists)</visible>
+                            </control>
+                            <!--
                             <control type="label">
                                     <width>380</width>
                                     <height>30</height>
@@ -875,6 +884,8 @@
                                     <label>$INFO[ListItem.Artist] $INFO[ListItem.AlbumArtist]</label>
                                     <textoffsetx>6</textoffsetx>
                             </control>
+                            -->
+                            <!--
                             <control type="label">
                                     <width>380</width>
                                     <height>30</height>
@@ -908,14 +919,29 @@
                                     <label>$INFO[ListItem.Property(Artist_YearsActive)] $INFO[ListItem.Property(Artist_Instrument)]</label>
                                     <textoffsetx>6</textoffsetx>
                             </control>
-                            <control type="button">
-                                <top>315</top>
-                                <left>0</left>
-                                <width>380</width>
-                                <height>90</height>
-                                <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
-                                <visible>Container.Content(albums)</visible>
+                            <control type="label">
+                                    <width>380</width>
+                                    <height>30</height>
+                                    <top>425</top>
+                                    <left>0</left>
+                                    <font>font12</font>
+                                    <textcolor>grey</textcolor>
+                                    <scroll>true</scroll>
+                                    <label>$INFO[ListItem.Property(Artist_Mood)]</label>
+                                    <textoffsetx>6</textoffsetx>
                             </control>
+                            <control type="label">
+                                    <width>380</width>
+                                    <height>30</height>
+                                    <top>455</top>
+                                    <left>0</left>
+                                    <font>font12</font>
+                                    <textcolor>grey</textcolor>
+                                    <scroll>true</scroll>
+                                    <label>$INFO[ListItem.Property(Artist_Style)] $INFO[ListItem.Property(Artist_Genre)]</label>
+                                    <textoffsetx>6</textoffsetx>
+                            </control>
+                            -->
                             <control type="textbox">
                                 <label>$VAR[MusicPlotVar]</label>
                                 <top>410</top>

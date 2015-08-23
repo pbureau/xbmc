@@ -121,12 +121,14 @@
                                             <include>MediaFlagVars</include>
                                             <texture>$VAR[SourceFlagVar,flagging/video/,.png]</texture>
                                     </control>
+                                    <!--
                                     <control type="label">
                                             <width>200</width>
                                             <label>$VAR[SourceFlagVar]</label>
                                             <font>font12</font>
                                             <textcolor>grey</textcolor>
                                     </control>
+                                    -->
                             </control>
                         </control>
                         <!--- Audio Stream selection list -->
@@ -134,7 +136,7 @@
                             <description>audiostream selection list</description>
                             <visible>Control.HasFocus(33203) | Control.HasFocus(52)</visible>
                             <left>80</left>
-                            <top>110</top>
+                            <top>160</top>
                             <include name="AdaptativeDialogBackground">
                                 <param name="id" value="52"/>
                             </include>
@@ -155,7 +157,7 @@
                                 <scrolltime tween="quadratic" easing="out">300</scrolltime>
                                 <onleft>33203</onleft>
                                 <onright>-</onright>
-                                <onup>33202</onup>
+                                <onup>33205</onup>
                                 <ondown>33204</ondown>
                                 <itemlayout height="40" width="300">
                                     <control type="image">
@@ -224,7 +226,7 @@
                         <control type="group">
                             <description>subtitles selection list</description>
                             <left>80</left>
-                            <top>160</top>
+                            <top>210</top>
                             <visible>Control.HasFocus(33204) | Control.HasFocus(51)</visible>
                             <include name="AdaptativeDialogBackground">
                                 <param name="id" value="51"/>
@@ -368,7 +370,7 @@
                                 <onright>50</onright>
                                 <onup condition="!ListItem.IsPlaying">8</onup>
                                 <onup condition="ListItem.IsPlaying">33201</onup>
-                                <ondown>33203</ondown>
+                                <ondown>33205</ondown>
                                 <onclick>RunScript(script.extendedinfo,info=extendedactorinfo,name=$INFO[Container(50).ListItem.Label])</onclick>
                                 <viewtype label="">list</viewtype>
                                 <pagecontrol>61</pagecontrol>
@@ -402,6 +404,18 @@
                                         <shadowcolor>shadow</shadowcolor>
                                         <selectedcolor>selected</selectedcolor>
                                         <label>$INFO[ListItem.Label]</label>
+                                    </control>
+                                    <control type="textbox">
+                                        <left>0</left>
+                                        <top>180</top>
+                                        <width>100</width>
+                                        <height>50</height>
+                                        <align>center</align>
+                                        <font>font10</font>
+                                        <textcolor>grey</textcolor>
+                                        <shadowcolor>shadow</shadowcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <label>$INFO[ListItem.Label2]</label>
                                     </control>
                                 </itemlayout>
                                 <focusedlayout height="200" width="100">
@@ -443,11 +457,12 @@
                                 </focusedlayout>
                             </control>
                         </control>
-                        <!--- More Information Panel -->
+                        <!--- Director Information Panel -->
                         <control type="group">
-                                <description>More information Panel</description>
-                                <left>600</left>
-                                <top>60</top>
+                                <description>Director information Panel</description>
+                                <visible>Control.HasFocus(33205) | Control.HasFocus(53)</visible>
+                                <left>80</left>
+                                <top>110</top>
                                 <control type="image">
                                     <left>0</left>
                                     <top>0</top>
@@ -455,15 +470,14 @@
                                     <height>230</height>
                                     <texture background="false" border="10">RecentAddedBack.png</texture>
                                 </control>
-				<control type="panel" id="33302">
+				<control type="panel" id="53">
 					<left>15</left>
 					<top>15</top>
 					<width>500</width>
 					<height>200</height>
-					<onleft>50</onleft>
-					<onright>50</onright>
-					<onup condition="!ListItem.IsPlaying">8</onup>
-					<onup condition="ListItem.IsPlaying">33201</onup>
+					<onleft>53</onleft>
+					<onright>53</onright>
+					<onup>33202</onup>
                                         <ondown>33203</ondown>
 					<viewtype label="">list</viewtype>
 					<pagecontrol>61</pagecontrol>
@@ -474,7 +488,7 @@
 							<width>100</width>
                                                         <height>150</height>
                                                         <aspectratio aligny="top">scale</aspectratio>
-							<texture background="true">$INFO[ListItem.Icon]</texture>
+							<texture fallback="DefaultVideoCover.png" background="true">$INFO[ListItem.Icon]</texture>
 							<bordertexture border="2">thumbs/panel_border3.png</bordertexture>
 							<bordersize>2</bordersize>
 						</control>
@@ -496,7 +510,7 @@
 							<textcolor>grey</textcolor>
 							<shadowcolor>shadow</shadowcolor>
 							<selectedcolor>selected</selectedcolor>
-							<label>$INFO[ListItem.Label]</label>
+							<label>$INFO[ListItem.Year] - $INFO[ListItem.Label]</label>
 						</control>
 					</itemlayout>
 					<focusedlayout height="200" width="100">
@@ -509,7 +523,7 @@
 								<width>100</width>
                                                                 <height>150</height>
 								<aspectratio aligny="top">scale</aspectratio>
-								<texture background="true">$INFO[ListItem.Icon]</texture>
+								<texture fallback="DefaultVideoCover.png" background="true">$INFO[ListItem.Icon]</texture>
 								<bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
 								<bordersize>3</bordersize>
 							</control>
@@ -608,6 +622,14 @@
                                         <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
                                         <onclick>noop</onclick>
                                     </control>
+                                    <control type="button" id="33205">
+                                        <width>50</width>
+                                        <onright>53</onright>
+                                        <aspectratio aligny="top">keep</aspectratio>
+                                        <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
+                                        <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
+                                        <onclick>noop</onclick>
+                                    </control>
                                     <control type="button" id="33203">
                                         <width>50</width>
                                         <onright>52</onright>
@@ -643,6 +665,8 @@
                                     <width>100</width>
                                     <aspectratio aligny="top">keep</aspectratio>
                                     <texture background="false">$VAR[PosterThumb]</texture>
+                                    <bordertexture border="7">thumbs/thumb_shadow_white.png</bordertexture>
+                                    <bordersize>3</bordersize>
                                 </control>
                                 <control type="group">
                                     <description>Movie Info Details</description>
