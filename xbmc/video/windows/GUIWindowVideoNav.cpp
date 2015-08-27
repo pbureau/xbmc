@@ -143,7 +143,7 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
         if( message.GetNumStringParams()>1 && StringUtils::EqualsNoCase(message.GetStringParam(1), "AutoInfo"))
         {
           CGUIMessage m(ACTION_AUTO_INFO, GetID(), 0);
-          CApplicationMessenger::Get().SendGUIMessage(m, GetID(), false);
+          CApplicationMessenger::GetInstance().SendGUIMessage(m, GetID(), false);
         }
 
       return true;

@@ -125,7 +125,7 @@ bool CGUIDialogVideoInfo::OnMessage(CGUIMessage& message)
       if (dbs.Open())
       {
         CLog::Log(LOGDEBUG, "Saving settings for %s", m_movieItem->GetPath().c_str());
-        dbs.SetVideoSettings(m_movieItem->GetPath(), CMediaSettings::Get().GetCurrentVideoSettings());
+        dbs.SetVideoSettings(m_movieItem->GetPath(), CMediaSettings::GetInstance().GetCurrentVideoSettings());
         dbs.Close();
       }
     }
@@ -268,10 +268,10 @@ void CGUIDialogVideoInfo::SelectAudioStream(int iItem, bool m_isPlaying)
   else
   {
     // only change the audio stream if it is different from current Settings
-    if (CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream != iItem)
+    if (CMediaSettings::GetInstance().GetCurrentVideoSettings().m_AudioStream != iItem)
     {
       // Set the audio stream to the one selected
-      CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream = iItem;
+      CMediaSettings::GetInstance().GetCurrentVideoSettings().m_AudioStream = iItem;
     }
   }
 }
@@ -284,7 +284,7 @@ void CGUIDialogVideoInfo::SelectSubtitleStream(int iItem, bool m_isPlaying)
     if(g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
       g_application.m_pPlayer->SetSubtitleVisible(false);
     else
-      CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleOn = false;
+      CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleOn = false;
   }
   else
   {
@@ -296,12 +296,12 @@ void CGUIDialogVideoInfo::SelectSubtitleStream(int iItem, bool m_isPlaying)
     }
     else
     {
-      CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleOn = true;
+      CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleOn = true;
       // only change the audio stream if it is different from current Settings
-      if (CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream != iItem)
+      if (CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleStream != iItem)
       {
         // Set the audio stream to the one selected
-        CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream = iItem;
+        CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleStream = iItem;
       }
     }
   }
@@ -554,16 +554,16 @@ void CGUIDialogVideoInfo::Update()
   {
     CPlayerOptions options;
     // If movie is not playing, Create a temporary player
-    eNewCore  = CPlayerCoreFactory::Get().GetDefaultPlayer(*m_movieItem);
+    eNewCore  = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(*m_movieItem);
     m_pPlayer = new CApplicationPlayer;
 
     m_pPlayer->CreatePlayer(eNewCore, g_application);
     // Load stream information from file
     m_pPlayer->PreloadFileInfo(*m_movieItem, options);
     // Set stream and subtitle from video settings
-    audioStream     = CMediaSettings::Get().GetCurrentVideoSettings().m_AudioStream;
-    subtitleStream  = CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleStream;
-    subtitlesOnFlag = CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleOn;
+    audioStream     = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_AudioStream;
+    subtitleStream  = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleStream;
+    subtitlesOnFlag = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleOn;
   }
 
   if( m_pPlayer->GetCurrentPlayer() == EPC_NONE )

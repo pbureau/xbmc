@@ -209,7 +209,7 @@ CGUIViewStateMusicDatabase::CGUIViewStateMusicDatabase(const CFileItemList& item
       // year
       AddSortMethod(SortByYear, 562, LABEL_MASKS("%F", "", strAlbumLeft, strAlbumRight));
 
-      const CViewState *viewState = CViewStateSettings::Get().Get("musicnavoneartist");
+      const CViewState *viewState = CViewStateSettings::GetInstance().Get("musicnavoneartist");
       SetSortMethod(viewState->m_sortDescription);
       SetViewAsControl(viewState->m_viewMode);
       SetSortOrder(viewState->m_sortDescription.sortOrder);
@@ -324,7 +324,7 @@ CGUIViewStateMusicDatabase::CGUIViewStateMusicDatabase(const CFileItemList& item
       AddSortMethod(SortByYear, 562, LABEL_MASKS("%T - %A", "%Y")); // Title, Artist, Year
       AddSortMethod(SortByDateAdded, 570, LABEL_MASKS("%A - %T", "%a"));  // Title - Artist, DateAdded | empty, empty
 
-      const CViewState *viewState = CViewStateSettings::Get().Get("musicnavonealbum");
+      const CViewState *viewState = CViewStateSettings::GetInstance().Get("musicnavonealbum");
       // the "All Albums" entries always default to SortByAlbum as this is most logical - user can always
       // change it and the change will be saved for this particular path
       if (dir.IsAllItem(items.GetPath()))
@@ -371,10 +371,10 @@ void CGUIViewStateMusicDatabase::SaveViewState()
       SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::GetInstance().Get("musicnavalbums"));
       break;
     case NODE_TYPE_ONEARTIST:
-      SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::Get().Get("musicnavoneartist"));
+      SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::GetInstance().Get("musicnavoneartist"));
       break;
     case NODE_TYPE_ONEALBUM:
-      SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::Get().Get("musicnavonealbum"));
+      SaveViewToDb(m_items.GetPath(), WINDOW_MUSIC_NAV, CViewStateSettings::GetInstance().Get("musicnavonealbum"));
       break;
     case NODE_TYPE_ALBUM_RECENTLY_ADDED:
     case NODE_TYPE_ALBUM_TOP100:
