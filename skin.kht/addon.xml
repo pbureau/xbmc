@@ -15,8 +15,11 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en_US">KHT skin by pbureau</summary>
+    <summary lang="en">KHT skin by pbureau</summary>
     <description lang="en_US">KHT is my skin.</description>
+    <description lang="en">KHT is my skin.</description>
     <disclaimer lang="en_US">HKT is the best skin</disclaimer>
+    <disclaimer lang="en">HKT is the best skin</disclaimer>
     <platform>all</platform>
   </extension>
 </addon>
