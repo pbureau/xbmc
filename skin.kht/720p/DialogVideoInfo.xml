@@ -84,13 +84,13 @@
                                 <control type="image">
                                     <left>0</left>
                                     <top>0</top>
-                                    <width>300</width>
-                                    <height>50</height>
-                                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                                    <width>320</width>
+                                    <height>72</height>
+                                    <texture background="false" border="10,10,20,20">RecentAddedBack.png</texture>
                                 </control>
                                 <control type="grouplist" id="33301">
-                                    <left>8</left>
-                                    <top>9</top>
+                                    <left>15</left>
+                                    <top>15</top>
                                     <orientation>horizontal</orientation>
                                     <control type="image">
                                             <colordiffuse>grey</colordiffuse>
@@ -647,18 +647,19 @@
                                     </control>
                             </control>
                         </control>
+                        <!--- Movie Plot back image -->
+                        <control type="image">
+                            <left>795</left>
+                            <top>390</top>
+                            <width>505</width>
+                            <height>350</height>
+                            <texture background="false" border="10">RecentAddedBack.png</texture>
+                        </control>
                         <!--- Movie Plot and Details -->
                         <control type="group">
 				<description>Movie Plot Panel</description>
                                 <left>802</left>
                                 <top>397</top>
-                                <control type="image">
-                                    <left>0</left>
-                                    <top>0</top>
-                                    <width>470</width>
-                                    <height>315</height>
-                                    <texture background="false" border="10">RecentAddedBack.png</texture>
-                                </control>
                                 <control type="image">
                                     <left>20</left>
                                     <top>15</top>
@@ -673,7 +674,7 @@
                                     <left>120</left>
                                     <top>10</top>
                                     <control type="label">
-                                            <width>314</width>
+                                            <width>340</width>
                                             <height>30</height>
                                             <top>0</top>
                                             <left>0</left>

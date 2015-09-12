@@ -12,21 +12,7 @@
 		<include>CommonBackground</include>
 		<include>ContentPanelBackgrounds</include>
 -->
-                        <!-- Page background -->
-                        <control type="image">
-                            <left>0</left>
-                            <top>0</top>
-                            <width>1280</width>
-                            <height>720</height>
-                            <aspectratio>scale</aspectratio>
-                            <texture background="true">$INFO[Container.Art(artist.fanart)]</texture>
-                            <!--
-                            <texture background="true">$INFO[ListItem.Art(fanart)]</texture>
-                            <visible>[!Skin.HasSetting(HideBackGroundFanart)|Window.IsVisible(movieinformation)] + !IsEmpty(ListItem.Property(Fanart_Image))</visible>
-                            <visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
-                            -->
-                            <include>VisibleFadeEffect</include>
-                        </control>
+                <include>CommonBackgroundMusic</include>
                 <control type="button" id="2201">
                     <description>Select allArtist view</description>
                     <textwidth>100</textwidth>

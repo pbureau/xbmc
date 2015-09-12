@@ -7,12 +7,13 @@
   <include>CommonBackground</include>
   <include>CommonBackgroundPlayer</include>
     <include>Clock</include>
+                <!-- Background image for Main Panel -->
                 <control type="image">
-                    <left>60</left>
-                    <top>60</top>
-                    <width>1150</width>
-                    <height>600</height>
-                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                    <left>45</left>
+                    <top>50</top>
+                    <width>820</width>
+                    <height>650</height>
+                    <texture background="false" border="10,10,20,20">RecentAddedBack.png</texture>
                 </control>
 		<control type="group">
 			<visible>Control.IsVisible(500)</visible>
@@ -21,266 +22,198 @@
 			<control type="panel" id="500">
 				<left>80</left>
 				<top>80</top>
-				<width>860</width>
+				<width>720</width>
 				<height>558</height>
 				<onleft>2</onleft>
 				<onright>60</onright>
-                <onup>-</onup>
+                                <onup>-</onup>
 				<ondown>-</ondown>
 				<viewtype label="21371">icons</viewtype>
 				<pagecontrol>60</pagecontrol>
 				<scrolltime>200</scrolltime>
 				<preloaditems>2</preloaditems>
                                 <labelxxxx type="label" id="6616">
-                                        <description>test de label</description>
-                                        <left>300</left>
-                                        <top>300</top>
-                                        <width>100</width>
-                                        <height>30</height>
+                                    <description>test de label</description>
+                                    <left>300</left>
+                                    <top>300</top>
+                                    <width>100</width>
+                                    <height>30</height>
+                                    <font>font12</font>
+                                    <label>totototototo</label>
+                                    <textcolor>grey2</textcolor>
+                                    <selectedcolor>selected</selectedcolor>
+                                    <align>center</align>
+                                    <aligny>center</aligny>
+                                </labelxxxx>
+                                <itemlayout
+                                    condition="Container.Content(Movies) |
+                                    Container.Content(Seasons) |
+                                    Container.Content(TVShows) |
+                                    Container.Content(Sets)" height="175"
+                                    width="120">
+                                    <control type="image">
+                                        <left>1</left>
+                                        <top>0</top>
+                                        <width>120</width>
+                                        <height>175</height>
+                                        <bordertexture border="5">button-nofocus.png</bordertexture>
+                                        <bordersize>5</bordersize>
+                                        <texture background="true">$VAR[PosterThumb]</texture>
+                                        <aspectratio>scale</aspectratio>
+                                    </control>
+                                    <control type="label">
+                                        <left>5</left>
+                                        <top>150</top>
+                                        <width>110</width>
+                                        <height>13</height>
                                         <font>font12</font>
-                                        <label>totototototo</label>
                                         <textcolor>grey2</textcolor>
                                         <selectedcolor>selected</selectedcolor>
                                         <align>center</align>
                                         <aligny>center</aligny>
-                                </labelxxxx>
-				<itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" height="163" width="110">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>107</width>
-						<height>80</height>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>!Container.Content(Episodes)</visible>
-					</control>
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>107</width>
-						<height>80</height>
-						<aspectratio>scale</aspectratio>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<visible>Container.Content(Episodes)</visible>
-					</control>
-					<control type="label">
-						<left>8</left>
-						<top>10</top>
-						<width>100</width>
-						<height>13</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-				</itemlayout>
-				<focusedlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" height="163" width="110">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>107</width>
-						<height>80</height>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>!Container.Content(Episodes)</visible>
-					</control>
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>107</width>
-						<height>80</height>
-						<aspectratio>scale</aspectratio>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<visible>Container.Content(Episodes)</visible>
-					</control>
-					<control type="label">
-						<left>8</left>
-						<top>10</top>
-						<width>100</width>
-						<height>13</height>
-						<font>font12</font>
-						<textcolor>white</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-				</focusedlayout>
-				<itemlayout condition="Container.Content(Movies) | Container.Content(Seasons) | Container.Content(TVShows) | Container.Content(Sets)" height="163" width="110">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>100</width>
-						<height>150</height>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$VAR[PosterThumb]</texture>
-						<aspectratio>scale</aspectratio>
-					</control>
-					<control type="label">
-						<left>0</left>
-						<top>150</top>
-						<width>100</width>
-						<height>13</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-				</itemlayout>
-				<focusedlayout condition="Container.Content(Movies) | Container.Content(Seasons) | Container.Content(TVShows) | Container.Content(Sets)" height="163" width="110">
+                                        <info>ListItem.Label</info>
+                                    </control>
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <aspectratio>keep</aspectratio>
+                                        <texture>$INFO[ListItem.Overlay]</texture>
+                                    </control>
+                                </itemlayout>
+                                <focusedlayout
+                                    condition="Container.Content(Movies) |
+                                    Container.Content(Seasons) |
+                                    Container.Content(TVShows) |
+                                    Container.Content(Sets)" height="163"
+                                    width="120">
                                     <control type="group">
                                         <animation type="Focus" reversible="false">
-                                                <effect type="zoom" start="95" end="120" time="300" tween="sine" easing="inout" center="auto" />
-                                                <effect type="fade" start="80" end="100" time="300" />
+                                            <effect type="zoom" start="95" end="120" time="300" tween="sine" easing="inout" center="auto" />
+                                            <effect type="fade" start="80" end="100" time="300" />
                                         </animation>
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>100</width>
-						<height>150</height>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$VAR[PosterThumb]</texture>
-						<aspectratio>scale</aspectratio>
-					</control>
-					<control type="label">
-						<left>0</left>
-						<top>150</top>
-						<width>100</width>
-						<height>13</height>
-						<font>font12</font>
-						<textcolor>white</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
+                                        <control type="image">
+                                            <left>1</left>
+                                            <top>0</top>
+                                            <width>120</width>
+                                            <height>175</height>
+                                            <bordertexture border="5">folder-focus.png</bordertexture>
+                                            <bordersize>5</bordersize>
+                                            <texture background="true">$VAR[PosterThumb]</texture>
+                                            <aspectratio>scale</aspectratio>
+                                        </control>
+                                        <!--
+                                        <control type="label">
+                                            <left>0</left>
+                                            <top>150</top>
+                                            <width>120</width>
+                                            <height>13</height>
+                                            <font>font12</font>
+                                            <textcolor>white</textcolor>
+                                            <selectedcolor>selected</selectedcolor>
+                                            <align>center</align>
+                                            <aligny>center</aligny>
+                                            <info>ListItem.Label</info>
+                                        </control>
+                                        -->
+                                        <control type="image">
+                                            <left>0</left>
+                                            <top>0</top>
+                                            <width>30</width>
+                                            <height>30</height>
+                                            <aspectratio>keep</aspectratio>
+                                            <texture>$INFO[ListItem.Overlay]</texture>
+                                        </control>
                                     </control>
-				</focusedlayout>
-			</control>
-                        <!-- Right Info Panel - Movie details -->
-			<control type="group">
-				<left>850</left>
-				<top>80</top>
-				<control type="image">
-					<width>340</width>
-					<height>200</height>
-					<aspectratio>scale</aspectratio>
-					<texture background="true">$INFO[ListItem.Art(fanart)]</texture>
-					<fadetime>400</fadetime>
-					<bordertexture border="2">thumbs/panel_border3.png</bordertexture>
-					<bordersize>2</bordersize>
-				</control>
-				<control type="label">
-					<width>314</width>
-					<height>30</height>
-					<top>201</top>
-                                        <left>0</left>
-					<font>font16_title_bold</font>
-					<textcolor>grey</textcolor>
-					<scroll>true</scroll>
-					<label>$VAR[FloorLabelVar]</label>
-					<textoffsetx>6</textoffsetx>
-				</control>
-				<control type="image">
-					<left>315</left>
-					<top>210</top>
-					<width>25</width>
-					<height>18</height>
-					<aspectratio>keep</aspectratio>
-					<texture>$VAR[UnFocusHDIndicator]</texture>
-					<colordiffuse>grey</colordiffuse>
-				</control>
-                                <control type="button">
-                                          <width>340</width>
-                                          <top>232</top>
-                                          <left>0</left>
-                                          <height>50</height>
-                                          <font>font12</font>
-                                          <aligny>top</aligny>
-                                          <textcolor>grey2</textcolor>
-                                          <label>$INFO[ListItem.Genre,,[CR]]$VAR[VideoSubLabelVar]</label>
-                                          <texturefocus border="2">separator5.png</texturefocus>
-                                          <texturenofocus border="2">separator5.png</texturenofocus>
-                                          <onclick>noop</onclick>
-				</control>
-				<control type="textbox">
-					<label>$VAR[VideoPlotVar]</label>
-					<top>286</top>
-                                        <left>9</left>
-					<width>325</width>
-					<height>270</height>
-					<font>font12</font>
-                                        <textcolor>grey2</textcolor>
-                                        <focusedcolor>grey2</focusedcolor>
-                                        <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
-				</control>
+                                </focusedlayout>
+                            </control>
+                            <!-- Background image for Right Panel -->
+                            <control type="image">
+                                <left>815</left>
+                                <top>50</top>
+                                <width>428</width>
+                                <height>505</height>
+                                <texture background="false" border="10,10,20,20">RecentAddedBack.png</texture>
+                            </control>
+                            <!-- Right Info Panel - Movie details -->
+                            <control type="group">
+                                <left>840</left>
+                                <top>80</top>
+                                <control type="image">
+                                    <width>360</width>
+                                    <height>200</height>
+                                    <aspectratio>scale</aspectratio>
+                                    <texture background="true">$INFO[ListItem.Art(fanart)]</texture>
+                                <fadetime>400</fadetime>
+                                <bordertexture border="2">thumbs/panel_border3.png</bordertexture>
+                                <bordersize>2</bordersize>
+                            </control>
+                            <control type="label">
+                                <width>314</width>
+                                <height>30</height>
+                                <top>201</top>
+                                <left>0</left>
+                                <font>font16_title_bold</font>
+                                <textcolor>grey</textcolor>
+                                <scroll>true</scroll>
+                                <label>$VAR[FloorLabelVar]</label>
+                                <textoffsetx>6</textoffsetx>
+                            </control>
+                            <control type="image">
+                                <left>335</left>
+                                <top>210</top>
+                                <width>25</width>
+                                <height>18</height>
+                                <aspectratio>keep</aspectratio>
+                                <texture>$VAR[UnFocusHDIndicator]</texture>
+                                <colordiffuse>grey</colordiffuse>
+                            </control>
+                            <control type="button">
+                                <width>360</width>
+                                <top>232</top>
+                                <left>0</left>
+                                <height>50</height>
+                                <font>font12</font>
+                                <aligny>top</aligny>
+                                <textcolor>grey2</textcolor>
+                                <label>$INFO[ListItem.Genre,,[CR]]$VAR[VideoSubLabelVar]</label>
+                                <texturefocus border="2">separator5.png</texturefocus>
+                                <texturenofocus border="2">separator5.png</texturenofocus>
+                                <onclick>noop</onclick>
+                            </control>
+                            <control type="textbox">
+                                <label>$VAR[VideoPlotVar]</label>
+                                <top>286</top>
+                                <left>9</left>
+                                <width>345</width>
+                                <height>140</height>
+                                <font>font12</font>
+                                <textcolor>grey2</textcolor>
+                                <focusedcolor>grey2</focusedcolor>
+                                <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
+                            </control>
 <!--
-				<control type="scrollbar" id="61">
-					<left>677</left>
-					<top>555</top>
-					<width>14</width>
-					<height>342</height>
-					<onleft>50</onleft>
-					<onright>SetProperty(MediaMenu,True,home)</onright>
-					<onright>SetFocus(9050)</onright>
-					<ondown>61</ondown>
-					<onup>61</onup>
-					<showonepage>false</showonepage>
-					<texturesliderbackground>-</texturesliderbackground>
-					<texturesliderbar colordiffuse="55ffffff" border="1">scrollbar/texturesliderbar2.png</texturesliderbar>
-					<texturesliderbarfocus border="1">scrollbar/texturesliderbar2.png</texturesliderbarfocus>
-				</control>
+                                <control type="scrollbar" id="61">
+                                        <left>677</left>
+                                        <top>555</top>
+                                        <width>14</width>
+                                        <height>342</height>
+                                        <onleft>50</onleft>
+                                        <onright>SetProperty(MediaMenu,True,home)</onright>
+                                        <onright>SetFocus(9050)</onright>
+                                        <ondown>61</ondown>
+                                        <onup>61</onup>
+                                        <showonepage>false</showonepage>
+                                        <texturesliderbackground>-</texturesliderbackground>
+                                        <texturesliderbar colordiffuse="55ffffff" border="1">scrollbar/texturesliderbar2.png</texturesliderbar>
+                                        <texturesliderbarfocus border="1">scrollbar/texturesliderbar2.png</texturesliderbarfocus>
+                                </control>
 -->
-			</control>
+                        </control>
                         <!-- Scrollbar for main panel - To Be Removed? -->
 			<control type="scrollbar" id="60">
-				<left>1170</left>
+				<left>780</left>
 				<top>80</top>
 				<width>25</width>
 				<height>550</height>
