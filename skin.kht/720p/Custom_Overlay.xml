@@ -237,7 +237,6 @@
 			</control>
 
 			<!-- Dialog labels -->
-
 			<control type="label">
 				<width>780</width>
 				<height>21</height>
@@ -916,11 +915,10 @@
 		</control>
 
 		<!-- Path label -->
-
 		<control type="label">
 			<posx>15r</posx>
 			<posy>48</posy>
-			<width>780</width>
+			<width>1200</width>
 			<height>21</height>
 			<textcolor>FFFF0000</textcolor>
 			<shadowcolor>FF000000</shadowcolor>

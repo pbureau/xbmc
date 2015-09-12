@@ -56,13 +56,6 @@
 		<control type="group" id="35000">
                       <left>60</left>
                       <top>60</top>
-                      <control type="image">
-                          <left>0</left>
-                          <top>0</top>
-                          <width>1150</width>
-                          <height>600</height>
-                          <texture background="false" border="10">RecentAddedBack.png</texture>
-                      </control>
 <!--
 			<include>Window_OpenClose_Animation</include>		
 -->
@@ -118,6 +111,7 @@
 			</control>
 		</control>
 -->
+
                 <!-- Left Side Menu Slider -->
 		<control type="group">
 			<left>-250</left>

@@ -544,7 +544,7 @@
 								<font>font10</font>
 								<selectedcolor>selected</selectedcolor>
 								<shadowcolor>shadow</shadowcolor>
-								<label>$INFO[ListItem.Label]</label>
+                                <label>$INFO[ListItem.Year] - $INFO[ListItem.Label]</label>
 								<autoscroll time="2000" delay="400" repeat="3000">true</autoscroll>
 								<animation effect="fade" start="100" end="40" time="300" tween="sine" easing="inout" condition="!Control.HasFocus(50)">Conditional</animation>
 							</control>

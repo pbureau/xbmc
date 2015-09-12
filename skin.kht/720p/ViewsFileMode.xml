@@ -248,138 +248,146 @@
 		</control>
 	</include>
 	<include name="AllAlbumsView">
-		<control type="group">
-			<visible>Control.IsVisible(500)</visible>
-			<include>VisibleFadeEffect</include>
-                        <!-- Main Panel - Album library -->
-			<control type="panel" id="500">
-				<left>20</left>
-				<top>20</top>
-				<width>800</width>
-				<height>550</height>
-				<onleft>2</onleft>
-				<onright>60</onright>
-				<onup>500</onup>
-				<ondown>500</ondown>
-				<viewtype label="Albums View">icon</viewtype>
-				<pagecontrol>60</pagecontrol>
-				<scrolltime>200</scrolltime>
-				<preloaditems>2</preloaditems>
-				<itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" 
-                                height="150" width="150">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>!Container.Content(Episodes)</visible>
-					</control>
-					<control type="label">
-						<left>0</left>
-						<top>122</top>
-						<width>120</width>
-						<height>25</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-<!--
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<aspectratio>scale</aspectratio>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<visible>Container.Content(Episodes)</visible>
-					</control>
--->
-				</itemlayout>
-				<focusedlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" height="186" width="216">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>!Container.Content(Episodes)</visible>
-					</control>
-					<control type="label">
-						<left>0</left>
-						<top>122</top>
-						<width>120</width>
-						<height>25</height>
-						<font>font12</font>
-						<textcolor>white</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-<!--
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>scale</aspectratio>
-						<visible>Container.Content(Episodes)</visible>
-					</control>
--->
-				</focusedlayout>
-			</control>
-			<control type="scrollbar" id="60">
-				<left>1170</left>
-				<top>80</top>
-				<width>25</width>
-				<height>550</height>
-				<texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
-				<texturesliderbar border="2,16,2,16">ScrollBarV_bar.png</texturesliderbar>
-				<texturesliderbarfocus border="2,16,2,16">ScrollBarV_bar_focus.png</texturesliderbarfocus>
-				<textureslidernib>ScrollBarNib.png</textureslidernib>
-				<textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
-				<onleft>500</onleft>
-				<onright>2</onright>
-				<showonepage>false</showonepage>
-				<orientation>vertical</orientation>
-				<visible>Control.IsVisible(500)</visible>
-			</control>
-                        <!-- Right Info Panel - Album details -->
-			<control type="group">
-                            <left>750</left>
+            <control type="group">
+                <visible>Control.IsVisible(500)</visible>
+                <include>VisibleFadeEffect</include>
+                <!-- Panel background image -->
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>1150</width>
+                    <height>600</height>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                </control>
+                <!-- Main Panel - Album library -->
+                <control type="panel" id="500">
+                    <left>20</left>
+                    <top>20</top>
+                    <width>800</width>
+                    <height>550</height>
+                    <onleft>2</onleft>
+                    <onright>60</onright>
+                    <onup>500</onup>
+                    <ondown>500</ondown>
+                    <viewtype label="Albums View">icon</viewtype>
+                    <pagecontrol>60</pagecontrol>
+                    <scrolltime>200</scrolltime>
+                    <preloaditems>2</preloaditems>
+                    <itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" 
+                        height="150" width="150">
+                        <control type="image">
+                            <left>1</left>
                             <top>0</top>
-                            <control type="image">
+                            <width>120</width>
+                            <height>120</height>
+                            <bordertexture border="5">button-nofocus.png</bordertexture>
+                            <bordersize>5</bordersize>
+                            <texture background="true">$INFO[Listitem.Icon]</texture>
+                            <aspectratio>keep</aspectratio>
+                            <visible>!Container.Content(Episodes)</visible>
+                        </control>
+                        <control type="label">
+                            <left>0</left>
+                            <top>122</top>
+                            <width>120</width>
+                            <height>25</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                            <info>ListItem.Label</info>
+                        </control>
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>30</width>
+                            <height>30</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Overlay]</texture>
+                        </control>
+<!--
+                                        <control type="image">
+                                                <left>1</left>
+                                                <top>0</top>
+                                                <width>120</width>
+                                                <height>120</height>
+                                                <aspectratio>scale</aspectratio>
+                                                <bordertexture border="5">button-nofocus.png</bordertexture>
+                                                <bordersize>5</bordersize>
+                                                <texture background="true">$INFO[Listitem.Icon]</texture>
+                                                <visible>Container.Content(Episodes)</visible>
+                                        </control>
+-->
+                                </itemlayout>
+                                <focusedlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" height="186" width="216">
+                                    <control type="image">
+                                        <left>1</left>
+                                        <top>0</top>
+                                        <width>120</width>
+                                        <height>120</height>
+                                        <bordertexture border="5">folder-focus.png</bordertexture>
+                                        <bordersize>5</bordersize>
+                                        <texture background="true">$INFO[Listitem.Icon]</texture>
+                                        <aspectratio>keep</aspectratio>
+                                        <visible>!Container.Content(Episodes)</visible>
+                                    </control>
+                                    <control type="label">
+                                        <left>0</left>
+                                        <top>122</top>
+                                        <width>120</width>
+                                        <height>25</height>
+                                        <font>font12</font>
+                                        <textcolor>white</textcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <align>center</align>
+                                        <aligny>center</aligny>
+                                        <info>ListItem.Label</info>
+                                    </control>
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <aspectratio>keep</aspectratio>
+                                        <texture>$INFO[ListItem.Overlay]</texture>
+                                    </control>
+<!--
+                                        <control type="image">
+                                                <left>1</left>
+                                                <top>0</top>
+                                                <width>120</width>
+                                                <height>120</height>
+                                                <bordertexture border="5">folder-focus.png</bordertexture>
+                                                <bordersize>5</bordersize>
+                                                <texture background="true">$INFO[Listitem.Icon]</texture>
+                                                <aspectratio>scale</aspectratio>
+                                                <visible>Container.Content(Episodes)</visible>
+                                        </control>
+-->
+                                </focusedlayout>
+                            </control>
+                            <control type="scrollbar" id="60">
+                                <left>1170</left>
+                                <top>80</top>
+                                <width>25</width>
+                                <height>550</height>
+                                <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
+                                <texturesliderbar border="2,16,2,16">ScrollBarV_bar.png</texturesliderbar>
+                                <texturesliderbarfocus border="2,16,2,16">ScrollBarV_bar_focus.png</texturesliderbarfocus>
+                                <textureslidernib>ScrollBarNib.png</textureslidernib>
+                                <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
+                                <onleft>500</onleft>
+                                <onright>2</onright>
+                                <showonepage>false</showonepage>
+                                <orientation>vertical</orientation>
+                                <visible>Control.IsVisible(500)</visible>
+                            </control>
+                            <!-- Right Info Panel - Album details -->
+                            <control type="group">
+                                <left>750</left>
+                                <top>0</top>
+                                <control type="image">
                                     <width>250</width>
                                     <height>250</height>
                                     <top>20</top>
@@ -389,8 +397,8 @@
                                     <texture background="true">$INFO[Listitem.Icon]</texture>
                                     <aspectratio>keep</aspectratio>
                                     <fadetime>400</fadetime>
-                            </control>
-                            <control type="label">
+                                </control>
+                                <control type="label">
                                     <width>380</width>
                                     <height>30</height>
                                     <top>272</top>
@@ -400,28 +408,28 @@
                                     <scroll>true</scroll>
                                     <label>$INFO[ListItem.Label]</label>
                                     <textoffsetx>6</textoffsetx>
-                            </control>
-                            <control type="button">
-                                <top>315</top>
-                                <left>0</left>
-                                <width>380</width>
-                                <height>90</height>
-                                <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
-                                <visible>Container.Content(albums)</visible>
-                            </control>
-                            <control type="textbox">
-                                <label>$VAR[MusicPlotVar]</label>
-                                <top>410</top>
-                                <left>0</left>
-                                <width>380</width>
-                                <height>160</height>
-                                <font>font12</font>
-                                <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
-                                <pagecontrol>61</pagecontrol>
+                                </control>
+                                <control type="button">
+                                    <top>315</top>
+                                    <left>0</left>
+                                    <width>380</width>
+                                    <height>90</height>
+                                    <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
+                                    <visible>Container.Content(albums)</visible>
+                                </control>
+                                <control type="textbox">
+                                    <label>$VAR[MusicPlotVar]</label>
+                                    <top>410</top>
+                                    <left>0</left>
+                                    <width>380</width>
+                                    <height>160</height>
+                                    <font>font12</font>
+                                    <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
+                                    <pagecontrol>61</pagecontrol>
+                                </control>
                             </control>
                         </control>
-		</control>
-	</include>
+                    </include>
 	<include name="OneAlbumView">
 		<control type="group">
 			<visible>Control.IsVisible(509)</visible>
@@ -598,138 +606,241 @@
 		</control>
 	</include>
 	<include name="OneArtistView">
-		<control type="group">
-			<visible>Control.IsVisible(506)</visible>
-			<include>VisibleFadeEffect</include>
-                        <!-- Main Panel - Artist details view -->
-			<control type="panel" id="506">
-				<left>20</left>
-				<top>20</top>
-				<width>800</width>
-				<height>550</height>
-				<onleft>2</onleft>
-				<onright>60</onright>
-				<onup>500</onup>
-				<ondown>500</ondown>
-				<viewtype label="One Artist View">icon</viewtype>
-				<pagecontrol>60</pagecontrol>
-				<scrolltime>200</scrolltime>
-				<preloaditems>2</preloaditems>
-				<itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" 
-                                height="150" width="150">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>!Container.Content(Episodes)</visible>
-					</control>
-					<control type="label">
-						<left>0</left>
-						<top>122</top>
-						<width>120</width>
-						<height>25</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-<!--
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<aspectratio>scale</aspectratio>
-						<bordertexture border="5">button-nofocus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<visible>Container.Content(Episodes)</visible>
-					</control>
--->
-				</itemlayout>
-				<focusedlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" height="186" width="216">
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>!Container.Content(Episodes)</visible>
-					</control>
-					<control type="label">
-						<left>0</left>
-						<top>122</top>
-						<width>120</width>
-						<height>25</height>
-						<font>font12</font>
-						<textcolor>white</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>center</align>
-						<aligny>center</aligny>
-						<info>ListItem.Label</info>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>30</width>
-						<height>30</height>
-						<aspectratio>keep</aspectratio>
-						<texture>$INFO[ListItem.Overlay]</texture>
-					</control>
-<!--
-					<control type="image">
-						<left>1</left>
-						<top>0</top>
-						<width>120</width>
-						<height>120</height>
-						<bordertexture border="5">folder-focus.png</bordertexture>
-						<bordersize>5</bordersize>
-						<texture background="true">$INFO[Listitem.Icon]</texture>
-						<aspectratio>scale</aspectratio>
-						<visible>Container.Content(Episodes)</visible>
-					</control>
--->
-				</focusedlayout>
-			</control>
-			<control type="scrollbar" id="60">
-				<left>1170</left>
-				<top>80</top>
-				<width>25</width>
-				<height>550</height>
-				<texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
-				<texturesliderbar border="2,16,2,16">ScrollBarV_bar.png</texturesliderbar>
-				<texturesliderbarfocus border="2,16,2,16">ScrollBarV_bar_focus.png</texturesliderbarfocus>
-				<textureslidernib>ScrollBarNib.png</textureslidernib>
-				<textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
-				<onleft>500</onleft>
-				<onright>2</onright>
-				<showonepage>false</showonepage>
-				<orientation>vertical</orientation>
-				<visible>Control.IsVisible(500)</visible>
-			</control>
-                        <!-- Right Info Panel - Album details -->
-			<control type="group">
-                            <left>750</left>
+            <control type="group">
+                <visible>Control.IsVisible(506)</visible>
+                <include>VisibleFadeEffect</include>
+                <!-- Panel background image -->
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>720</width>
+                    <height>300</height>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                </control>
+                <!-- Main Panel - Albums list view -->
+                <control type="panel" id="506">
+                    <left>20</left>
+                    <top>20</top>
+                    <width>700</width>
+                    <height>250</height>
+                    <onleft>2</onleft>
+                    <onright>60</onright>
+                    <onup>500</onup>
+                    <ondown>500</ondown>
+                    <viewtype label="One Artist View">icon</viewtype>
+                    <pagecontrol>60</pagecontrol>
+                    <scrolltime>200</scrolltime>
+                    <preloaditems>2</preloaditems>
+                    <itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" 
+                        height="150" width="150">
+                        <control type="image">
+                            <left>1</left>
                             <top>0</top>
+                            <width>120</width>
+                            <height>120</height>
+                            <bordertexture border="5">button-nofocus.png</bordertexture>
+                            <bordersize>5</bordersize>
+                            <texture background="true">$INFO[Listitem.Icon]</texture>
+                            <aspectratio>keep</aspectratio>
+                            <visible>!Container.Content(Episodes)</visible>
+                        </control>
+                        <control type="label">
+                            <left>0</left>
+                            <top>122</top>
+                            <width>120</width>
+                            <height>25</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                            <info>ListItem.Label</info>
+                        </control>
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>30</width>
+                            <height>30</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Overlay]</texture>
+                        </control>
+<!--
+                                        <control type="image">
+                                                <left>1</left>
+                                                <top>0</top>
+                                                <width>120</width>
+                                                <height>120</height>
+                                                <aspectratio>scale</aspectratio>
+                                                <bordertexture border="5">button-nofocus.png</bordertexture>
+                                                <bordersize>5</bordersize>
+                                                <texture background="true">$INFO[Listitem.Icon]</texture>
+                                                <visible>Container.Content(Episodes)</visible>
+                                        </control>
+-->
+                                </itemlayout>
+                                <focusedlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" height="186" width="216">
+                                    <control type="image">
+                                        <left>1</left>
+                                        <top>0</top>
+                                        <width>120</width>
+                                        <height>120</height>
+                                        <bordertexture border="5">folder-focus.png</bordertexture>
+                                        <bordersize>5</bordersize>
+                                        <texture background="true">$INFO[Listitem.Icon]</texture>
+                                        <aspectratio>keep</aspectratio>
+                                        <visible>!Container.Content(Episodes)</visible>
+                                    </control>
+                                    <control type="label">
+                                        <left>0</left>
+                                        <top>122</top>
+                                        <width>120</width>
+                                        <height>25</height>
+                                        <font>font12</font>
+                                        <textcolor>white</textcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <align>center</align>
+                                        <aligny>center</aligny>
+                                        <info>ListItem.Label</info>
+                                    </control>
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <aspectratio>keep</aspectratio>
+                                        <texture>$INFO[ListItem.Overlay]</texture>
+                                    </control>
+<!--
+                                        <control type="image">
+                                                <left>1</left>
+                                                <top>0</top>
+                                                <width>120</width>
+                                                <height>120</height>
+                                                <bordertexture border="5">folder-focus.png</bordertexture>
+                                                <bordersize>5</bordersize>
+                                                <texture background="true">$INFO[Listitem.Icon]</texture>
+                                                <aspectratio>scale</aspectratio>
+                                                <visible>Container.Content(Episodes)</visible>
+                                        </control>
+-->
+                                </focusedlayout>
+                            </control>
+                            <control type="scrollbar" id="60">
+                                <left>1170</left>
+                                <top>80</top>
+                                <width>25</width>
+                                <height>550</height>
+                                <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
+                                <texturesliderbar border="2,16,2,16">ScrollBarV_bar.png</texturesliderbar>
+                                <texturesliderbarfocus border="2,16,2,16">ScrollBarV_bar_focus.png</texturesliderbarfocus>
+                                <textureslidernib>ScrollBarNib.png</textureslidernib>
+                                <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
+                                <onleft>500</onleft>
+                                <onright>2</onright>
+                                <showonepage>false</showonepage>
+                                <orientation>vertical</orientation>
+                                <visible>Control.IsVisible(500)</visible>
+                            </control>
+                            <!-- Panel background image -->
                             <control type="image">
+                                <left>0</left>
+                                <top>300</top>
+                                <width>720</width>
+                                <height>350</height>
+                                <texture background="false" border="10">RecentAddedBack.png</texture>
+                            </control>
+                            <!-- Discography Panel -->
+                            <control type="panel" id="1506">
+                                <left>20</left>
+                                <top>320</top>
+                                <width>700</width>
+                                <height>300</height>
+                                <onleft>2</onleft>
+                                <onright>60</onright>
+                                <onup>500</onup>
+                                <ondown>500</ondown>
+                                <pagecontrol>60</pagecontrol>
+                                <scrolltime>200</scrolltime>
+                                <preloaditems>2</preloaditems>
+                                <itemlayout height="150" width="150">
+                                    <control type="image">
+                                        <left>1</left>
+                                        <top>0</top>
+                                        <width>120</width>
+                                        <height>120</height>
+                                        <bordertexture border="5">button-nofocus.png</bordertexture>
+                                        <bordersize>5</bordersize>
+                                        <texture  fallback="DefaultAlbumCover.png" background="true">$INFO[Listitem.Icon]</texture>
+                                        <aspectratio>keep</aspectratio>
+                                    </control>
+                                    <control type="label">
+                                        <left>0</left>
+                                        <top>122</top>
+                                        <width>120</width>
+                                        <height>25</height>
+                                        <font>font12</font>
+                                        <textcolor>grey2</textcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <align>center</align>
+                                        <aligny>center</aligny>
+                                        <info>ListItem.Label</info>
+                                    </control>
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <aspectratio>keep</aspectratio>
+                                        <texture>$INFO[ListItem.Overlay]</texture>
+                                    </control>
+                                </itemlayout>
+                                <focusedlayout height="150" width="150">
+                                    <control type="image">
+                                        <left>1</left>
+                                        <top>0</top>
+                                        <width>120</width>
+                                        <height>120</height>
+                                        <bordertexture border="5">folder-focus.png</bordertexture>
+                                        <bordersize>5</bordersize>
+                                        <texture fallback="DefaultAlbumCover.png" background="true">$INFO[Listitem.Icon]</texture>
+                                        <aspectratio>keep</aspectratio>
+                                    </control>
+                                    <control type="label">
+                                        <left>0</left>
+                                        <top>122</top>
+                                        <width>120</width>
+                                        <height>25</height>
+                                        <font>font12</font>
+                                        <textcolor>white</textcolor>
+                                        <selectedcolor>selected</selectedcolor>
+                                        <align>center</align>
+                                        <aligny>center</aligny>
+                                        <info>ListItem.Label</info>
+                                    </control>
+                                    <control type="image">
+                                        <left>0</left>
+                                        <top>0</top>
+                                        <width>30</width>
+                                        <height>30</height>
+                                        <aspectratio>keep</aspectratio>
+                                        <texture>$INFO[ListItem.Overlay]</texture>
+                                    </control>
+                                </focusedlayout>
+                                <content target="music">plugin://script.extendedinfo?info=discography&amp;&amp;artistname=$INFO[ListItem.Artist]</content>
+                            </control>
+                            <!-- Panel background image -->
+                            <control type="image">
+                                <left>730</left>
+                                <top>0</top>
+                                <width>420</width>
+                                <height>650</height>
+                                <texture background="false" border="10">RecentAddedBack.png</texture>
+                            </control>
+                            <!-- Right Info Panel - Album details -->
+                            <control type="group">
+                                <left>750</left>
+                                <top>0</top>
+                                <control type="image">
                                     <width>250</width>
                                     <height>250</height>
                                     <top>20</top>
@@ -739,8 +850,8 @@
                                     <texture background="true">$INFO[Listitem.Icon]</texture>
                                     <aspectratio>keep</aspectratio>
                                     <fadetime>400</fadetime>
-                            </control>
-                            <control type="label">
+                                </control>
+                                <control type="label">
                                     <width>380</width>
                                     <height>30</height>
                                     <top>272</top>
@@ -750,27 +861,27 @@
                                     <scroll>true</scroll>
                                     <label>$INFO[ListItem.Label]</label>
                                     <textoffsetx>6</textoffsetx>
-                            </control>
-                            <control type="button">
-                                <top>315</top>
-                                <left>0</left>
-                                <width>380</width>
-                                <height>90</height>
-                                <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
-                                <visible>Container.Content(albums)</visible>
-                            </control>
-                            <control type="textbox">
-                                <label>$VAR[MusicPlotVar]</label>
-                                <top>410</top>
-                                <left>0</left>
-                                <width>380</width>
-                                <height>160</height>
-                                <font>font12</font>
-                                <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
-                                <pagecontrol>61</pagecontrol>
+                                </control>
+                                <control type="button">
+                                    <top>315</top>
+                                    <left>0</left>
+                                    <width>380</width>
+                                    <height>90</height>
+                                    <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
+                                    <visible>Container.Content(albums)</visible>
+                                </control>
+                                <control type="textbox">
+                                    <label>$VAR[MusicPlotVar]</label>
+                                    <top>410</top>
+                                    <left>0</left>
+                                    <width>380</width>
+                                    <height>160</height>
+                                    <font>font12</font>
+                                    <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
+                                    <pagecontrol>61</pagecontrol>
+                                </control>
                             </control>
                         </control>
-		</control>
 	</include>
 	<include name="WideIconView">
 		<control type="group">
@@ -850,290 +961,298 @@
 		</control>
 	</include>
 	<include name="AllSongsView">
-		<control type="group">
-			<visible>Control.IsVisible(51)</visible>
-			<include>VisibleFadeEffect</include>
-                        <left>10</left>
-                        <top>17</top>
-                        <!-- Main files list - all songs -->
-			<control type="list" id="51">
-				<left>0</left>
-				<top>0</top>
-				<width>600</width>
-				<height>561</height>
-				<onleft>2</onleft>
-				<onright>60</onright>
-				<onup>51</onup>
-				<ondown>51</ondown>
-				<viewtype label="All Songs">list</viewtype>
-				<pagecontrol>60</pagecontrol>
-				<scrolltime>200</scrolltime>
-				<itemlayout height="40" width="1080">
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>1080</width>
-						<height>41</height>
-						<texture border="0,2,0,2">MenuItemNF.png</texture>
-					</control>
-					<control type="image">
-						<left>10</left>
-						<top>4</top>
-						<width>40</width>
-						<height>32</height>
-						<texture background="true">$INFO[ListItem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-					</control>
-					<control type="label">
-						<left>60</left>
-						<top>0</top>
-						<width>950</width>
-						<height>40</height>
-						<font>font13</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>left</align>
-						<aligny>center</aligny>
-                                                <label>$INFO[ListItem.Artist] • $INFO[ListItem.Title]</label>
-					</control>
-					<control type="label">
-						<left>60</left>
-						<top>0</top>
-						<width>1000</width>
-						<height>40</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>right</align>
-						<aligny>center</aligny>
-						<label>$INFO[ListItem.Label2]</label>
-						<visible>!Window.IsVisible(Videos)</visible>
-					</control>
-					<control type="label">
-						<left>65</left>
-						<top>0</top>
-						<width>940</width>
-						<height>40</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>right</align>
-						<aligny>center</aligny>
-						<label>$INFO[ListItem.Label2]</label>
-						<visible>Window.IsVisible(Videos)</visible>
-						<animation effect="slide" start="0,0" end="40,0" delay="0" time="0" condition="![Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]">conditional</animation>
-					</control>
-					<control type="image">
-						<left>1010</left>
-						<top>8</top>
-						<width>40</width>
-						<height>26</height>
-						<texture>$INFO[ListItem.VideoResolution,flagging/lists/,.png]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-						<visible>!ListItem.IsStereoscopic</visible>
-					</control>
-					<control type="image">
-						<left>1010</left>
-						<top>8</top>
-						<width>40</width>
-						<height>26</height>
-						<texture>flagging/lists/3D.png</texture>
-						<visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-						<visible>ListItem.IsStereoscopic</visible>
-					</control>
-					<control type="image">
-						<left>1050</left>
-						<top>14</top>
-						<width>20</width>
-						<height>16</height>
-						<texture>$INFO[ListItem.Overlay]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>Window.IsVisible(Videos) + !ListItem.IsResumable</visible>
-					</control>
-					<control type="image">
-						<left>1050</left>
-						<top>14</top>
-						<width>16</width>
-						<height>16</height>
-						<texture>OverlayWatching.png</texture>
-						<visible>Window.IsVisible(Videos) + ListItem.IsResumable</visible>
-					</control>
-				</itemlayout>
-				<focusedlayout height="40" width="1080">
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>1080</width>
-						<height>41</height>
-						<texture border="0,2,0,2">MenuItemNF.png</texture>
-						<visible>!Control.HasFocus(51)</visible>
-						<include>VisibleFadeEffect</include>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>1080</width>
-						<height>41</height>
-						<texture border="0,2,0,2">MenuItemFO.png</texture>
-						<visible>Control.HasFocus(51)</visible>
-						<include>VisibleFadeEffect</include>
-					</control>
-					<control type="image">
-						<left>875</left>
-						<top>4</top>
-						<width>200</width>
-						<height>33</height>
-						<texture border="0,0,14,0">MediaItemDetailBG.png</texture>
-						<visible>Control.HasFocus(51) + !IsEmpty(ListItem.Label2)</visible>
-					</control>
-					<control type="image">
-						<left>10</left>
-						<top>4</top>
-						<width>40</width>
-						<height>32</height>
-						<texture background="true">$INFO[ListItem.Icon]</texture>
-						<aspectratio>keep</aspectratio>
-					</control>
-					<control type="label">
-						<left>60</left>
-						<top>0</top>
-						<width>950</width>
-						<height>40</height>
-						<font>font13</font>
-						<textcolor>white</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>left</align>
-						<aligny>center</aligny>
-                                                <label>$INFO[ListItem.Artist] • $INFO[ListItem.Title]</label>
-					</control>
-					<control type="label">
-						<left>60</left>
-						<top>0</top>
-						<width>1000</width>
-						<height>40</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>right</align>
-						<aligny>center</aligny>
-						<label>$INFO[ListItem.Label2]</label>
-						<visible>!Window.IsVisible(Videos)</visible>
-					</control>
-					<control type="label">
-						<left>65</left>
-						<top>0</top>
-						<width>940</width>
-						<height>40</height>
-						<font>font12</font>
-						<textcolor>grey2</textcolor>
-						<selectedcolor>selected</selectedcolor>
-						<align>right</align>
-						<aligny>center</aligny>
-						<label>$INFO[ListItem.Label2]</label>
-						<visible>Window.IsVisible(Videos)</visible>
-						<animation effect="slide" start="0,0" end="40,0" delay="0" time="0" condition="![Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]">conditional</animation>
-					</control>
-					<control type="image">
-						<left>1010</left>
-						<top>8</top>
-						<width>40</width>
-						<height>26</height>
-						<texture>$INFO[ListItem.VideoResolution,flagging/lists/,.png]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-						<visible>!ListItem.IsStereoscopic</visible>
-					</control>
-					<control type="image">
-						<left>1010</left>
-						<top>8</top>
-						<width>40</width>
-						<height>26</height>
-						<texture>flagging/lists/3D.png</texture>
-						<visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-						<visible>ListItem.IsStereoscopic</visible>
-					</control>
-					<control type="image">
-						<left>1050</left>
-						<top>14</top>
-						<width>20</width>
-						<height>16</height>
-						<texture>$INFO[ListItem.Overlay]</texture>
-						<aspectratio>keep</aspectratio>
-						<visible>Window.IsVisible(Videos) + !ListItem.IsResumable</visible>
-					</control>
-					<control type="image">
-						<left>1050</left>
-						<top>14</top>
-						<width>16</width>
-						<height>16</height>
-						<texture>OverlayWatching.png</texture>
-						<visible>Window.IsVisible(Videos) + ListItem.IsResumable</visible>
-					</control>
-				</focusedlayout>
-			</control>
-                        <!-- Right info panel - details on current song -->
-			<control type="group">
-                            <left>640</left>
+            <control type="group">
+                <visible>Control.IsVisible(51)</visible>
+                <include>VisibleFadeEffect</include>
+                <left>10</left>
+                <top>17</top>
+                <!-- Panel background image -->
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>1150</width>
+                    <height>600</height>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                </control>
+                <!-- Main files list - all songs -->
+                <control type="list" id="51">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>600</width>
+                    <height>561</height>
+                    <onleft>2</onleft>
+                    <onright>60</onright>
+                    <onup>51</onup>
+                    <ondown>51</ondown>
+                    <viewtype label="All Songs">list</viewtype>
+                    <pagecontrol>60</pagecontrol>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout height="40" width="1080">
+                        <control type="image">
+                            <left>0</left>
                             <top>0</top>
-                            <control type="image">
-                                    <width>250</width>
-                                    <height>250</height>
-                                    <top>20</top>
-                                        <left>0</left>
-                                    <bordertexture border="5">button-nofocus.png</bordertexture>
-                                    <bordersize>5</bordersize>
-                                    <texture background="true">$INFO[Listitem.Icon]</texture>
-                                    <aspectratio>keep</aspectratio>
-                                    <fadetime>400</fadetime>
-                            </control>
-                            <control type="label">
-                                    <width>480</width>
-                                    <height>30</height>
-                                    <top>272</top>
-                                    <left>0</left>
-                                    <font>font16_bold</font>
-                                    <textcolor>grey</textcolor>
-                                    <scroll>true</scroll>
-                                    <label>[UPPERCASE]$INFO[ListItem.Album][/UPPERCASE] • $LOCALIZE[554] $INFO[ListItem.TrackNumber]</label>
-                                    <textoffsetx>6</textoffsetx>
-                            </control>
-                            <control type="button">
-                                <top>315</top>
-                                <left>0</left>
-                                <width>480</width>
-                                <height>90</height>
-                                <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
-                            </control>
-                            <control type="label">
-                                    <width>480</width>
-                                    <height>30</height>
-                                    <top>400</top>
-                                    <left>0</left>
-                                    <font>font16_bold</font>
-                                    <textcolor>grey</textcolor>
-                                    <scroll>true</scroll>
-                                    <label>Ne pas oublier, forcer le tri par nom de l'artiste</label>
-                                    <textoffsetx>6</textoffsetx>
-                            </control>
+                            <width>1080</width>
+                            <height>41</height>
+                            <texture border="0,2,0,2">MenuItemNF.png</texture>
                         </control>
-                        <!-- Scrollbar for the main file list - To Be Removed ?? -->
-			<control type="scrollbar" id="60">
-				<left>1170</left>
-				<top>80</top>
-				<width>25</width>
-				<height>550</height>
-				<texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
-				<texturesliderbar border="0,14,0,14">ScrollBarV_bar.png</texturesliderbar>
-				<texturesliderbarfocus border="0,14,0,14">ScrollBarV_bar_focus.png</texturesliderbarfocus>
-				<textureslidernib>ScrollBarNib.png</textureslidernib>
-				<textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
-				<onleft>50</onleft>
-				<onright>2</onright>
-				<showonepage>false</showonepage>
-				<orientation>vertical</orientation>
-				<visible>Control.IsVisible(51)</visible>
-			</control>
-		</control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>4</top>
+                            <width>40</width>
+                            <height>32</height>
+                            <texture background="true">$INFO[ListItem.Icon]</texture>
+                            <aspectratio>keep</aspectratio>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>950</width>
+                            <height>40</height>
+                            <font>font13</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>left</align>
+                            <aligny>center</aligny>
+                            <label>$INFO[ListItem.Artist] • $INFO[ListItem.Title]</label>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>1000</width>
+                            <height>40</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>right</align>
+                            <aligny>center</aligny>
+                            <label>$INFO[ListItem.Label2]</label>
+                            <visible>!Window.IsVisible(Videos)</visible>
+                        </control>
+                        <control type="label">
+                            <left>65</left>
+                            <top>0</top>
+                            <width>940</width>
+                            <height>40</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>right</align>
+                            <aligny>center</aligny>
+                            <label>$INFO[ListItem.Label2]</label>
+                            <visible>Window.IsVisible(Videos)</visible>
+                            <animation effect="slide" start="0,0" end="40,0" delay="0" time="0" condition="![Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]">conditional</animation>
+                        </control>
+                        <control type="image">
+                            <left>1010</left>
+                            <top>8</top>
+                            <width>40</width>
+                            <height>26</height>
+                            <texture>$INFO[ListItem.VideoResolution,flagging/lists/,.png]</texture>
+                            <aspectratio>keep</aspectratio>
+                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
+                            <visible>!ListItem.IsStereoscopic</visible>
+                        </control>
+                        <control type="image">
+                            <left>1010</left>
+                            <top>8</top>
+                            <width>40</width>
+                            <height>26</height>
+                            <texture>flagging/lists/3D.png</texture>
+                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
+                            <visible>ListItem.IsStereoscopic</visible>
+                        </control>
+                        <control type="image">
+                            <left>1050</left>
+                            <top>14</top>
+                            <width>20</width>
+                            <height>16</height>
+                            <texture>$INFO[ListItem.Overlay]</texture>
+                            <aspectratio>keep</aspectratio>
+                            <visible>Window.IsVisible(Videos) + !ListItem.IsResumable</visible>
+                        </control>
+                        <control type="image">
+                            <left>1050</left>
+                            <top>14</top>
+                            <width>16</width>
+                            <height>16</height>
+                            <texture>OverlayWatching.png</texture>
+                            <visible>Window.IsVisible(Videos) + ListItem.IsResumable</visible>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout height="40" width="1080">
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>1080</width>
+                            <height>41</height>
+                            <texture border="0,2,0,2">MenuItemNF.png</texture>
+                            <visible>!Control.HasFocus(51)</visible>
+                            <include>VisibleFadeEffect</include>
+                        </control>
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>1080</width>
+                            <height>41</height>
+                            <texture border="0,2,0,2">MenuItemFO.png</texture>
+                            <visible>Control.HasFocus(51)</visible>
+                            <include>VisibleFadeEffect</include>
+                        </control>
+                        <control type="image">
+                            <left>875</left>
+                            <top>4</top>
+                            <width>200</width>
+                            <height>33</height>
+                            <texture border="0,0,14,0">MediaItemDetailBG.png</texture>
+                            <visible>Control.HasFocus(51) + !IsEmpty(ListItem.Label2)</visible>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>4</top>
+                            <width>40</width>
+                            <height>32</height>
+                            <texture background="true">$INFO[ListItem.Icon]</texture>
+                            <aspectratio>keep</aspectratio>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>950</width>
+                            <height>40</height>
+                            <font>font13</font>
+                            <textcolor>white</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>left</align>
+                            <aligny>center</aligny>
+                            <label>$INFO[ListItem.Artist] • $INFO[ListItem.Title]</label>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>1000</width>
+                            <height>40</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>right</align>
+                            <aligny>center</aligny>
+                            <label>$INFO[ListItem.Label2]</label>
+                            <visible>!Window.IsVisible(Videos)</visible>
+                        </control>
+                        <control type="label">
+                            <left>65</left>
+                            <top>0</top>
+                            <width>940</width>
+                            <height>40</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <selectedcolor>selected</selectedcolor>
+                            <align>right</align>
+                            <aligny>center</aligny>
+                            <label>$INFO[ListItem.Label2]</label>
+                            <visible>Window.IsVisible(Videos)</visible>
+                            <animation effect="slide" start="0,0" end="40,0" delay="0" time="0" condition="![Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]">conditional</animation>
+                        </control>
+                        <control type="image">
+                            <left>1010</left>
+                            <top>8</top>
+                            <width>40</width>
+                            <height>26</height>
+                            <texture>$INFO[ListItem.VideoResolution,flagging/lists/,.png]</texture>
+                            <aspectratio>keep</aspectratio>
+                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
+                            <visible>!ListItem.IsStereoscopic</visible>
+                        </control>
+                        <control type="image">
+                            <left>1010</left>
+                            <top>8</top>
+                            <width>40</width>
+                            <height>26</height>
+                            <texture>flagging/lists/3D.png</texture>
+                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
+                            <visible>ListItem.IsStereoscopic</visible>
+                        </control>
+                        <control type="image">
+                            <left>1050</left>
+                            <top>14</top>
+                            <width>20</width>
+                            <height>16</height>
+                            <texture>$INFO[ListItem.Overlay]</texture>
+                            <aspectratio>keep</aspectratio>
+                            <visible>Window.IsVisible(Videos) + !ListItem.IsResumable</visible>
+                        </control>
+                        <control type="image">
+                            <left>1050</left>
+                            <top>14</top>
+                            <width>16</width>
+                            <height>16</height>
+                            <texture>OverlayWatching.png</texture>
+                            <visible>Window.IsVisible(Videos) + ListItem.IsResumable</visible>
+                        </control>
+                    </focusedlayout>
+                </control>
+                <!-- Right info panel - details on current song -->
+                <control type="group">
+                    <left>640</left>
+                    <top>0</top>
+                    <control type="image">
+                        <width>250</width>
+                        <height>250</height>
+                        <top>20</top>
+                        <left>0</left>
+                        <bordertexture border="5">button-nofocus.png</bordertexture>
+                        <bordersize>5</bordersize>
+                        <texture background="true">$INFO[Listitem.Icon]</texture>
+                        <aspectratio>keep</aspectratio>
+                        <fadetime>400</fadetime>
+                    </control>
+                    <control type="label">
+                        <width>480</width>
+                        <height>30</height>
+                        <top>272</top>
+                        <left>0</left>
+                        <font>font16_bold</font>
+                        <textcolor>grey</textcolor>
+                        <scroll>true</scroll>
+                        <label>[UPPERCASE]$INFO[ListItem.Album][/UPPERCASE] • $LOCALIZE[554] $INFO[ListItem.TrackNumber]</label>
+                        <textoffsetx>6</textoffsetx>
+                    </control>
+                    <control type="button">
+                        <top>315</top>
+                        <left>0</left>
+                        <width>480</width>
+                        <height>90</height>
+                        <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
+                    </control>
+                    <control type="label">
+                        <width>480</width>
+                        <height>30</height>
+                        <top>400</top>
+                        <left>0</left>
+                        <font>font16_bold</font>
+                        <textcolor>grey</textcolor>
+                        <scroll>true</scroll>
+                        <label>Ne pas oublier, forcer le tri par nom de l'artiste</label>
+                        <textoffsetx>6</textoffsetx>
+                    </control>
+                </control>
+                <!-- Scrollbar for the main file list - To Be Removed ?? -->
+                <control type="scrollbar" id="60">
+                    <left>1170</left>
+                    <top>80</top>
+                    <width>25</width>
+                    <height>550</height>
+                    <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
+                    <texturesliderbar border="0,14,0,14">ScrollBarV_bar.png</texturesliderbar>
+                    <texturesliderbarfocus border="0,14,0,14">ScrollBarV_bar_focus.png</texturesliderbarfocus>
+                    <textureslidernib>ScrollBarNib.png</textureslidernib>
+                    <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
+                    <onleft>50</onleft>
+                    <onright>2</onright>
+                    <showonepage>false</showonepage>
+                    <orientation>vertical</orientation>
+                    <visible>Control.IsVisible(51)</visible>
+                </control>
+            </control>
 	</include>
 </includes>
