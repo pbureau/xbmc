@@ -76,21 +76,22 @@
                                         <ondown>33204</ondown>
                                 </control>
                         </control> -->
+                        <!--- Movie Tech Back image -->
+                        <control type="image">
+                            <left>0</left>
+                            <top>635</top>
+                            <width>323</width>
+                            <height>90</height>
+                            <texture background="false" border="20">RecentAddedBackWide.png</texture>
+                        </control>
                         <!--- Movie Techn Info Panel -->
                         <control type="group">
                                 <description>Movie Technical Information Panel</description>
-                                <left>10</left>
+                                <left>20</left>
                                 <top>662</top>
-                                <control type="image">
+                                <control type="grouplist" id="33301">
                                     <left>0</left>
                                     <top>0</top>
-                                    <width>320</width>
-                                    <height>72</height>
-                                    <texture background="false" border="10,10,20,20">RecentAddedBack.png</texture>
-                                </control>
-                                <control type="grouplist" id="33301">
-                                    <left>15</left>
-                                    <top>15</top>
                                     <orientation>horizontal</orientation>
                                     <control type="image">
                                             <colordiffuse>grey</colordiffuse>
@@ -151,7 +152,7 @@
                             -->
                             <control type="list" id="52">
                                 <left>20</left>
-                                <top>10</top>
+                                <top>15</top>
                                 <height>240</height>
                                 <pagecontrol>61</pagecontrol>
                                 <scrolltime tween="quadratic" easing="out">300</scrolltime>
@@ -259,7 +260,7 @@
                             -->
                             <control type="list" id="51">
                                 <left>20</left>
-                                <top>10</top>
+                                <top>15</top>
                                 <height>240</height>
                                 <onleft>33204</onleft>
                                 <onright>-</onright>
@@ -357,13 +358,13 @@
                             <control type="image">
                                 <left>0</left>
                                 <top>0</top>
-                                <width>530</width>
-                                <height>230</height>
+                                <width>580</width>
+                                <height>260</height>
                                 <texture background="false" border="10">RecentAddedBack.png</texture>
                             </control>
                             <control type="panel" id="50">
-                                <left>15</left>
-                                <top>15</top>
+                                <left>30</left>
+                                <top>25</top>
                                 <width>500</width>
                                 <height>200</height>
                                 <onleft>50</onleft>
@@ -385,6 +386,7 @@
                                         <bordertexture border="2">thumbs/panel_border3.png</bordertexture>
                                         <bordersize>2</bordersize>
                                     </control>
+                                    <!--
                                     <control type="image">
                                         <top>150</top>
                                         <width>100</width>
@@ -393,11 +395,12 @@
                                         <colordiffuse>8855ffff</colordiffuse>
                                         <bordersize>0</bordersize>
                                     </control>
+                                    -->
                                     <control type="textbox">
                                         <left>0</left>
-                                        <top>150</top>
+                                        <top>152</top>
                                         <width>100</width>
-                                        <height>50</height>
+                                        <height>30</height>
                                         <align>center</align>
                                         <font>font10</font>
                                         <textcolor>grey</textcolor>
@@ -407,7 +410,7 @@
                                     </control>
                                     <control type="textbox">
                                         <left>0</left>
-                                        <top>180</top>
+                                        <top>170</top>
                                         <width>100</width>
                                         <height>50</height>
                                         <align>center</align>
@@ -432,6 +435,7 @@
                                             <bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
                                             <bordersize>3</bordersize>
                                         </control>
+                                        <!--
                                         <control type="image">
                                             <top>150</top>
                                             <width>100</width>
@@ -440,6 +444,7 @@
                                             <colordiffuse>ffff0000</colordiffuse>
                                             <bordersize>0</bordersize>
                                         </control>
+                                        -->
                                         <control type="textbox">
                                             <left>0</left>
                                             <top>150</top>
@@ -466,13 +471,13 @@
                                 <control type="image">
                                     <left>0</left>
                                     <top>0</top>
-                                    <width>530</width>
-                                    <height>230</height>
+                                    <width>580</width>
+                                    <height>260</height>
                                     <texture background="false" border="10">RecentAddedBack.png</texture>
                                 </control>
 				<control type="panel" id="53">
-					<left>15</left>
-					<top>15</top>
+					<left>30</left>
+					<top>25</top>
 					<width>500</width>
 					<height>200</height>
 					<onleft>53</onleft>
@@ -492,6 +497,7 @@
 							<bordertexture border="2">thumbs/panel_border3.png</bordertexture>
 							<bordersize>2</bordersize>
 						</control>
+                                                <!--
                                                 <control type="image">
                                                     <top>150</top>
                                                     <width>100</width>
@@ -500,6 +506,7 @@
                                                     <colordiffuse>8855ffff</colordiffuse>
                                                     <bordersize>0</bordersize>
                                                 </control>
+                                                -->
 						<control type="textbox">
 							<left>0</left>
 							<top>150</top>
@@ -527,6 +534,7 @@
 								<bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
 								<bordersize>3</bordersize>
 							</control>
+                                                        <!--
                                                         <control type="image">
                                                             <top>150</top>
                                                             <width>100</width>
@@ -535,6 +543,7 @@
                                                             <colordiffuse>ffff0000</colordiffuse>
                                                             <bordersize>0</bordersize>
                                                         </control>
+                                                        -->
 							<control type="textbox">
 								<left>0</left>
 								<top>150</top>
@@ -577,74 +586,75 @@
 				<onclick>ActivateWindow(SubtitleSearch)</onclick>
 			</control>
 -->
+                        <!--- Control Panel Back image -->
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>100</width>
+                            <height>320</height>
+                            <texture border="10" background="false">RecentAddedBackTall.png</texture>
+                        </control>
                         <!--- Control Panel -->
                         <control type="group">
                             <description>Movie Control Panel</description>
                             <left>10</left>
                             <top>10</top>
-                            <control type="image">
-                                <left>0</left>
-                                <top>0</top>
-                                <width>70</width>
-                                <height>320</height>
-                                <texture border="10" background="false">RecentAddedBack.png</texture>
-                            </control>
                             <control type="grouplist" id="33102">
-                                    <left>10</left>
-                                    <top>10</top>
-                                    <onleft>-</onleft>
-                                    <onright>-</onright>
-                                    <onup>-</onup>
-                                    <ondown>-</ondown>
-                                    <control type="button" id="8">
-                                        <description>Play button</description>
-                                        <width>50</width>
-                                        <visible>!ListItem.IsPlaying</visible>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
-                                        <texturenofocus border="2">icon_player.png</texturenofocus>
-                                        <onclick>noop</onclick>
-                                    </control>
-                                    <control type="button" id="33201">
-                                        <description>Resume button</description>
-                                        <width>50</width>
-                                        <visible>ListItem.IsPlaying</visible>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
-                                        <texturenofocus border="2">icon_player.png</texturenofocus>
-                                        <onclick>RunScript(special://masterprofile/resumeFullscreen.py)</onclick>
-                                    </control>
-                                    <control type="button" id="33202">
-                                        <width>50</width>
-                                        <onright>50</onright>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
-                                        <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
-                                        <onclick>noop</onclick>
-                                    </control>
-                                    <control type="button" id="33205">
-                                        <width>50</width>
-                                        <onright>53</onright>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
-                                        <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
-                                        <onclick>noop</onclick>
-                                    </control>
-                                    <control type="button" id="33203">
-                                        <width>50</width>
-                                        <onright>52</onright>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2" colordiffuse="bluefocus">icon_favourites.png</texturefocus>
-                                        <texturenofocus border="2">icon_favourites.png</texturenofocus>
-                                    </control>
-                                    <control type="button" id="33204">
-                                        <width>50</width>
-                                        <onright>51</onright>
-                                        <aspectratio aligny="top">keep</aspectratio>
-                                        <texturefocus border="2" colordiffuse="bluefocus">OSDSubtitlesNF.png</texturefocus>
-                                        <texturenofocus border="2">OSDSubtitlesNF.png</texturenofocus>
-                                        <onclick>noop</onclick>
-                                    </control>
+                                <left>10</left>
+                                <top>10</top>
+                                <onleft>-</onleft>
+                                <onright>-</onright>
+                                <onup>-</onup>
+                                <ondown>-</ondown>
+                                <control type="button" id="8">
+                                    <description>Play button</description>
+                                    <width>50</width>
+                                    <visible>!ListItem.IsPlaying</visible>
+                                    <aspectratio aligny="top">keep</aspectratio>
+                                    <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
+                                    <texturenofocus border="2">icon_player.png</texturenofocus>
+                                    <onclick>noop</onclick>
+                                </control>
+                                <control type="button" id="33201">
+                                    <description>Resume button</description>
+                                    <width>50</width>
+                                    <visible>ListItem.IsPlaying</visible>
+                                    <aspectratio aligny="top">keep</aspectratio>
+                                    <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
+                                    <texturenofocus border="2">icon_player.png</texturenofocus>
+                                    <onclick>RunScript(special://masterprofile/resumeFullscreen.py)</onclick>
+                                </control>
+                                <control type="button" id="33202">
+                                    <width>50</width>
+                                    <onright>50</onright>
+                                    <aspectratio aligny="top">keep</aspectratio>
+                                    <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
+                                    <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
+                                    <onclick>noop</onclick>
+                                </control>
+                                <control type="button" id="33205">
+                                    <width>50</width>
+                                    <onright>53</onright>
+                                    <aspectratio aligny="top">keep</aspectratio>
+                                    <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
+                                    <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
+                                    <onclick>noop</onclick>
+                                </control>
+                                <control type="button" id="33203">
+                                    <width>50</width>
+                                    <onright>52</onright>
+                                    <aspectratio aligny="top">keep</aspectratio>
+                                    <texturefocus border="2" colordiffuse="bluefocus">icon_favourites.png</texturefocus>
+                                    <texturenofocus border="2">icon_favourites.png</texturenofocus>
+                                </control>
+                                <control type="button" id="33204">
+                                    <width>50</width>
+                                    <onright>51</onright>
+                                    <aspectratio aligny="top">keep</aspectratio>
+                                    <texturefocus border="2" colordiffuse="bluefocus">OSDSubtitlesNF.png</texturefocus>
+                                    <texturenofocus border="2">OSDSubtitlesNF.png</texturenofocus>
+                                    <onclick>noop</onclick>
+                                </control>
                             </control>
                         </control>
                         <!--- Movie Plot back image -->
@@ -657,85 +667,85 @@
                         </control>
                         <!--- Movie Plot and Details -->
                         <control type="group">
-				<description>Movie Plot Panel</description>
-                                <left>802</left>
-                                <top>397</top>
-                                <control type="image">
-                                    <left>20</left>
-                                    <top>15</top>
-                                    <width>100</width>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texture background="false">$VAR[PosterThumb]</texture>
-                                    <bordertexture border="7">thumbs/thumb_shadow_white.png</bordertexture>
-                                    <bordersize>3</bordersize>
+                            <description>Movie Plot Panel</description>
+                            <left>802</left>
+                            <top>397</top>
+                            <control type="image">
+                                <left>20</left>
+                                <top>15</top>
+                                <width>100</width>
+                                <aspectratio aligny="top">keep</aspectratio>
+                                <texture background="false">$VAR[PosterThumb]</texture>
+                                <bordertexture border="7">thumbs/thumb_shadow_white.png</bordertexture>
+                                <bordersize>3</bordersize>
+                            </control>
+                            <control type="group">
+                                <description>Movie Info Details</description>
+                                <left>120</left>
+                                <top>10</top>
+                                <control type="label">
+                                    <width>340</width>
+                                    <height>30</height>
+                                    <top>0</top>
+                                    <left>0</left>
+                                    <font>font16_title_bold</font>
+                                    <textcolor>grey</textcolor>
+                                    <scroll>true</scroll>
+                                    <label>$VAR[FloorLabelVar]</label>
+                                    <!--<label>$INFO[Window(movieinformation).Property(AudioLanguage)]</label>-->
+                                    <textoffsetx>6</textoffsetx>
                                 </control>
-                                <control type="group">
-                                    <description>Movie Info Details</description>
-                                    <left>120</left>
-                                    <top>10</top>
-                                    <control type="label">
-                                            <width>340</width>
-                                            <height>30</height>
-                                            <top>0</top>
-                                            <left>0</left>
-                                            <font>font16_title_bold</font>
-                                            <textcolor>grey</textcolor>
-                                            <scroll>true</scroll>
-                                            <label>$VAR[FloorLabelVar]</label>
-                                            <!--<label>$INFO[Window(movieinformation).Property(AudioLanguage)]</label>-->
-                                            <textoffsetx>6</textoffsetx>
-                                    </control>
-                                    <control type="label">
-                                            <width>314</width>
-                                            <height>30</height>
-                                            <top>30</top>
-                                            <left>0</left>
-                                            <font>font12</font>
-                                            <textcolor>labelheader</textcolor>
-                                            <scroll>true</scroll>
-                                            <label>$INFO[ListItem.Tagline]</label>
-                                            <visible>!IsEmpty(ListItem.Tagline)</visible>
-                                            <textoffsetx>6</textoffsetx>
-                                    </control>
-                                    <control type="label">
-                                            <width>314</width>
-                                            <height>30</height>
-                                            <top>60</top>
-                                            <left>0</left>
-                                            <font>font12</font>
-                                            <textcolor>grey2</textcolor>
-                                            <scroll>false</scroll>
-                                            <label>$LOCALIZE[20339]: $INFO[ListItem.Director]</label>
-                                            <visible>!IsEmpty(ListItem.Director)</visible>
-                                            <textoffsetx>6</textoffsetx>
-                                    </control>
-                                    <control type="button">
-                                              <top>90</top>
-                                              <left>0</left>
-                                              <width>340</width>
-                                              <height>50</height>
-                                              <font>font12</font>
-                                              <aligny>top</aligny>
-                                              <textcolor>grey2</textcolor>
-                                              <label>$INFO[ListItem.Genre,,[CR]]$VAR[VideoSubLabelVar]</label>
-                                              <texturefocus border="2">separator5.png</texturefocus>
-                                              <texturenofocus border="2">separator5.png</texturenofocus>
-                                              <onclick>noop</onclick>
-                                    </control>
+                                <control type="label">
+                                    <width>314</width>
+                                    <height>30</height>
+                                    <top>30</top>
+                                    <left>0</left>
+                                    <font>font12</font>
+                                    <textcolor>labelheader</textcolor>
+                                    <scroll>true</scroll>
+                                    <label>$INFO[ListItem.Tagline]</label>
+                                    <visible>!IsEmpty(ListItem.Tagline)</visible>
+                                    <textoffsetx>6</textoffsetx>
                                 </control>
-				<control type="textbox">
-					<label>$INFO[ListItem.Plot]</label>
-					<top>170</top>
-                                        <left>20</left>
-					<width>440</width>
-					<height>135</height>
-					<font>font12</font>
-                                        <textcolor>grey2</textcolor>
-                                        <focusedcolor>grey2</focusedcolor>
-                                        <autoscroll time="3000" delay="2000" repeat="3000">true</autoscroll>
-				</control>
-			</control>
-		</control>
+                                <control type="label">
+                                    <width>314</width>
+                                    <height>30</height>
+                                    <top>60</top>
+                                    <left>0</left>
+                                    <font>font12</font>
+                                    <textcolor>grey2</textcolor>
+                                    <scroll>false</scroll>
+                                    <label>$LOCALIZE[20339]: $INFO[ListItem.Director]</label>
+                                    <visible>!IsEmpty(ListItem.Director)</visible>
+                                    <textoffsetx>6</textoffsetx>
+                                </control>
+                                <control type="button">
+                                    <top>90</top>
+                                    <left>0</left>
+                                    <width>340</width>
+                                    <height>50</height>
+                                    <font>font12</font>
+                                    <aligny>top</aligny>
+                                    <textcolor>grey2</textcolor>
+                                    <label>$INFO[ListItem.Genre,,[CR]]$VAR[VideoSubLabelVar]</label>
+                                    <texturefocus border="2">separator5.png</texturefocus>
+                                    <texturenofocus border="2">separator5.png</texturenofocus>
+                                    <onclick>noop</onclick>
+                                </control>
+                            </control>
+                            <control type="textbox">
+                                <label>$INFO[ListItem.Plot]</label>
+                                <top>170</top>
+                                <left>20</left>
+                                <width>440</width>
+                                <height>135</height>
+                                <font>font12</font>
+                                <textcolor>grey2</textcolor>
+                                <focusedcolor>grey2</focusedcolor>
+                                <autoscroll time="3000" delay="2000" repeat="3000">true</autoscroll>
+                            </control>
+                        </control>
+                    </control>
 		<include>Clock</include>
 	</controls>
 </window>

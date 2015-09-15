@@ -5,20 +5,19 @@
 	<controls>
               <include>CommonBackground</include>
               <include>Clock</include>
+              <!-- Main Panel Background -->
+              <control type="image">
+                  <left>45</left>
+                  <top>50</top>
+                  <width>500</width>
+                  <height>300</height>
+                  <texture background="false" border="10">RecentAddedBack.png</texture>
+              </control>
+              <!-- Main Icon Panel -->
               <control type="group">
-                  <left>60</left>
-                  <top>60</top>
-                  <control type="image">
-                      <left>0</left>
-                      <top>0</top>
-                      <width>1150</width>
-                      <height>600</height>
-                      <texture background="false" border="10">RecentAddedBack.png</texture>
-                  </control>
-                  <!-- Main Icon Panel -->
                   <control type="panel" id="9000" description="ICONE">
-                      <posx>15</posx>
-                      <posy>15</posy>
+                      <left>80</left>
+                      <top>80</top>
                       <width>1150</width>
                       <onleft>9000</onleft>
                       <onright>9000</onright>
@@ -26,34 +25,36 @@
                       <ondown>20</ondown>
                       <orientation>vertical</orientation>
                       <scrolltime tween="sine" easing="inout">280</scrolltime>
-                      <itemlayout height="200" width="200">
+                      <itemlayout height="100" width="100">
                           <control type="image" description="THMBSCOLOR">
-                              <width>180</width>
-                              <height>180</height>
+                              <left>10</left>
+                              <width>80</width>
+                              <height>80</height>
                               <texture>$INFO[ListItem.Thumb]</texture>
                           </control>
                           <control type="label" description="label_unfocused">
-                              <top>180</top>
-                              <width>200</width>
+                              <top>82</top>
+                              <width>100</width>
                               <height>20</height>
-                              <font>size30</font>
+                              <font>size18</font>
                               <align>center</align>
                               <textcolor>white</textcolor>
                               <label>[B]$INFO[ListItem.label][/B]</label>
                           </control>
                       </itemlayout>
-                      <focusedlayout height="" width="384">
+                      <focusedlayout height="100" width="100">
                           <control type="image" description="THMBSCOLOR">
-                              <width>180</width>
-                              <height>180</height>
+                              <left>10</left>
+                              <width>80</width>
+                              <height>80</height>
                               <texture>$INFO[ListItem.Thumb]</texture>
                               <colordiffuse>bluefocus</colordiffuse>
                           </control>
                           <control type="label" description="label_focused">
-                              <top>180</top>
-                              <width>200</width>
+                              <top>82</top>
+                              <width>100</width>
                               <height>20</height>
-                              <font>size30</font>
+                              <font>size18</font>
                               <align>center</align>
                               <textcolor>blue</textcolor>
                               <label>[B]$INFO[ListItem.label][/B]</label>

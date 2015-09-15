@@ -13,7 +13,7 @@
                     <top>50</top>
                     <width>820</width>
                     <height>650</height>
-                    <texture background="false" border="10,10,20,20">RecentAddedBack.png</texture>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
 		<control type="group">
 			<visible>Control.IsVisible(500)</visible>
@@ -61,10 +61,18 @@
                                         <texture background="true">$VAR[PosterThumb]</texture>
                                         <aspectratio>scale</aspectratio>
                                     </control>
+                                    <control type="image">
+                                        <left>1</left>
+                                        <top>0</top>
+                                        <width>120</width>
+                                        <height>175</height>
+                                        <texture background="true">ContentPanelShade.png</texture>
+                                        <aspectratio>scale</aspectratio>
+                                    </control>
                                     <control type="label">
-                                        <left>5</left>
+                                        <left>6</left>
                                         <top>150</top>
-                                        <width>110</width>
+                                        <width>108</width>
                                         <height>13</height>
                                         <font>font12</font>
                                         <textcolor>grey2</textcolor>
@@ -212,6 +220,7 @@
 -->
                         </control>
                         <!-- Scrollbar for main panel - To Be Removed? -->
+                        <!--
 			<control type="scrollbar" id="60">
 				<left>780</left>
 				<top>80</top>
@@ -228,6 +237,7 @@
 				<orientation>vertical</orientation>
 				<visible>Control.IsVisible(500)</visible>
 			</control>
+                        -->
 		</control>
                 <!-- List viewtype layout - Currently copypaste from confluence -->
 		<control type="group">

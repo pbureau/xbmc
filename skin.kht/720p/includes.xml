@@ -43,24 +43,24 @@
                 <control type="image">
                     <left>0</left>
                     <top>0</top>
-                    <width>435</width>
-                    <height>100</height>
+                    <width>460</width>
+                    <height>120</height>
                     <visible>!IntegerGreaterThan(Container($PARAM[id]).NumItems,2)</visible>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
                 <control type="image">
                     <left>0</left>
                     <top>0</top>
-                    <width>435</width>
-                    <height>180</height>
+                    <width>460</width>
+                    <height>210</height>
                     <visible>IntegerGreaterThan(Container($PARAM[id]).NumItems,2) + !IntegerGreaterThan(Container($PARAM[id]).NumItems,4)</visible>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
                 <control type="image">
                     <left>0</left>
                     <top>0</top>
-                    <width>435</width>
-                    <height>260</height>
+                    <width>460</width>
+                    <height>280</height>
                     <visible>IntegerGreaterThan(Container($PARAM[id]).NumItems,4)</visible>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>

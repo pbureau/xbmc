@@ -14,7 +14,7 @@
    height="1052.3622047"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.48.3.1 r9886"
    sodipodi:docname="box.svg">
   <defs
      id="defs4">
@@ -98,6 +98,39 @@
          stdDeviation="6.2225397"
          id="feGaussianBlur4050" />
     </filter>
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter3813-6">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="6.2225397"
+         id="feGaussianBlur3815-0" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter3900"
+       x="-0.029949925"
+       width="1.0598998"
+       y="-0.12080795"
+       height="1.2416159">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="7.5352003"
+         id="feGaussianBlur3902" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter3936"
+       x="-0.12757689"
+       width="1.2551538"
+       y="-0.029561086"
+       height="1.0591222">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="6.6025397"
+         id="feGaussianBlur3938" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -106,16 +139,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.973503"
-     inkscape:cx="785.45064"
-     inkscape:cy="430.64826"
+     inkscape:zoom="1"
+     inkscape:cx="901.8167"
+     inkscape:cy="664.32424"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1867"
-     inkscape:window-height="1056"
-     inkscape:window-x="53"
-     inkscape:window-y="24"
+     inkscape:window-width="1920"
+     inkscape:window-height="1031"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
@@ -127,7 +160,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -155,7 +188,7 @@
        height="303.04578"
        width="319.20819"
        id="rect3811"
-       style="fill:#000000;fill-opacity:1;stroke:none;filter:url(#filter3813);opacity:1"
+       style="fill:#000000;fill-opacity:1;stroke:none;filter:url(#filter3813)"
        inkscape:export-filename="/home/pbureau/Balyo/Software/xbmc/skin.kht/media/RecentAddedBack.png"
        inkscape:export-xdpi="200"
        inkscape:export-ydpi="200" />
@@ -244,5 +277,53 @@
        inkscape:export-filename="/home/pbureau/Balyo/Software/xbmc/skin.kht/media/RecentAddedBack.png"
        inkscape:export-xdpi="200"
        inkscape:export-ydpi="200" />
+    <rect
+       style="fill:#1b1f21;fill-opacity:1;stroke:none"
+       id="rect3809-0"
+       width="603.82391"
+       height="149.69612"
+       x="943.53967"
+       y="47.011524"
+       rx="0"
+       ry="0"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
+    <rect
+       inkscape:export-ydpi="200"
+       inkscape:export-xdpi="200"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       ry="0"
+       rx="0"
+       y="55.011524"
+       x="951.53967"
+       height="149.69612"
+       width="603.82391"
+       id="rect3882"
+       style="fill:#1b1f21;fill-opacity:1;stroke:none;filter:url(#filter3900)" />
+    <rect
+       style="fill:#1b1f21;fill-opacity:1;stroke:none"
+       id="rect3809-5"
+       width="124.20819"
+       height="536.04578"
+       x="1101.3959"
+       y="292.83929"
+       rx="0"
+       ry="0"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackTall.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
+    <rect
+       inkscape:export-ydpi="200"
+       inkscape:export-xdpi="200"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackTall.png"
+       ry="0"
+       rx="0"
+       y="300.83929"
+       x="1109.3959"
+       height="536.04578"
+       width="124.20819"
+       id="rect3922"
+       style="fill:#1b1f21;fill-opacity:1;stroke:none;filter:url(#filter3936)" />
   </g>
 </svg>
