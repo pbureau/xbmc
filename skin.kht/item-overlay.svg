@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="item-overlay.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3755">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.3764706;"
+         offset="0"
+         id="stop3757" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0.86274511;"
+         offset="1"
+         id="stop3759" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3755"
+       id="linearGradient3761"
+       x1="108.8539"
+       y1="168.73862"
+       x2="108.8539"
+       y2="185.84361"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3755"
+       id="linearGradient3767"
+       gradientUnits="userSpaceOnUse"
+       x1="108.8539"
+       y1="177.66719"
+       x2="108.8539"
+       y2="185.84361"
+       gradientTransform="translate(-2.1428575,-0.35714334)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3755-7"
+       id="linearGradient3767-2"
+       gradientUnits="userSpaceOnUse"
+       x1="108.8539"
+       y1="177.66719"
+       x2="108.8539"
+       y2="185.84361"
+       gradientTransform="translate(-2.1428575,-0.35714334)" />
+    <linearGradient
+       id="linearGradient3755-7">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.25882354;"
+         offset="0"
+         id="stop3757-5" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0.86274511;"
+         offset="1"
+         id="stop3759-4" />
+    </linearGradient>
+    <linearGradient
+       y2="185.84361"
+       x2="108.8539"
+       y1="177.66719"
+       x1="108.8539"
+       gradientTransform="translate(176.42857,-0.714288)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient3060"
+       xlink:href="#linearGradient3755-7"
+       inkscape:collect="always" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="221.10704"
+     inkscape:cy="898.43564"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1031"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:url(#linearGradient3767);fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect2985"
+       width="150"
+       height="150"
+       x="43.57143"
+       y="60.576469"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/ContentPanelShade.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
+    <rect
+       style="fill:url(#linearGradient3060);fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="rect2985-4"
+       width="150"
+       height="150"
+       x="222.14285"
+       y="60.21933"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/ContentPanelShade.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
+  </g>
+</svg>
