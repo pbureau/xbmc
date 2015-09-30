@@ -38,6 +38,8 @@
 #include "TextureCache.h"
 #include "music/MusicThumbLoader.h"
 #include "filesystem/Directory.h"
+#include "utils/log.h"
+#include "music/windows/GUIWindowMusicBase.h"
 
 using namespace std;
 using namespace XFILE;
@@ -140,6 +142,18 @@ bool CGUIDialogMusicInfo::OnAction(const CAction &action)
     Close();
     return true;
   }
+  /* Navigate back to the Artist info */
+  else if (action.GetID() == ACTION_PREVIOUS_MENU && !m_bArtistInfo)
+  {
+    CGUIWindowMusicBase * win_base = (CGUIWindowMusicBase *)g_windowManager.GetWindow(WINDOW_MUSIC_NAV);
+    if(win_base && win_base->m_last_artist != NULL)
+    {
+        SetArtist(*(win_base->m_last_artist), win_base->m_last_artist->strPath);
+        Update();
+        return true;
+    }
+  }
+
   return CGUIDialog::OnAction(action);
 }
 

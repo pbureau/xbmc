@@ -47,6 +47,8 @@ public:
   virtual bool OnBack(int actionID);
 
   void OnInfo(CFileItem *pItem, bool bShowInfo = false);
+  /* Reference to the last Artist displayed in the ArtistInfoDialog */
+  CArtist * m_last_artist;
 
 protected:
   virtual void OnInitWindow();

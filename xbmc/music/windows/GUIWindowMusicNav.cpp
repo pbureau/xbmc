@@ -94,109 +94,109 @@ bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message)
 {
   switch (message.GetMessage())
   {
-  case GUI_MSG_WINDOW_RESET:
-    m_vecItems->SetPath("?");
-    break;
-  case GUI_MSG_WINDOW_DEINIT:
-    if (m_thumbLoader.IsLoading())
-      m_thumbLoader.StopThread();
-    break;
-  case GUI_MSG_WINDOW_INIT:
-    {
-/* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
-      m_rootDir.AllowNonLocalSources(false);
-
-      // is this the first time the window is opened?
-      if (m_vecItems->GetPath() == "?" && message.GetStringParam().empty())
-        message.SetStringParam(CSettings::GetInstance().GetString(CSettings::SETTING_MYMUSIC_DEFAULTLIBVIEW));
-      
-      DisplayEmptyDatabaseMessage(false); // reset message state
-
-      if (!CGUIWindowMusicBase::OnMessage(message))
-        return false;
-
-      //  base class has opened the database, do our check
-      DisplayEmptyDatabaseMessage(m_musicdatabase.GetSongsCount() <= 0);
-
-      if (m_bDisplayEmptyDatabaseMessage)
+    case GUI_MSG_WINDOW_RESET:
+      m_vecItems->SetPath("?");
+      break;
+    case GUI_MSG_WINDOW_DEINIT:
+      if (m_thumbLoader.IsLoading())
+        m_thumbLoader.StopThread();
+      break;
+    case GUI_MSG_WINDOW_INIT:
       {
-        // no library - make sure we focus on a known control, and default to the root.
-        SET_CONTROL_FOCUS(CONTROL_BTNTYPE, 0);
-        m_vecItems->SetPath("");
-        SetHistoryForPath("");
-        Update("");
-      }
+        /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
+        m_rootDir.AllowNonLocalSources(false);
 
-      return true;
-    }
-    break;
+        // is this the first time the window is opened?
+        if (m_vecItems->GetPath() == "?" && message.GetStringParam().empty())
+          message.SetStringParam(CSettings::GetInstance().GetString(CSettings::SETTING_MYMUSIC_DEFAULTLIBVIEW));
 
-  case GUI_MSG_CLICKED:
-    {
-      int iControl = message.GetSenderId();
-      if (iControl == CONTROL_BTNPARTYMODE)
-      {
-        if (g_partyModeManager.IsEnabled())
-          g_partyModeManager.Disable();
-        else
+        DisplayEmptyDatabaseMessage(false); // reset message state
+
+        if (!CGUIWindowMusicBase::OnMessage(message))
+          return false;
+
+        //  base class has opened the database, do our check
+        DisplayEmptyDatabaseMessage(m_musicdatabase.GetSongsCount() <= 0);
+
+        if (m_bDisplayEmptyDatabaseMessage)
         {
-          if (!g_partyModeManager.Enable())
+          // no library - make sure we focus on a known control, and default to the root.
+          SET_CONTROL_FOCUS(CONTROL_BTNTYPE, 0);
+          m_vecItems->SetPath("");
+          SetHistoryForPath("");
+          Update("");
+        }
+
+        return true;
+      }
+      break;
+
+    case GUI_MSG_CLICKED:
+      {
+        int iControl = message.GetSenderId();
+        if (iControl == CONTROL_BTNPARTYMODE)
+        {
+          if (g_partyModeManager.IsEnabled())
+            g_partyModeManager.Disable();
+          else
           {
-            SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
-            return false;
+            if (!g_partyModeManager.Enable())
+            {
+              SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
+              return false;
+            }
+
+            // Playlist directory is the root of the playlist window
+            if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistmusic://");
+
+            return true;
           }
-
-          // Playlist directory is the root of the playlist window
-          if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistmusic://");
-
+          UpdateButtons();
+        }
+        else if (iControl == CONTROL_SEARCH)
+        {
+          if (m_searchWithEdit)
+          {
+            // search updated - reset timer
+            m_searchTimer.StartZero();
+            // grab our search string
+            CGUIMessage selected(GUI_MSG_ITEM_SELECTED, GetID(), CONTROL_SEARCH);
+            OnMessage(selected);
+            SetProperty("search", selected.GetLabel());
+            return true;
+          }
+          std::string search(GetProperty("search").asString());
+          CGUIKeyboardFactory::ShowAndGetFilter(search, true);
+          SetProperty("search", search);
           return true;
         }
-        UpdateButtons();
+        else if (iControl == CONTROL_UPDATE_LIBRARY)
+        {
+          if (!g_application.IsMusicScanning())
+            g_application.StartMusicScan("");
+          else
+            g_application.StopMusicScan();
+          return true;
+        }
       }
-      else if (iControl == CONTROL_SEARCH)
+      break;
+    case GUI_MSG_PLAYBACK_STOPPED:
+    case GUI_MSG_PLAYBACK_ENDED:
+    case GUI_MSG_PLAYLISTPLAYER_STOPPED:
+    case GUI_MSG_PLAYBACK_STARTED:
       {
-        if (m_searchWithEdit)
+        SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE, g_partyModeManager.IsEnabled());
+      }
+      break;
+    case GUI_MSG_NOTIFY_ALL:
+      {
+        if (message.GetParam1() == GUI_MSG_SEARCH_UPDATE && IsActive())
         {
           // search updated - reset timer
           m_searchTimer.StartZero();
-          // grab our search string
-          CGUIMessage selected(GUI_MSG_ITEM_SELECTED, GetID(), CONTROL_SEARCH);
-          OnMessage(selected);
-          SetProperty("search", selected.GetLabel());
-          return true;
+          SetProperty("search", message.GetStringParam());
         }
-        std::string search(GetProperty("search").asString());
-        CGUIKeyboardFactory::ShowAndGetFilter(search, true);
-        SetProperty("search", search);
-        return true;
       }
-      else if (iControl == CONTROL_UPDATE_LIBRARY)
-      {
-        if (!g_application.IsMusicScanning())
-          g_application.StartMusicScan("");
-        else
-          g_application.StopMusicScan();
-        return true;
-      }
-    }
-    break;
-  case GUI_MSG_PLAYBACK_STOPPED:
-  case GUI_MSG_PLAYBACK_ENDED:
-  case GUI_MSG_PLAYLISTPLAYER_STOPPED:
-  case GUI_MSG_PLAYBACK_STARTED:
-    {
-      SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE, g_partyModeManager.IsEnabled());
-    }
-    break;
-  case GUI_MSG_NOTIFY_ALL:
-    {
-      if (message.GetParam1() == GUI_MSG_SEARCH_UPDATE && IsActive())
-      {
-        // search updated - reset timer
-        m_searchTimer.StartZero();
-        SetProperty("search", message.GetStringParam());
-      }
-    }
   }
   return CGUIWindowMusicBase::OnMessage(message);
 }
@@ -208,8 +208,8 @@ bool CGUIWindowMusicNav::OnAction(const CAction& action)
     int item = m_viewControl.GetSelectedItem();
     CMusicDatabaseDirectory dir;
     if (item > -1 && m_vecItems->Get(item)->m_bIsFolder
-                  && (dir.HasAlbumInfo(m_vecItems->Get(item)->GetPath())||
-                      dir.IsArtistDir(m_vecItems->Get(item)->GetPath())))
+        && (dir.HasAlbumInfo(m_vecItems->Get(item)->GetPath())||
+          dir.IsArtistDir(m_vecItems->Get(item)->GetPath())))
       OnContextButton(item,CONTEXT_BUTTON_INFO);
 
     return true;
@@ -257,6 +257,7 @@ std::string CGUIWindowMusicNav::GetQuickpathName(const std::string& strPath) con
 
 bool CGUIWindowMusicNav::OnClick(int iItem)
 {
+  CLog::Log(LOGDEBUG,"%s::%s : %s", __FILE__, __FUNCTION__, m_vecItems->GetPath().c_str());
   if (iItem < 0 || iItem >= m_vecItems->Size()) return false;
 
   CFileItemPtr item = m_vecItems->Get(iItem);
@@ -274,7 +275,21 @@ bool CGUIWindowMusicNav::OnClick(int iItem)
   }
   if (item->IsMusicDb() && !item->m_bIsFolder)
     m_musicdatabase.SetPropertiesForFileItem(*item);
-    
+
+  // Artists/Albums select action, show artist/album information 
+  // FIXME: Need a Setting similar to Movie Select
+  // FIXME: Group in a single if(), if the actions are exactly the same
+  if( m_vecItems->GetPath() == "musicdb://artists/" )
+  {
+    OnInfo(iItem);
+    return true;
+  }
+  else if( m_vecItems->GetPath() == "musicdb://albums/" )
+  {
+    OnInfo(iItem);
+    return true;
+  }
+
   return CGUIWindowMusicBase::OnClick(iItem);
 }
 

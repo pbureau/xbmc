@@ -78,6 +78,7 @@ CGUIWindowMusicBase::CGUIWindowMusicBase(int id, const std::string &xmlFile)
     : CGUIMediaWindow(id, xmlFile.c_str())
 {
   m_dlgProgress = NULL;
+  m_last_artist = NULL;
 }
 
 CGUIWindowMusicBase::~CGUIWindowMusicBase ()
@@ -382,6 +383,7 @@ void CGUIWindowMusicBase::ShowArtistInfo(const CFileItem *pItem, bool bShowInfo 
     CGUIDialogMusicInfo *pDlgArtistInfo = (CGUIDialogMusicInfo*)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_INFO);
     if (pDlgArtistInfo)
     {
+      m_last_artist = &artist;
       pDlgArtistInfo->SetArtist(artist, artist.strPath);
       pDlgArtistInfo->Open();
 
@@ -461,6 +463,7 @@ bool CGUIWindowMusicBase::ShowAlbumInfo(const CFileItem *pItem, bool bShowInfo /
     CGUIDialogMusicInfo *pDlgAlbumInfo = (CGUIDialogMusicInfo*)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_INFO);
     if (pDlgAlbumInfo)
     {
+      m_last_artist = NULL;
       pDlgAlbumInfo->SetAlbum(album, album.strPath);
       pDlgAlbumInfo->Open();
 
