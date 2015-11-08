@@ -1142,7 +1142,7 @@ bool CGUIWindowMusicBase::GetDirectory(const std::string &strDirectory, CFileIte
     if (m_musicdatabase.GetArtForItem(params.GetAlbumId(), MediaTypeAlbum, albumArt))
       items.AppendArt(albumArt, MediaTypeAlbum);
   }
-  if (params.GetArtistId() > 0)
+  else if (params.GetArtistId() > 0)
   {
     map<string, string> artistArt;
     if (m_musicdatabase.GetArtForItem(params.GetArtistId(), "artist", artistArt))

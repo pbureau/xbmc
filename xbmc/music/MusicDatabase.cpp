@@ -69,6 +69,7 @@
 #include "guiinfo/GUIInfoLabels.h"
 
 #include <utility>
+#include "filesystem/MusicDatabaseDirectory.h"
 
 using namespace std;
 using namespace AUTOPTR;
@@ -3695,6 +3696,12 @@ bool CMusicDatabase::GetSongsNav(const std::string& strBaseDir, CFileItemList& i
 
   if (idArtist > 0)
     musicUrl.AddOption("artistid", idArtist);
+  /* FIXME: Move this test into CDirectoryNodeSong::GetContent() to be consitent with the albumartistsonly option. 
+   * pass result here with a parameter.
+   * use a skin setting to select this behavior (see DirectoryNodeArtist::GetContent())
+   */
+  if( CMusicDatabaseDirectory::GetDirectoryChildType(strBaseDir) == NODE_TYPE_ONEALBUM && idAlbum != -1 )
+    musicUrl.AddOption("albumforcefull", true);
 
   Filter filter;
   return GetSongsByWhere(musicUrl.ToString(), filter, items, sortDescription);
@@ -5592,6 +5599,8 @@ bool CMusicDatabase::GetFilter(CDbUrl &musicUrl, Filter &filter, SortDescription
   }
   else if (type == "songs" || type == "singles")
   {
+    bool albumForceFull = false;
+
     option = options.find("singles");
     if (option != options.end())
       filter.AppendWhere(PrepareSQL("songview.idAlbum %sIN (SELECT idAlbum FROM album WHERE strReleaseType = '%s')",
@@ -5622,11 +5631,18 @@ bool CMusicDatabase::GetFilter(CDbUrl &musicUrl, Filter &filter, SortDescription
     if (option != options.end())
       filter.AppendWhere(PrepareSQL("songview.idSong IN (SELECT song_genre.idSong FROM song_genre JOIN genre ON genre.idGenre = song_genre.idGenre WHERE genre.strGenre like '%s')", option->second.asString().c_str()));
 
-    option = options.find("artistid");
+    option = options.find("albumforcefull");
     if (option != options.end())
-      filter.AppendWhere(PrepareSQL("songview.idSong IN (SELECT song_artist.idSong FROM song_artist WHERE song_artist.idArtist = %i)" // song artists
-                                    " OR songview.idSong IN (SELECT song.idSong FROM song JOIN album_artist ON song.idAlbum=album_artist.idAlbum WHERE album_artist.idArtist = %i)", // album artists
-                                    (int)option->second.asInteger(), (int)option->second.asInteger()));
+      albumForceFull = option->second.asBoolean();
+
+    if(!albumForceFull)
+    {
+      option = options.find("artistid");
+      if (option != options.end())
+        filter.AppendWhere(PrepareSQL("songview.idSong IN (SELECT song_artist.idSong FROM song_artist WHERE song_artist.idArtist = %i)" // song artists
+              " OR songview.idSong IN (SELECT song.idSong FROM song JOIN album_artist ON song.idAlbum=album_artist.idAlbum WHERE album_artist.idArtist = %i)", // album artists
+              (int)option->second.asInteger(), (int)option->second.asInteger()));
+    }
 
     option = options.find("artist");
     if (option != options.end())
