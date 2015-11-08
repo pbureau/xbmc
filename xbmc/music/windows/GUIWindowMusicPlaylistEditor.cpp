@@ -48,7 +48,6 @@
 CGUIWindowMusicPlaylistEditor::CGUIWindowMusicPlaylistEditor(void)
     : CGUIWindowMusicBase(WINDOW_MUSIC_PLAYLIST_EDITOR, "MyMusicPlaylistEditor.xml")
 {
-  m_thumbLoader.SetObserver(this);
   m_playlistThumbLoader.SetObserver(this);
   m_playlist = new CFileItemList;
 }
@@ -417,7 +416,7 @@ void CGUIWindowMusicPlaylistEditor::OnSavePlaylist()
 void CGUIWindowMusicPlaylistEditor::AppendToPlaylist(CFileItemList &newItems)
 {
   OnRetrieveMusicInfo(newItems);
-  FormatItemLabels(newItems, LABEL_MASKS(CSettings::GetInstance().GetString(CSettings::SETTING_MUSICFILES_TRACKFORMAT), CSettings::GetInstance().GetString(CSettings::SETTING_MUSICFILES_TRACKFORMATRIGHT), "%L", ""));
+  FormatItemLabels(newItems, LABEL_MASKS(CSettings::GetInstance().GetString(CSettings::SETTING_MUSICFILES_TRACKFORMAT), "%D", "%L", ""));
   m_playlist->Append(newItems);
   UpdatePlaylist();
 }

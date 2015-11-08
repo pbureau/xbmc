@@ -19,28 +19,35 @@
  */
 
 #include "Application.h"
-#include "PVRClient.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "pvr/PVRManager.h"
-#include "pvr/addons/PVRClients.h"
 #include "epg/Epg.h"
-#include "pvr/channels/PVRChannelGroupsContainer.h"
-#include "pvr/timers/PVRTimers.h"
-#include "pvr/timers/PVRTimerInfoTag.h"
-#include "pvr/timers/PVRTimerType.h"
-#include "pvr/recordings/PVRRecordings.h"
+#include "messaging/ApplicationMessenger.h"
+#include "messaging/helpers/DialogHelper.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 
+#include "pvr/PVRManager.h"
+#include "pvr/addons/PVRClients.h"
+#include "pvr/channels/PVRChannelGroupsContainer.h"
+#include "pvr/recordings/PVRRecordings.h"
+#include "pvr/timers/PVRTimers.h"
+#include "pvr/timers/PVRTimerInfoTag.h"
+#include "pvr/timers/PVRTimerType.h"
+
+#include "PVRClient.h"
+
 #include <assert.h>
 #include <memory>
+#include <algorithm>
 
 using namespace ADDON;
 using namespace PVR;
 using namespace EPG;
+using namespace KODI::MESSAGING;
+
+using KODI::MESSAGING::HELPERS::DialogResponse;
 
 #define DEFAULT_INFO_STRING_VALUE "unknown"
 
@@ -122,14 +129,14 @@ void CPVRClient::OnPostUnInstall()
     PVR::CPVRManager::GetInstance().Start(true);
 }
 
-bool CPVRClient::CanInstall(const std::string &referer)
+bool CPVRClient::CanInstall()
 {
   if (!PVR::CPVRManager::GetInstance().InstallAddonAllowed(ID()))
   {
-    PVR::CPVRManager::GetInstance().MarkAsOutdated(ID(), referer);
+    PVR::CPVRManager::GetInstance().MarkAsOutdated(ID());
     return false;
   }
-  return CAddon::CanInstall(referer);
+  return CAddon::CanInstall();
 }
 
 void CPVRClient::ResetProperties(int iClientId /* = PVR_INVALID_CLIENT_ID */)
@@ -161,9 +168,6 @@ ADDON_STATUS CPVRClient::Create(int iClientId)
   ADDON_STATUS status(ADDON_STATUS_UNKNOWN);
   if (iClientId <= PVR_INVALID_CLIENT_ID)
     return status;
-
-  /* ensure that a previous instance is destroyed */
-  Destroy();
 
   /* reset all properties to defaults */
   ResetProperties(iClientId);
@@ -306,7 +310,7 @@ void CPVRClient::WriteClientTimerInfo(const CPVRTimerInfoTag &xbmcTimer, PVR_TIM
   addonTimer.bStartAnyTime             = xbmcTimer.m_bStartAnyTime;
   addonTimer.bEndAnyTime               = xbmcTimer.m_bEndAnyTime;
   addonTimer.firstDay                  = firstDay - g_advancedSettings.m_iPVRTimeCorrection;
-  addonTimer.iEpgUid                   = epgTag ? epgTag->UniqueBroadcastID() : -1;
+  addonTimer.iEpgUid                   = epgTag ? epgTag->UniqueBroadcastID() : PVR_TIMER_NO_EPG_UID;
   strncpy(addonTimer.strSummary, xbmcTimer.m_strSummary.c_str(), sizeof(addonTimer.strSummary) - 1);
   addonTimer.iMarginStart              = xbmcTimer.m_iMarginStart;
   addonTimer.iMarginEnd                = xbmcTimer.m_iMarginEnd;
@@ -1215,7 +1219,7 @@ PVR_ERROR CPVRClient::AddTimer(const CPVRTimerInfoTag &timer)
   return retVal;
 }
 
-PVR_ERROR CPVRClient::DeleteTimer(const CPVRTimerInfoTag &timer, bool bForce /* = false */, bool bDeleteSchedule /* = false */)
+PVR_ERROR CPVRClient::DeleteTimer(const CPVRTimerInfoTag &timer, bool bForce /* = false */)
 {
   if (!m_bReadyToUse)
     return PVR_ERROR_REJECTED;
@@ -1229,7 +1233,7 @@ PVR_ERROR CPVRClient::DeleteTimer(const CPVRTimerInfoTag &timer, bool bForce /* 
     PVR_TIMER tag;
     WriteClientTimerInfo(timer, tag);
 
-    retVal = m_pStruct->DeleteTimer(tag, bForce, bDeleteSchedule);
+    retVal = m_pStruct->DeleteTimer(tag, bForce);
 
     LogError(retVal, __FUNCTION__);
   }
@@ -1943,10 +1947,10 @@ bool CPVRClient::Autoconfigure(void)
         std::string strLogLine(StringUtils::Format(g_localizeStrings.Get(19689).c_str(), (*it).GetName().c_str(), (*it).GetIP().c_str()));
         CLog::Log(LOGDEBUG, "%s - %s", __FUNCTION__, strLogLine.c_str());
 
-        if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{19688}, // Scanning for PVR services
-                                              CVariant{strLogLine},
-                                              CVariant{19690}, // Do you want to use this service?
-                                              CVariant{""}))
+        if (DialogResponse::YES != 
+          HELPERS::ShowYesNoDialogLines(CVariant{19688}, // Scanning for PVR services
+                                        CVariant{strLogLine},
+                                        CVariant{19690})) // Do you want to use this service?
         {
           CLog::Log(LOGDEBUG, "%s - %s service found but not enabled by the user", __FUNCTION__, (*it).GetName().c_str());
           m_rejectedAvahiHosts.push_back(*it);

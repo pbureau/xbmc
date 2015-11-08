@@ -28,8 +28,6 @@
 #include "utils/XBMCTinyXML.h"
 #include "utils/log.h"
 
-using namespace std;
-
 CGUIListItemLayout::CGUIListItemLayout()
 : m_group(0, 0, 0, 0, 0, 0)
 {

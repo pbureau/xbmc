@@ -24,7 +24,7 @@
 #include "Application.h"
 #include "events/EventLog.h"
 #include "events/NotificationEvent.h"
-#include "interfaces/Builtins.h"
+#include "interfaces/builtins/Builtins.h"
 #include "utils/Variant.h"
 #include "utils/Splash.h"
 #include "LangInfo.h"
@@ -60,6 +60,7 @@
 #include "input/InertialScrollingHandler.h"
 #include "messaging/ThreadMessage.h"
 #include "messaging/ApplicationMessenger.h"
+#include "messaging/helpers/DialogHelper.h"
 #include "SectionLoader.h"
 #include "cores/DllLoader/DllLoaderContainer.h"
 #include "GUIUserMessages.h"
@@ -96,9 +97,9 @@
 
 #include "input/KeyboardLayoutManager.h"
 
-#if SDL_VERSION == 1
+#if HAVE_SDL_VERSION == 1
 #include <SDL/SDL.h>
-#elif SDL_VERSION == 2
+#elif HAVE_SDL_VERSION == 2
 #include <SDL2/SDL.h>
 #endif
 
@@ -119,9 +120,6 @@
 #ifdef HAS_VIDEO_PLAYBACK
 #include "cores/VideoRenderers/RenderManager.h"
 #endif
-#ifdef HAS_KARAOKE
-#include "music/karaoke/karaokelyricsmanager.h"
-#endif
 #include "network/ZeroconfBrowser.h"
 #ifndef TARGET_POSIX
 #include "threads/platform/win/Win32Exception.h"
@@ -137,7 +135,6 @@
 #endif
 #include "interfaces/AnnouncementManager.h"
 #include "peripherals/Peripherals.h"
-#include "peripherals/dialogs/GUIDialogPeripheralManager.h"
 #include "peripherals/devices/PeripheralImon.h"
 #include "music/infoscanner/MusicInfoScanner.h"
 
@@ -150,7 +147,6 @@
 
 // Dialog includes
 #include "video/dialogs/GUIDialogVideoBookmarks.h"
-#include "dialogs/GUIDialogYesNo.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "dialogs/GUIDialogSubMenu.h"
@@ -171,6 +167,7 @@
 #include "utils/XMLUtils.h"
 #include "addons/AddonInstaller.h"
 #include "addons/AddonManager.h"
+#include "addons/RepositoryUpdater.h"
 #include "music/tags/MusicInfoTag.h"
 #include "music/tags/MusicInfoTagLoaderFactory.h"
 #include "CompileInfo.h"
@@ -251,6 +248,8 @@ using namespace ActiveAE;
 
 using namespace XbmcThreads;
 
+using KODI::MESSAGING::HELPERS::DialogResponse;
+
 // uncomment this if you want to use release libs in the debug build.
 // Atm this saves you 7 mb of memory
 #define USE_RELEASE_LIBS
@@ -290,9 +289,6 @@ CApplication::CApplication(void)
 
 
   /* for now always keep this around */
-#ifdef HAS_KARAOKE
-  m_pKaraokeMgr = new CKaraokeLyricsManager();
-#endif
   m_currentStack = new CFileItemList;
 
   m_bPresentFrame = false;
@@ -326,10 +322,6 @@ CApplication::~CApplication(void)
   delete m_Autorun;
 #endif
   delete m_currentStack;
-
-#ifdef HAS_KARAOKE
-  delete m_pKaraokeMgr;
-#endif
 
   delete m_dpms;
   delete m_pInertialScrollingHandler;
@@ -516,9 +508,7 @@ bool CApplication::Create()
   buildType = "Unknown";
 #endif
   std::string specialVersion;
-#if defined(TARGET_DARWIN_IOS_ATV2)
-  specialVersion = " (version for AppleTV2)";
-#elif defined(TARGET_RASPBERRY_PI)
+#if defined(TARGET_RASPBERRY_PI)
   specialVersion = " (version for Raspberry Pi)";
 //#elif defined(some_ID) // uncomment for special version/fork
 //  specialVersion = " (version for XXXX)";
@@ -640,9 +630,9 @@ bool CApplication::Create()
   CSettings::GetInstance().SetLoaded();
 
   CLog::Log(LOGINFO, "creating subdirectories");
-  CLog::Log(LOGINFO, "userdata folder: %s", CProfilesManager::GetInstance().GetProfileUserDataFolder().c_str());
-  CLog::Log(LOGINFO, "recording folder: %s", CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH).c_str());
-  CLog::Log(LOGINFO, "screenshots folder: %s", CSettings::GetInstance().GetString(CSettings::SETTING_DEBUG_SCREENSHOTPATH).c_str());
+  CLog::Log(LOGINFO, "userdata folder: %s", CURL::GetRedacted(CProfilesManager::GetInstance().GetProfileUserDataFolder()).c_str());
+  CLog::Log(LOGINFO, "recording folder: %s", CURL::GetRedacted(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH)).c_str());
+  CLog::Log(LOGINFO, "screenshots folder: %s", CURL::GetRedacted(CSettings::GetInstance().GetString(CSettings::SETTING_DEBUG_SCREENSHOTPATH)).c_str());
   CDirectory::Create(CProfilesManager::GetInstance().GetUserDataFolder());
   CDirectory::Create(CProfilesManager::GetInstance().GetProfileUserDataFolder());
   CProfilesManager::GetInstance().CreateProfileFolders();
@@ -659,9 +649,6 @@ bool CApplication::Create()
     CLog::Log(LOGFATAL, "CApplication::Create: Failed to start the AudioEngine");
     return false;
   }
-
-  // start AudioDSP engine with a blocking message
-  CApplicationMessenger::GetInstance().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON);
 
   // restore AE's previous volume state
   SetHardwareVolume(m_volumeLevel);
@@ -688,8 +675,6 @@ bool CApplication::Create()
     CLog::Log(LOGFATAL, "CApplication::Create: Unable to start CAddonMgr");
     return false;
   }
-
-  g_peripherals.Initialise();
 
   // Create the Mouse, Keyboard, Remote, and Joystick devices
   // Initialize after loading settings to get joystick deadzone setting
@@ -831,25 +816,17 @@ bool CApplication::CreateGUI()
   return true;
 }
 
-bool CApplication::InitWindow()
+bool CApplication::InitWindow(RESOLUTION res)
 {
-#ifdef TARGET_DARWIN_OSX
-  // force initial window creation to be windowed, if fullscreen, it will switch to it below
-  // fixes the white screen of death if starting fullscreen and switching to windowed.
-  bool bFullScreen = false;
-  if (!g_Windowing.CreateNewWindow(CSysInfo::GetAppName(), bFullScreen, CDisplaySettings::GetInstance().GetResolutionInfo(RES_WINDOW), OnEvent))
+  if (res == RES_INVALID)
+    res = CDisplaySettings::GetInstance().GetCurrentResolution();
+
+  bool bFullScreen = res != RES_WINDOW;
+  if (!g_Windowing.CreateNewWindow(CSysInfo::GetAppName(), bFullScreen, CDisplaySettings::GetInstance().GetResolutionInfo(res), OnEvent))
   {
     CLog::Log(LOGFATAL, "CApplication::Create: Unable to create window");
     return false;
   }
-#else
-  bool bFullScreen = CDisplaySettings::GetInstance().GetCurrentResolution() != RES_WINDOW;
-  if (!g_Windowing.CreateNewWindow(CSysInfo::GetAppName(), bFullScreen, CDisplaySettings::GetInstance().GetCurrentResolutionInfo(), OnEvent))
-  {
-    CLog::Log(LOGFATAL, "CApplication::Create: Unable to create window");
-    return false;
-  }
-#endif
 
   if (!g_Windowing.InitRenderSystem())
   {
@@ -857,7 +834,7 @@ bool CApplication::InitWindow()
     return false;
   }
   // set GUI res and force the clear of the screen
-  g_graphicsContext.SetVideoResolution(CDisplaySettings::GetInstance().GetCurrentResolution());
+  g_graphicsContext.SetVideoResolution(res);
   return true;
 }
 
@@ -1136,6 +1113,8 @@ bool CApplication::Initialize()
     StringUtils::Format(g_localizeStrings.Get(178).c_str(), g_sysinfo.GetAppName().c_str()),
     "special://xbmc/media/icon256x256.png", EventLevelBasic)));
 
+  g_peripherals.Initialise();
+
   // Load curl so curl_global_init gets called before any service threads
   // are started. Unloading will have no effect as curl is never fully unloaded.
   // To quote man curl_global_init:
@@ -1210,7 +1189,7 @@ bool CApplication::Initialize()
       uiInitializationFinished = firstWindow != WINDOW_STARTUP_ANIM;
 
       CStereoscopicsManager::GetInstance().Initialize();
-      CApplicationMessenger::GetInstance().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON); // send a blocking message to active AudioDSP engine
+      CApplicationMessenger::GetInstance().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON, ACTIVE_AE_DSP_SYNC_ACTIVATE); // send a blocking message to active AudioDSP engine
     }
 
   }
@@ -1243,6 +1222,8 @@ bool CApplication::Initialize()
   // register action listeners
   RegisterActionListener(&CSeekHandler::GetInstance());
   RegisterActionListener(&CPlayerController::GetInstance());
+
+  CRepositoryUpdater::GetInstance().Start();
 
   CLog::Log(LOGNOTICE, "initialize done");
 
@@ -1359,46 +1340,68 @@ void CApplication::OnSettingChanged(const CSetting *setting)
     return;
 
   const std::string &settingId = setting->GetId();
+  // check if we should ignore this change event due to changing skins in which case we have to
+  // change several settings and each one of them could lead to a complete skin reload which would
+  // result in multiple skin reloads. Therefore we manually specify to ignore specific settings
+  // which are going to be changed.
+  if (settingId == m_skinReloadSettingIgnore)
+  {
+    m_skinReloadSettingIgnore.clear();
+    return;
+  }
+
   if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN ||
       settingId == CSettings::SETTING_LOOKANDFEEL_FONT ||
+      settingId == CSettings::SETTING_LOOKANDFEEL_SKINTHEME ||
       settingId == CSettings::SETTING_LOOKANDFEEL_SKINCOLORS)
   {
-    // if the skin changes and the current theme is not the default one, reset
-    // the theme to the default value (which will also change lookandfeel.skincolors
-    // which in turn will reload the skin.  Similarly, if the current skin font is not
-    // the default, reset it as well.
-    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME) != "SKINDEFAULT")
+    // if the skin changes and the current color/theme/font is not the default one, reset
+    // the it to the default value
+    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN)
     {
-      CSettings::GetInstance().SetString(CSettings::SETTING_LOOKANDFEEL_SKINTHEME, "SKINDEFAULT");
-      return;
-    }
-    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_FONT) != "Default")
-    {
-      CSettings::GetInstance().SetString(CSettings::SETTING_LOOKANDFEEL_FONT, "Default");
-      return;
+      CSetting* skinRelatedSetting = CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS);
+      if (!skinRelatedSetting->IsDefault())
+      {
+        m_skinReloadSettingIgnore = skinRelatedSetting->GetId();
+        skinRelatedSetting->Reset();
     }
 
+      skinRelatedSetting = CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKINTHEME);
+      if (!skinRelatedSetting->IsDefault())
+    {
+        m_skinReloadSettingIgnore = skinRelatedSetting->GetId();
+        skinRelatedSetting->Reset();
+    }
+
+      setting = CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_FONT);
+      if (!setting->IsDefault())
+      {
+        m_skinReloadSettingIgnore = skinRelatedSetting->GetId();
+        skinRelatedSetting->Reset();
+      }
+  }
+  else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINTHEME)
+  {
+      CSettingString* skinColorsSetting = static_cast<CSettingString*>(CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS));
+      m_skinReloadSettingIgnore = skinColorsSetting->GetId();
+
+      // we also need to adjust the skin color setting
+    std::string colorTheme = ((CSettingString*)setting)->GetValue();
+    URIUtils::RemoveExtension(colorTheme);
+      if (setting->IsDefault() || StringUtils::EqualsNoCase(colorTheme, "Textures"))
+        skinColorsSetting->Reset();
+    else
+        skinColorsSetting->SetValue(colorTheme);
+    }
+
+    // reset the settings to ignore during changing skins
+    m_skinReloadSettingIgnore.clear();
+
+    // now we can finally reload skins
     std::string builtin("ReloadSkin");
     if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && !m_skinReverting)
       builtin += "(confirm)";
     CApplicationMessenger::GetInstance().PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, builtin);
-  }
-  else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINTHEME)
-  {
-    // also set the default color theme
-    std::string colorTheme = ((CSettingString*)setting)->GetValue();
-    URIUtils::RemoveExtension(colorTheme);
-    if (StringUtils::EqualsNoCase(colorTheme, "Textures"))
-      colorTheme = "defaults";
-
-    // check if we have to change the skin color
-    // if yes, it will trigger a call to ReloadSkin() in
-    // it's OnSettingChanged() callback
-    // if no we have to call ReloadSkin() ourselves
-    if (!StringUtils::EqualsNoCase(colorTheme, CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS)))
-      CSettings::GetInstance().SetString(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS, colorTheme);
-    else
-      CApplicationMessenger::GetInstance().PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, "ReloadSkin");
   }
   else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINZOOM)
   {
@@ -1411,7 +1414,7 @@ void CApplication::OnSettingChanged(const CSetting *setting)
     {
       if (((CSettingBool *) setting)->GetValue())
       {
-        CApplicationMessenger::GetInstance().PostMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON);
+        CApplicationMessenger::GetInstance().PostMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON, ACTIVE_AE_DSP_SYNC_ACTIVATE);
         CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_RESTART); // send non blocking media restart message
       }
       else
@@ -1480,9 +1483,8 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
   if (setting == NULL)
     return false;
 
-  const std::string &settingId = setting->GetId();
 #if defined(HAS_LIBAMCODEC)
-  if (settingId == CSettings::SETTING_VIDEOPLAYER_USEAMCODEC)
+  if (setting->GetId() == CSettings::SETTING_VIDEOPLAYER_USEAMCODEC)
   {
     // Do not permit amcodec to be used on non-aml platforms.
     // The setting will be hidden but the default value is true,
@@ -1495,14 +1497,14 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
   }
 #endif
 #if defined(TARGET_ANDROID)
-  if (settingId == CSettings::SETTING_VIDEOPLAYER_USESTAGEFRIGHT)
+  if (setting->GetId() == CSettings::SETTING_VIDEOPLAYER_USESTAGEFRIGHT)
   {
     CSettingBool *usestagefright = (CSettingBool*)setting;
     return usestagefright->SetValue(false);
   }
 #endif
 #if defined(TARGET_DARWIN_OSX)
-  if (settingId == CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)
+  if (setting->GetId() == CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)
   {
     CSettingString *audioDevice = (CSettingString*)setting;
     // Gotham and older didn't enumerate audio devices per stream on osx
@@ -1545,8 +1547,8 @@ void CApplication::ReloadSkin(bool confirm/*=false*/)
        user as to whether they want to keep the current skin. */
     if (confirm && !m_skinReverting)
     {
-      bool cancelled;
-      if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{13123}, CVariant{13111}, cancelled, CVariant{""}, CVariant{""}, 10000))
+      if (HELPERS::ShowYesNoDialogText(CVariant{13123}, CVariant{13111}, CVariant{""}, CVariant{""}, 10000) != 
+        DialogResponse::YES)
       {
         m_skinReverting = true;
         if (oldSkin.empty())
@@ -1578,15 +1580,9 @@ bool CApplication::Load(const TiXmlNode *settings)
   const TiXmlElement *audioElement = settings->FirstChildElement("audio");
   if (audioElement != NULL)
   {
-#ifndef TARGET_ANDROID
     XMLUtils::GetBoolean(audioElement, "mute", m_muted);
     if (!XMLUtils::GetFloat(audioElement, "fvolumelevel", m_volumeLevel, VOLUME_MINIMUM, VOLUME_MAXIMUM))
       m_volumeLevel = VOLUME_MAXIMUM;
-#else
-    // Use system volume settings
-    m_volumeLevel = CXBMCApp::GetSystemVolume();
-    m_muted = (m_volumeLevel == 0);
-#endif
   }
 
   return true;
@@ -2160,10 +2156,10 @@ bool CApplication::OnAction(const CAction &action)
   // built in functions : execute the built-in
   if (action.GetID() == ACTION_BUILT_IN_FUNCTION)
   {
-    if (!CBuiltins::IsSystemPowerdownCommand(action.GetName()) ||
+    if (!CBuiltins::GetInstance().IsSystemPowerdownCommand(action.GetName()) ||
         g_PVRManager.CanSystemPowerdown())
     {
-      CBuiltins::Execute(action.GetName());
+      CBuiltins::GetInstance().Execute(action.GetName());
       m_navigationTimer.StartZero();
     }
     return true;
@@ -2196,16 +2192,16 @@ bool CApplication::OnAction(const CAction &action)
     if (tag)
     {
       *m_itemCurrentFile->GetMusicInfoTag() = *tag;
-      char rating = tag->GetRating();
+      char rating = tag->GetUserrating();
       bool needsUpdate(false);
       if (rating > '0' && action.GetID() == ACTION_DECREASE_RATING)
       {
-        m_itemCurrentFile->GetMusicInfoTag()->SetRating(rating - 1);
+        m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(rating - 1);
         needsUpdate = true;
       }
       else if (rating < '5' && action.GetID() == ACTION_INCREASE_RATING)
       {
-        m_itemCurrentFile->GetMusicInfoTag()->SetRating(rating + 1);
+        m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(rating + 1);
         needsUpdate = true;
       }
       if (needsUpdate)
@@ -2213,7 +2209,40 @@ bool CApplication::OnAction(const CAction &action)
         CMusicDatabase db;
         if (db.Open())      // OpenForWrite() ?
         {
-          db.SetSongRating(m_itemCurrentFile->GetPath(), m_itemCurrentFile->GetMusicInfoTag()->GetRating());
+          db.SetSongUserrating(m_itemCurrentFile->GetPath(), m_itemCurrentFile->GetMusicInfoTag()->GetUserrating());
+          db.Close();
+        }
+        // send a message to all windows to tell them to update the fileitem (eg playlistplayer, media windows)
+        CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_UPDATE_ITEM, 0, m_itemCurrentFile);
+        g_windowManager.SendMessage(msg);
+      }
+    }
+    return true;
+  }
+  else if ((action.GetID() == ACTION_INCREASE_RATING || action.GetID() == ACTION_DECREASE_RATING) && m_pPlayer->IsPlayingVideo())
+  {
+    const CVideoInfoTag *tag = g_infoManager.GetCurrentMovieTag();
+    if (tag)
+    {
+      *m_itemCurrentFile->GetVideoInfoTag() = *tag;
+      int rating = tag->m_iUserRating;
+      bool needsUpdate(false);
+      if (rating > 1 && action.GetID() == ACTION_DECREASE_RATING)
+      {
+        m_itemCurrentFile->GetVideoInfoTag()->m_iUserRating = rating - 1;
+        needsUpdate = true;
+      }
+      else if (rating < 10 && action.GetID() == ACTION_INCREASE_RATING)
+      {
+        m_itemCurrentFile->GetVideoInfoTag()->m_iUserRating = rating + 1;
+        needsUpdate = true;
+      }
+      if (needsUpdate)
+      {
+        CVideoDatabase db;
+        if (db.Open())
+        {
+          db.SetVideoUserRating(m_itemCurrentFile->GetVideoInfoTag()->m_iDbId, m_itemCurrentFile->GetVideoInfoTag()->m_iUserRating, m_itemCurrentFile->GetVideoInfoTag()->m_type);
           db.Close();
         }
         // send a message to all windows to tell them to update the fileitem (eg playlistplayer, media windows)
@@ -2287,9 +2316,6 @@ bool CApplication::OnAction(const CAction &action)
       if (!m_pPlayer->IsPaused() && m_pPlayer->GetPlaySpeed() != 1)
         m_pPlayer->SetPlaySpeed(1, g_application.m_muted);
 
-      #ifdef HAS_KARAOKE
-      m_pKaraokeMgr->SetPaused( m_pPlayer->IsPaused() );
-#endif
       g_audioManager.Enable(m_pPlayer->IsPaused());
       return true;
     }
@@ -2481,35 +2507,12 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     break;
   
   case TMSG_SHUTDOWN:
-  {
-    switch (CSettings::GetInstance().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))
-    {
-    case POWERSTATE_SHUTDOWN:
-      CApplicationMessenger::GetInstance().PostMsg(TMSG_POWERDOWN);
-      break;
-
-    case POWERSTATE_SUSPEND:
-      CApplicationMessenger::GetInstance().PostMsg(TMSG_SUSPEND);
-      break;
-
-    case POWERSTATE_HIBERNATE:
-      CApplicationMessenger::GetInstance().PostMsg(TMSG_HIBERNATE);
-      break;
-
-    case POWERSTATE_QUIT:
-      CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
-      break;
-
-    case POWERSTATE_MINIMIZE:
-      CApplicationMessenger::GetInstance().PostMsg(TMSG_MINIMIZE);
+    HandleShutdownMessage();
       break;
 
     case TMSG_RENDERER_FLUSH:
       g_renderManager.Flush();
       break;
-    }
-  }
-  break;
 
   case TMSG_HIBERNATE:
     g_powerManager.Hibernate();
@@ -2546,8 +2549,10 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   }
   break;
 
+#ifdef TARGET_ANDROID
   case TMSG_DISPLAY_SETUP:
-    *static_cast<bool*>(pMsg->lpVoid) = InitWindow();
+    // We might come from a refresh rate switch destroying the native window; use the context resolution
+    *static_cast<bool*>(pMsg->lpVoid) = InitWindow(g_graphicsContext.GetVideoResolution());
     SetRenderGUI(true);
     break;
 
@@ -2555,6 +2560,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     *static_cast<bool*>(pMsg->lpVoid) = DestroyWindow();
     SetRenderGUI(false);
     break;
+#endif
 
   case TMSG_SETPVRMANAGERSTATE:
     if (pMsg->param1 != 0)
@@ -2641,7 +2647,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     break;
 
   case TMSG_EXECUTE_BUILT_IN:
-    CBuiltins::Execute(pMsg->strParam.c_str());
+    CBuiltins::GetInstance().Execute(pMsg->strParam.c_str());
     break;
 
   case TMSG_PICTURE_SHOW:
@@ -2734,11 +2740,42 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   break;
 
   case TMSG_LOADPROFILE:
-  {
     CGUIWindowLoginScreen::LoadProfile(pMsg->param1);
     break;
+
+  default:
+    CLog::Log(LOGERROR, "%s: Unhandled threadmessage sent, %u", __FUNCTION__, pMsg->dwMessage);
+    break;
+  }
   }
 
+void CApplication::HandleShutdownMessage()
+{
+  switch (CSettings::GetInstance().GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))
+  {
+  case POWERSTATE_SHUTDOWN:
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_POWERDOWN);
+    break;
+
+  case POWERSTATE_SUSPEND:
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_SUSPEND);
+    break;
+
+  case POWERSTATE_HIBERNATE:
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_HIBERNATE);
+    break;
+
+  case POWERSTATE_QUIT:
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
+    break;
+
+  case POWERSTATE_MINIMIZE:
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_MINIMIZE);
+    break;
+
+  default:
+    CLog::Log(LOGERROR, "%s: No valid shutdownstate matched", __FUNCTION__);
+    break;
   }
 }
 
@@ -3426,14 +3463,6 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   // reset VideoStartWindowed as it's a temp setting
   CMediaSettings::GetInstance().SetVideoStartWindowed(false);
 
-#ifdef HAS_KARAOKE
-  //We have to stop parsing a cdg before mplayer is deallocated
-  // WHY do we have to do this????
-  if (m_pKaraokeMgr)
-    m_pKaraokeMgr->Stop();
-#endif
-
-
   {
     CSingleLock lock(m_playStateMutex);
     // tell system we are starting a file
@@ -3882,10 +3911,6 @@ void CApplication::StopPlaying()
   int iWin = g_windowManager.GetActiveWindow();
   if ( m_pPlayer->IsPlaying() )
   {
-#ifdef HAS_KARAOKE
-    if( m_pKaraokeMgr )
-      m_pKaraokeMgr->Stop();
-#endif
     m_pPlayer->CloseFile();
 
     // turn off visualisation window when stopping
@@ -4207,7 +4232,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
 
   case GUI_MSG_PLAYBACK_STARTED:
     {
-#ifdef TARGET_DARWIN
+#ifdef TARGET_DARWIN_IOS
       CDarwinUtils::SetScheduling(message.GetMessage());
 #endif
       CPlayList playList = g_playlistPlayer.GetPlaylist(g_playlistPlayer.GetCurrentPlaylist());
@@ -4237,30 +4262,6 @@ bool CApplication::OnMessage(CGUIMessage& message)
       param["player"]["speed"] = 1;
       param["player"]["playerid"] = g_playlistPlayer.GetCurrentPlaylist();
       CAnnouncementManager::GetInstance().Announce(Player, "xbmc", "OnPlay", m_itemCurrentFile, param);
-
-      if (m_pPlayer->IsPlayingAudio())
-      {
-        // Start our cdg parser as appropriate
-#ifdef HAS_KARAOKE
-        if (m_pKaraokeMgr && CSettings::GetInstance().GetBool(CSettings::SETTING_KARAOKE_ENABLED) && !m_itemCurrentFile->IsInternetStream())
-        {
-          m_pKaraokeMgr->Stop();
-          if (m_itemCurrentFile->IsMusicDb())
-          {
-            if (!m_itemCurrentFile->HasMusicInfoTag() || !m_itemCurrentFile->GetMusicInfoTag()->Loaded())
-            {
-              IMusicInfoTagLoader* tagloader = CMusicInfoTagLoaderFactory::CreateLoader(*m_itemCurrentFile);
-              tagloader->Load(m_itemCurrentFile->GetPath(),*m_itemCurrentFile->GetMusicInfoTag());
-              delete tagloader;
-            }
-            m_pKaraokeMgr->Start(m_itemCurrentFile->GetMusicInfoTag()->GetURL());
-          }
-          else
-            m_pKaraokeMgr->Start(m_itemCurrentFile->GetPath());
-        }
-#endif
-      }
-
       return true;
     }
     break;
@@ -4321,11 +4322,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
   case GUI_MSG_PLAYBACK_ENDED:
   case GUI_MSG_PLAYLISTPLAYER_STOPPED:
     {
-#ifdef HAS_KARAOKE
-      if (m_pKaraokeMgr )
-        m_pKaraokeMgr->Stop();
-#endif
-#ifdef TARGET_DARWIN
+#ifdef TARGET_DARWIN_IOS
       CDarwinUtils::SetScheduling(message.GetMessage());
 #endif
       // first check if we still have items in the stack to play
@@ -4421,27 +4418,30 @@ bool CApplication::OnMessage(CGUIMessage& message)
     break;
   case GUI_MSG_EXECUTE:
     if (message.GetNumStringParams())
-      return ExecuteXBMCAction(message.GetStringParam());
+      return ExecuteXBMCAction(message.GetStringParam(), message.GetItem());
     break;
   }
   return false;
 }
 
-bool CApplication::ExecuteXBMCAction(std::string actionStr)
+bool CApplication::ExecuteXBMCAction(std::string actionStr, const CGUIListItemPtr &item /* = NULL */)
 {
   // see if it is a user set string
 
   //We don't know if there is unsecure information in this yet, so we
   //postpone any logging
   const std::string in_actionStr(actionStr);
+  if (item)
+    actionStr = CGUIInfoLabel::GetItemLabel(actionStr, item.get());
+  else
   actionStr = CGUIInfoLabel::GetLabel(actionStr);
 
   // user has asked for something to be executed
-  if (CBuiltins::HasCommand(actionStr))
+  if (CBuiltins::GetInstance().HasCommand(actionStr))
   {
-    if (!CBuiltins::IsSystemPowerdownCommand(actionStr) ||
+    if (!CBuiltins::GetInstance().IsSystemPowerdownCommand(actionStr) ||
         g_PVRManager.CanSystemPowerdown())
-      CBuiltins::Execute(actionStr);
+      CBuiltins::GetInstance().Execute(actionStr);
   }
   else
   {
@@ -4595,13 +4595,6 @@ void CApplication::ProcessSlow()
   // check for any idle curl connections
   g_curlInterface.CheckIdle();
 
-  // check for any idle myth sessions
-
-#ifdef HAS_KARAOKE
-  if ( m_pKaraokeMgr )
-    m_pKaraokeMgr->ProcessSlow();
-#endif
-
   if (!m_pPlayer->IsPlayingVideo())
     g_largeTextureManager.CleanupUnusedImages();
 
@@ -4632,10 +4625,6 @@ void CApplication::ProcessSlow()
 #endif
 
   g_mediaManager.ProcessEvents();
-
-  if (!m_pPlayer->IsPlayingVideo() &&
-      CSettings::GetInstance().GetInt(CSettings::SETTING_GENERAL_ADDONUPDATES) != AUTO_UPDATES_NEVER)
-    CAddonInstaller::GetInstance().UpdateRepos();
 
   CAEFactory::GarbageCollect();
 

@@ -39,11 +39,10 @@
 #include "URL.h"
 
 using namespace XFILE;
-using namespace std;
 using namespace ADDON;
 using namespace KODI::MESSAGING;
 
-map<int, CPluginDirectory *> CPluginDirectory::globalHandles;
+std::map<int, CPluginDirectory *> CPluginDirectory::globalHandles;
 int CPluginDirectory::handleCounter = 0;
 CCriticalSection CPluginDirectory::m_handleLock;
 
@@ -80,7 +79,7 @@ void CPluginDirectory::removeHandle(int handle)
 CPluginDirectory *CPluginDirectory::dirFromHandle(int handle)
 {
   CSingleLock lock(m_handleLock);
-  map<int, CPluginDirectory *>::iterator i = globalHandles.find(handle);
+  std::map<int, CPluginDirectory *>::iterator i = globalHandles.find(handle);
   if (i != globalHandles.end())
     return i->second;
   CLog::Log(LOGWARNING, "Attempt to use invalid handle %i", handle);
@@ -121,7 +120,7 @@ bool CPluginDirectory::StartScript(const std::string& strPath, bool retrievingDi
 
   // setup our parameters to send the script
   std::string strHandle = StringUtils::Format("%i", handle);
-  vector<string> argv;
+  std::vector<std::string> argv;
   argv.push_back(basePath);
   argv.push_back(strHandle);
   argv.push_back(options);
@@ -148,21 +147,20 @@ bool CPluginDirectory::StartScript(const std::string& strPath, bool retrievingDi
 bool CPluginDirectory::GetPluginResult(const std::string& strPath, CFileItem &resultItem)
 {
   CURL url(strPath);
-  CPluginDirectory* newDir = new CPluginDirectory();
+  CPluginDirectory newDir;
 
-  bool success = newDir->StartScript(strPath, false);
+  bool success = newDir.StartScript(strPath, false);
 
   if (success)
   { // update the play path and metadata, saving the old one as needed
     if (!resultItem.HasProperty("original_listitem_url"))
       resultItem.SetProperty("original_listitem_url", resultItem.GetPath());
-    resultItem.SetPath(newDir->m_fileResult->GetPath());
-    resultItem.SetMimeType(newDir->m_fileResult->GetMimeType());
-    resultItem.UpdateInfo(*newDir->m_fileResult);
-    if (newDir->m_fileResult->HasVideoInfoTag() && newDir->m_fileResult->GetVideoInfoTag()->m_resumePoint.IsSet())
+    resultItem.SetPath(newDir.m_fileResult->GetPath());
+    resultItem.SetMimeType(newDir.m_fileResult->GetMimeType());
+    resultItem.UpdateInfo(*newDir.m_fileResult);
+    if (newDir.m_fileResult->HasVideoInfoTag() && newDir.m_fileResult->GetVideoInfoTag()->m_resumePoint.IsSet())
       resultItem.m_lStartOffset = STARTOFFSET_RESUME; // resume point set in the resume item, so force resume
   }
-  delete newDir;
 
   return success;
 }
@@ -346,10 +344,8 @@ void CPluginDirectory::AddSortMethod(int handle, SORT_METHOD sortMethod, const s
       }
     case SORT_METHOD_PLAYLIST_ORDER:
       {
-        std::string strTrackLeft=CSettings::GetInstance().GetString(CSettings::SETTING_MUSICFILES_TRACKFORMAT);
-        std::string strTrackRight=CSettings::GetInstance().GetString(CSettings::SETTING_MUSICFILES_TRACKFORMATRIGHT);
-
-        dir->m_listItems->AddSortMethod(SortByPlaylistOrder, 559, LABEL_MASKS(strTrackLeft, strTrackRight));
+        std::string strTrack=CSettings::GetInstance().GetString(CSettings::SETTING_MUSICFILES_TRACKFORMAT);
+        dir->m_listItems->AddSortMethod(SortByPlaylistOrder, 559, LABEL_MASKS(strTrack, "%D"));
         break;
       }
     case SORT_METHOD_EPISODE:
@@ -437,7 +433,7 @@ bool CPluginDirectory::RunScriptWithParams(const std::string& strPath)
 
   // setup our parameters to send the script
   std::string strHandle = StringUtils::Format("%i", -1);
-  vector<string> argv;
+  std::vector<std::string> argv;
   argv.push_back(basePath);
   argv.push_back(strHandle);
   argv.push_back(options);

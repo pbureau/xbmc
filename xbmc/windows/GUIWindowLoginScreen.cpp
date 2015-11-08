@@ -30,7 +30,7 @@
 #ifdef HAS_JSONRPC
 #include "interfaces/json-rpc/JSONRPC.h"
 #endif
-#include "interfaces/Builtins.h"
+#include "interfaces/builtins/Builtins.h"
 #include "utils/log.h"
 #include "utils/Weather.h"
 #include "utils/StringUtils.h"
@@ -148,7 +148,7 @@ bool CGUIWindowLoginScreen::OnAction(const CAction &action)
     StringUtils::ToLower(actionName);
     if ((actionName.find("shutdown") != std::string::npos) &&
         PVR::g_PVRManager.CanSystemPowerdown())
-      CBuiltins::Execute(action.GetName());
+      CBuiltins::GetInstance().Execute(action.GetName());
     return true;
   }
   return CGUIWindow::OnAction(action);
@@ -337,7 +337,7 @@ void CGUIWindowLoginScreen::LoadProfile(unsigned int profile)
   CStereoscopicsManager::GetInstance().Initialize();
 
   // start audio DSP related services with a blocking message
-  CApplicationMessenger::GetInstance().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON);
+  CApplicationMessenger::GetInstance().SendMsg(TMSG_SETAUDIODSPSTATE, ACTIVE_AE_DSP_STATE_ON, ACTIVE_AE_DSP_SYNC_ACTIVATE);
 
   // if the user interfaces has been fully initialized let everyone know
   if (uiInitializationFinished)

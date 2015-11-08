@@ -93,6 +93,19 @@
             <show more="true" details="true">installed</show>
           </control>
         </setting>
+        <setting id="lookandfeel.stereostrength" type="integer" label="36550" help="36551">
+          <level>2</level>
+          <default>5</default>
+          <constraints>
+            <minimum>0</minimum>
+            <step>1</step>
+            <maximum>10</maximum>
+          </constraints>
+          <dependencies>
+            <dependency type="update" setting="lookandfeel.skin" />
+          </dependencies>
+          <control type="spinner" format="string" />
+        </setting>
       </group>
       <group id="2">
         <setting id="lookandfeel.enablerssfeeds" type="boolean" label="13305" help="36111">
@@ -463,6 +476,16 @@
           <default>false</default>
           <control type="toggle" />
         </setting>
+        <setting id="videolibrary.groupsingleitemsets" type="boolean" label="20470" help="36157">
+          <level>0</level>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>
+        <setting id="videolibrary.showemptytvshows" type="boolean" label="20471" help="36163">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>
       </group>
       <group id="2">
         <setting id="videolibrary.updateonstartup" type="boolean" label="22000" help="36146">
@@ -497,7 +520,7 @@
           <level>1</level>
           <default>original</default>
           <constraints>
-            <options>streamlanguages</options>
+            <options>audiostreamlanguages</options>
           </constraints>
           <control type="list" format="string" />
         </setting>
@@ -863,7 +886,7 @@
           <level>1</level>
           <default>original</default>
           <constraints>
-            <options>streamlanguages</options>
+            <options>subtitlestreamlanguages</options>
           </constraints>
           <control type="list" format="string" />
         </setting>
@@ -979,7 +1002,7 @@
           <level>1</level>
           <default>English</default>
           <constraints>
-            <options>streamlanguages</options>
+            <options>subtitledownloadlanguages</options>
             <delimiter>,</delimiter>
             <minimumitems>1</minimumitems>
           </constraints>
@@ -1070,6 +1093,18 @@
         </setting>
       </group>
       <group id="2">
+        <setting id="bluray.playerregion" type="integer" label="14121" help="38017">
+          <level>1</level>
+          <default>1</default> <!-- region A -->
+          <constraints>
+            <options>
+              <option label="14122">1</option> <!-- region A -->
+              <option label="14123">2</option> <!-- region B -->
+              <option label="14124">4</option> <!-- region C -->
+            </options>
+          </constraints>
+          <control type="spinner" format="string" />
+        </setting>
         <setting id="disc.playback" type="integer" label="14102" help="37031">
           <level>1</level>
           <default>0</default> <!-- default -->
@@ -1374,6 +1409,42 @@
           <control type="spinner" format="string" />
         </setting>
       </group>
+      <group id="4">
+        <setting id="pvrplayback.enableradiords" type="boolean" label="29980" help="29981">
+          <level>1</level>
+          <default>true</default>
+          <control type="toggle" />
+        </setting>
+        <setting id="pvrplayback.trafficadvisory" type="boolean" label="29982" help="29983">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle" />
+          <dependencies>
+            <dependency type="enable" setting="pvrplayback.enableradiords">true</dependency>
+          </dependencies>
+        </setting>
+        <setting id="pvrplayback.trafficadvisoryvolume" type="integer" label="29984" help="29985">
+          <level>2</level>
+          <default>10</default>
+          <constraints>
+            <minimum>0</minimum>
+            <step>1</step>
+            <maximum>20</maximum>
+          </constraints>
+          <control type="spinner" format="string">
+            <formatlabel>14050</formatlabel>
+          </control>
+          <dependencies>
+            <dependency type="enable" setting="pvrplayback.enableradiords">true</dependency>
+            <dependency type="enable" setting="pvrplayback.trafficadvisory">true</dependency>
+          </dependencies>
+        </setting>
+        <setting id="pvrplayback.sendrdstrafficmsg" type="boolean" label="29986" help="29987">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>
+      </group>
     </category>
     <category id="pvrrecord" label="19043" help="36233">
       <group id="1">
@@ -1413,27 +1484,19 @@
         </setting>
         <setting id="pvrrecord.marginstart" type="integer" label="19175" help="36237">
           <level>2</level>
-          <default>0</default>
+          <default>0</default> <!-- 0 mins -->
           <constraints>
-            <minimum>0</minimum>
-            <step>1</step>
-            <maximum>60</maximum>
+            <options>pvrrecordmargins</options>
           </constraints>
-          <control type="spinner" format="string">
-            <formatlabel>14044</formatlabel>
-          </control>
+          <control type="list" format="string"/>
         </setting>
         <setting id="pvrrecord.marginend" type="integer" label="19176" help="36238">
           <level>2</level>
-          <default>0</default>
+          <default>0</default> <!-- 0 mins -->
           <constraints>
-            <minimum>0</minimum>
-            <step>1</step>
-            <maximum>60</maximum>
+            <options>pvrrecordmargins</options>
           </constraints>
-          <control type="spinner" format="string">
-            <formatlabel>14044</formatlabel>
-          </control>
+          <control type="list" format="string"/>
         </setting>
         <setting id="pvrrecord.preventduplicateepisodes" type="integer" label="812" help="36423">
           <level>2</level>
@@ -1774,7 +1837,7 @@
       <group id="5">
         <setting id="musicplayer.visualisation" type="addon" label="250" help="36273">
           <level>0</level>
-          <default>visualization.glspectrum</default>
+          <default>visualization.spectrum</default>
           <constraints>
             <addontype>xbmc.player.musicviz</addontype>
             <allowempty>true</allowempty>
@@ -1799,13 +1862,6 @@
             <heading>16016</heading>
           </control>
         </setting>
-        <setting id="musicfiles.trackformatright" type="string" label="13387" help="36276">
-          <level>2</level>
-          <default>%D</default>
-          <control type="edit" format="string">
-            <heading>16016</heading>
-          </control>
-        </setting>
         <setting id="musicfiles.nowplayingtrackformat" type="string" label="13307" help="36277">
           <level>4</level>
           <default></default>
@@ -1816,27 +1872,7 @@
             <heading>16016</heading>
           </control>
         </setting>
-        <setting id="musicfiles.nowplayingtrackformatright" type="string" label="13387" help="36278">
-          <level>4</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string">
-            <heading>16016</heading>
-          </control>
-        </setting>
         <setting id="musicfiles.librarytrackformat" type="string" label="13307" help="36279">
-          <level>4</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string">
-            <heading>16016</heading>
-          </control>
-        </setting>
-        <setting id="musicfiles.librarytrackformatright" type="string" label="13387" help="36280">
           <level>4</level>
           <default></default>
           <constraints>
@@ -1913,94 +1949,6 @@
         </setting>
       </group>
     </category>
-    <category id="karaoke" label="13327" help="36292">
-      <requirement>HAS_KARAOKE</requirement>
-      <group id="1">
-        <setting id="karaoke.enabled" type="boolean" label="13323" help="36293">
-          <level>2</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="karaoke.autopopupselector" type="boolean" label="22037" help="36294">
-          <level>2</level>
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-      </group>
-      <group id="2">
-        <setting id="karaoke.font" type="string" label="22030" help="36295">
-          <level>2</level>
-          <default>arial.ttf</default>
-          <constraints>
-            <options>fonts</options>
-          </constraints>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-          </dependencies>
-          <control type="list" format="string" />
-        </setting>
-        <setting id="karaoke.fontheight" type="integer" parent="karaoke.font" label="22031" help="36296">
-          <level>2</level>
-          <default>36</default>
-          <constraints>
-            <minimum>16</minimum>
-            <step>2</step>
-            <maximum>74</maximum>
-          </constraints>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-            <dependency type="update" setting="karaoke.font" />
-          </dependencies>
-          <control type="spinner" format="string" />
-        </setting>
-        <setting id="karaoke.fontcolors" type="integer" parent="karaoke.font" label="22032" help="36297">
-          <level>2</level>
-          <default>0</default> <!-- white/green -->
-          <constraints>
-            <options>
-              <option label="22040">0</option> <!-- white/green -->
-              <option label="22041">1</option> <!-- white/red -->
-              <option label="22042">2</option> <!-- white/blue -->
-              <option label="22043">3</option> <!-- black/white -->
-            </options>
-          </constraints>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-          </dependencies>
-          <control type="list" format="string" />
-        </setting>
-        <setting id="karaoke.charset" type="string" parent="karaoke.font" label="22033" help="36298">
-          <level>2</level>
-          <default>DEFAULT</default>
-          <constraints>
-            <options>charsets</options>
-          </constraints>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-          </dependencies>
-          <control type="list" format="string" />
-        </setting>
-      </group>
-      <group id="3">
-        <setting id="karaoke.export" type="action" label="22038" help="36299">
-          <level>2</level>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-          </dependencies>
-          <control type="button" format="action" />
-        </setting>
-        <setting id="karaoke.importcsv" type="action" label="22036" help="36300">
-          <level>2</level>
-          <dependencies>
-            <dependency type="enable" setting="karaoke.enabled">true</dependency>
-          </dependencies>
-          <control type="button" format="action" />
-        </setting>
-      </group>
-    </category>
     <category id="mymusic" label="0" help="0">
       <group id="1">
         <setting id="mymusic.startwindow" type="integer" label="0" help="36301">
@@ -2024,17 +1972,7 @@
   <section id="pictures" label="1" help="36304">
     <category id="pictures" label="14081" help="36305">
       <group id="1">
-        <setting id="pictures.usetags" type="boolean" label="14082" help="36306">
-          <level>0</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
         <setting id="pictures.generatethumbs" type="boolean" label="13360" help="36307">
-          <level>1</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="pictures.useexifrotation" type="boolean" label="20184" help="36308">
           <level>1</level>
           <default>true</default>
           <control type="toggle" />
@@ -2357,7 +2295,7 @@
             <hidden>true</hidden>
           </control>
         </setting>
-        <setting id="services.airplayios8compat" type="boolean" parent="services.airplay" label="1268" help="36549">
+        <setting id="services.airplayvideosupport" type="boolean" parent="services.airplay" label="1268" help="36549">
           <level>3</level>
           <default>true</default>
           <dependencies>
@@ -2614,6 +2552,22 @@
             <options>audiostreamsilence</options>
           </constraints>
           <control type="list" format="string" />
+        </setting>
+        <setting id="audiooutput.supportdtshdcpudecoding" type="boolean" label="38019" help="38020">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle" />
+          <dependencies>
+            <dependency type="enable">
+            <or>
+              <condition setting="audiooutput.passthrough" operator="is">false</condition>
+              <and>
+                <condition setting="audiooutput.dtshdpassthrough" operator="is">false</condition>
+                <condition setting="audiooutput.dtspassthrough" operator="is">false</condition>
+              </and>
+            </or>
+            </dependency>
+          </dependencies>
         </setting>
       </group>
       <group id="2">

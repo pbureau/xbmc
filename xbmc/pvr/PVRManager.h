@@ -19,17 +19,18 @@
  *
  */
 
-#include <map>
-
+#include "FileItem.h"
 #include "addons/include/xbmc_pvr_types.h"
+#include "interfaces/IAnnouncer.h"
 #include "settings/lib/ISettingCallback.h"
 #include "threads/Event.h"
 #include "threads/Thread.h"
 #include "utils/JobManager.h"
 #include "utils/Observer.h"
-#include "interfaces/IAnnouncer.h"
+
 #include "pvr/recordings/PVRRecording.h"
-#include "FileItem.h"
+
+#include <map>
 
 class CGUIDialogProgressBarHandle;
 class CStopWatch;
@@ -111,7 +112,7 @@ namespace PVR
      */
     virtual ~CPVRManager(void);
 
-    virtual void Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, const char *message, const CVariant &data);
+    virtual void Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, const char *message, const CVariant &data) override;
 
     /*!
      * @brief Get the instance of the PVRManager.
@@ -119,8 +120,8 @@ namespace PVR
      */
     static CPVRManager &GetInstance();
 
-    virtual void OnSettingChanged(const CSetting *setting);
-    virtual void OnSettingAction(const CSetting *setting);
+    virtual void OnSettingChanged(const CSetting *setting) override;
+    virtual void OnSettingAction(const CSetting *setting) override;
 
     /*!
      * @brief Get the channel groups container.
@@ -182,9 +183,8 @@ namespace PVR
     /*!
      * @brief Mark an add-on as outdated so it will be upgrade when it's possible again
      * @param strAddonId The add-on to mark as outdated
-     * @param strReferer The referer to use when downloading
      */
-    void MarkAsOutdated(const std::string& strAddonId, const std::string& strReferer);
+    void MarkAsOutdated(const std::string& strAddonId);
 
     /*!
      * @return True when updated, false when the pvr manager failed to load after the attempt
@@ -584,7 +584,7 @@ namespace PVR
     /*!
      * @brief PVR update and control thread.
      */
-    virtual void Process(void);
+    virtual void Process(void) override;
 
   private:
     /*!
@@ -679,7 +679,7 @@ namespace PVR
     CCriticalSection                m_managerStateMutex;
     ManagerState                    m_managerState;
     CStopWatch                     *m_parentalTimer;
-    std::map<std::string, std::string> m_outdatedAddons;
+    std::vector<std::string>        m_outdatedAddons;
     static int                      m_pvrWindowIds[10];
   };
 

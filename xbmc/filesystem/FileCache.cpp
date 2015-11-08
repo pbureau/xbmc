@@ -19,7 +19,6 @@
  */
 
 #include "threads/SystemClock.h"
-#include "utils/AutoPtrHandle.h"
 #include "FileCache.h"
 #include "threads/Thread.h"
 #include "File.h"
@@ -30,10 +29,14 @@
 #include "utils/log.h"
 #include "settings/AdvancedSettings.h"
 
+#if !defined(TARGET_WINDOWS)
+#include "linux/ConvUtils.h" //GetLastError()
+#endif
+
 #include <cassert>
 #include <algorithm>
+#include <memory>
 
-using namespace AUTOPTR;
 using namespace XFILE;
 
 #define READ_CACHE_CHUNK_SIZE (64*1024)
@@ -249,7 +252,7 @@ void CFileCache::Process()
   }
 
   // create our read buffer
-  auto_aptr<char> buffer(new char[m_chunkSize]);
+  std::unique_ptr<char[]> buffer(new char[m_chunkSize]);
   if (buffer.get() == NULL)
   {
     CLog::Log(LOGERROR, "%s - failed to allocate read buffer", __FUNCTION__);

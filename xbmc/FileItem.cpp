@@ -42,6 +42,7 @@
 #include "music/MusicDatabase.h"
 #include "epg/Epg.h"
 #include "pvr/channels/PVRChannel.h"
+#include "pvr/channels/PVRRadioRDSInfoTag.h"
 #include "pvr/recordings/PVRRecording.h"
 #include "pvr/timers/PVRTimerInfoTag.h"
 #include "video/VideoInfoTag.h"
@@ -56,7 +57,6 @@
 #include "utils/RegExp.h"
 #include "utils/log.h"
 #include "utils/Variant.h"
-#include "music/karaoke/karaokelyricsfactory.h"
 #include "utils/Mime.h"
 
 #include <assert.h>
@@ -221,7 +221,7 @@ CFileItem::CFileItem(const CArtist& artist)
   m_strPath = artist.strArtist;
   m_bIsFolder = true;
   URIUtils::AddSlashAtEnd(m_strPath);
-  GetMusicInfoTag()->SetArtist(artist.strArtist);
+  GetMusicInfoTag()->SetArtist(artist);
   FillInMimeType(false);
 }
 
@@ -384,6 +384,7 @@ const CFileItem& CFileItem::operator=(const CFileItem& item)
   m_pvrChannelInfoTag = item.m_pvrChannelInfoTag;
   m_pvrRecordingInfoTag = item.m_pvrRecordingInfoTag;
   m_pvrTimerInfoTag = item.m_pvrTimerInfoTag;
+  m_pvrRadioRDSInfoTag = item.m_pvrRadioRDSInfoTag;
 
   m_lStartOffset = item.m_lStartOffset;
   m_lStartPartNumber = item.m_lStartPartNumber;
@@ -401,6 +402,7 @@ const CFileItem& CFileItem::operator=(const CFileItem& item)
   m_extrainfo = item.m_extrainfo;
   m_specialSort = item.m_specialSort;
   m_bIsAlbum = item.m_bIsAlbum;
+  m_doContentLookup = item.m_doContentLookup;
   return *this;
 }
 
@@ -452,6 +454,7 @@ void CFileItem::Reset()
   m_pvrChannelInfoTag.reset();
   m_pvrRecordingInfoTag.reset();
   m_pvrTimerInfoTag.reset();
+  m_pvrRadioRDSInfoTag.reset();
   delete m_pictureInfoTag;
   m_pictureInfoTag=NULL;
   m_extrainfo.clear();
@@ -489,6 +492,7 @@ void CFileItem::Archive(CArchive& ar)
     ar << m_mimetype;
     ar << m_extrainfo;
     ar << m_specialSort;
+    ar << m_doContentLookup;
 
     if (m_musicInfoTag)
     {
@@ -501,6 +505,13 @@ void CFileItem::Archive(CArchive& ar)
     {
       ar << 1;
       ar << *m_videoInfoTag;
+    }
+    else
+      ar << 0;
+    if (m_pvrRadioRDSInfoTag)
+    {
+      ar << 1;
+      ar << *m_pvrRadioRDSInfoTag;
     }
     else
       ar << 0;
@@ -539,6 +550,7 @@ void CFileItem::Archive(CArchive& ar)
     ar >> m_extrainfo;
     ar >> temp;
     m_specialSort = (SortSpecial)temp;
+    ar >> m_doContentLookup;
 
     int iType;
     ar >> iType;
@@ -547,6 +559,9 @@ void CFileItem::Archive(CArchive& ar)
     ar >> iType;
     if (iType == 1)
       ar >> *GetVideoInfoTag();
+    ar >> iType;
+    if (iType == 1)
+      ar >> *m_pvrRadioRDSInfoTag;
     ar >> iType;
     if (iType == 1)
       ar >> *GetPictureInfoTag();
@@ -573,6 +588,9 @@ void CFileItem::Serialize(CVariant& value) const
 
   if (m_videoInfoTag)
     (*m_videoInfoTag).Serialize(value["videoInfoTag"]);
+
+  if (m_pvrRadioRDSInfoTag)
+    m_pvrRadioRDSInfoTag->Serialize(value["rdsInfoTag"]);
 
   if (m_pictureInfoTag)
     (*m_pictureInfoTag).Serialize(value["pictureInfoTag"]);
@@ -739,6 +757,11 @@ bool CFileItem::IsPVRTimer() const
   return HasPVRTimerInfoTag();
 }
 
+bool CFileItem::IsPVRRadioRDS() const
+{
+  return HasPVRRadioRDSInfoTag();
+}
+
 bool CFileItem::IsDiscStub() const
 {
   if (IsVideoDb() && HasVideoInfoTag())
@@ -778,14 +801,6 @@ bool CFileItem::IsAudio() const
   }
 
   return URIUtils::HasExtension(m_strPath, g_advancedSettings.GetMusicExtensions());
-}
-
-bool CFileItem::IsKaraoke() const
-{
-  if (!IsAudio())
-    return false;
-
-  return CKaraokeLyricsFactory::HasLyrics( m_strPath );
 }
 
 bool CFileItem::IsPicture() const
@@ -1379,6 +1394,11 @@ void CFileItem::UpdateInfo(const CFileItem &item, bool replaceLabels /*=true*/)
     *GetMusicInfoTag() = *item.GetMusicInfoTag();
     SetInvalid();
   }
+  if (item.HasPVRRadioRDSInfoTag())
+  {
+    m_pvrRadioRDSInfoTag = item.m_pvrRadioRDSInfoTag;
+    SetInvalid();
+  }
   if (item.HasPictureInfoTag())
   {
     *GetPictureInfoTag() = *item.GetPictureInfoTag();
@@ -1423,8 +1443,9 @@ void CFileItem::SetFromAlbum(const CAlbum &album)
   if (!album.strAlbum.empty())
     SetLabel(album.strAlbum);
   m_bIsFolder = true;
-  m_strLabel2 = StringUtils::Join(album.artist, g_advancedSettings.m_musicItemSeparator);
+  m_strLabel2 = album.GetAlbumArtistString();
   GetMusicInfoTag()->SetAlbum(album);
+  SetArt(album.art);
   m_bIsAlbum = true;
   CMusicDatabase::SetPropertiesFromAlbum(*this,album);
   FillInMimeType(false);
@@ -1562,12 +1583,15 @@ bool CFileItem::LoadTracksFromCueDocument(CFileItemList& scannedItems)
       {
         if (song.strAlbum.empty() && !tag.GetAlbum().empty())
           song.strAlbum = tag.GetAlbum();
-        if (song.albumArtist.empty() && !tag.GetAlbumArtist().empty())
-          song.albumArtist = tag.GetAlbumArtist();
+        //Pass album artist to final MusicInfoTag object via setting song album artist vector. 
+        if (song.GetAlbumArtist().empty() && !tag.GetAlbumArtist().empty())
+          song.SetAlbumArtist(tag.GetAlbumArtist());        
         if (song.genre.empty() && !tag.GetGenre().empty())
           song.genre = tag.GetGenre();
-        if (song.artist.empty() && !tag.GetArtist().empty())
-          song.artist = tag.GetArtist();
+        //Pass artist to final MusicInfoTag object via setting song artist description string only.
+        //Artist credits not used during loading from cue sheet. 
+        if (song.strArtistDesc.empty() && !tag.GetArtistString().empty())
+          song.strArtistDesc = tag.GetArtistString();
         if (tag.GetDiscNumber())
           song.iTrack |= (tag.GetDiscNumber() << 16); // see CMusicInfoTag::GetDiscNumber()
         if (!tag.GetCueSheet().empty())

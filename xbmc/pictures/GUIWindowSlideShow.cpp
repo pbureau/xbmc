@@ -101,7 +101,7 @@ void CBackgroundPicLoader::Process()
       if (m_pCallback)
       {
         unsigned int start = XbmcThreads::SystemClockMillis();
-        CBaseTexture* texture = CTexture::LoadFromFile(m_strFileName, m_maxWidth, m_maxHeight, CSettings::GetInstance().GetBool(CSettings::SETTING_PICTURES_USEEXIFROTATION));
+        CBaseTexture* texture = CTexture::LoadFromFile(m_strFileName, m_maxWidth, m_maxHeight);
         totalTime += XbmcThreads::SystemClockMillis() - start;
         count++;
         // tell our parent
@@ -260,8 +260,6 @@ void CGUIWindowSlideShow::OnDeinitWindow(int nextWindowID)
   //   Reset();
   if (nextWindowID != WINDOW_PICTURES)
     m_ImageLib.Unload();
-
-  g_windowManager.ShowOverlay(OVERLAY_STATE_SHOWN);
 
   if (nextWindowID != WINDOW_FULLSCREEN_VIDEO)
   {
@@ -934,8 +932,6 @@ bool CGUIWindowSlideShow::OnMessage(CGUIMessage& message)
       CGUIWindow::OnMessage(message);
       if (message.GetParam1() != WINDOW_PICTURES)
         m_ImageLib.Load();
-
-      g_windowManager.ShowOverlay(OVERLAY_STATE_HIDDEN);
 
       // turn off slideshow if we only have 1 image
       if (m_slides->Size() <= 1)

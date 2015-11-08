@@ -41,7 +41,6 @@
 #include <iterator>
 #include "utils/log.h"
 
-using namespace std;
 using namespace RenderManager;
 
 class CPulldownCorrection
@@ -929,6 +928,7 @@ static std::string GetRenderFormatName(ERenderFormat format)
     case RENDER_FMT_EGLIMG:    return "EGLIMG";
     case RENDER_FMT_BYPASS:    return "BYPASS";
     case RENDER_FMT_MEDIACODEC:return "MEDIACODEC";
+    case RENDER_FMT_MEDIACODECSURFACE:return "MEDIACODECSURFACE";
     case RENDER_FMT_IMXMAP:    return "IMXMAP";
     case RENDER_FMT_MMAL:      return "MMAL";
     case RENDER_FMT_NONE:      return "NONE";
@@ -1109,10 +1109,10 @@ int CDVDPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
   if (m_speed < 0)
   {
     double sleepTime, renderPts;
-    int bufferLevel;
+    int queued, discard;
     double inputPts = m_droppingStats.m_lastPts;
-    g_renderManager.GetStats(sleepTime, renderPts, bufferLevel);
-    if (pts_org > renderPts || bufferLevel > 0)
+    g_renderManager.GetStats(sleepTime, renderPts, queued, discard);
+    if (pts_org > renderPts || queued > 0)
     {
       if (inputPts >= renderPts)
       {
@@ -1131,8 +1131,9 @@ int CDVDPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
   else if (m_speed > DVD_PLAYSPEED_NORMAL)
   {
     double sleepTime, renderPts;
-    int bufferLevel;
-    g_renderManager.GetStats(sleepTime, renderPts, bufferLevel);
+    int bufferLevel, queued, discard;
+    g_renderManager.GetStats(sleepTime, renderPts, queued, discard);
+    bufferLevel = queued + discard;
 
     // estimate the time it will take for the next frame to get rendered
     // drop the frame if it's late in regard to this estimation
@@ -1156,7 +1157,7 @@ int CDVDPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
 
   // timestamp when we think next picture should be displayed based on current duration
   m_FlipTimeStamp  = iCurrentClock;
-  m_FlipTimeStamp += max(0.0, iSleepTime);
+  m_FlipTimeStamp += std::max(0.0, iSleepTime);
   m_FlipTimePts    = pts;
 
   if ((pPicture->iFlags & DVP_FLAG_DROPPED))
@@ -1218,10 +1219,10 @@ int CDVDPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
 std::string CDVDPlayerVideo::GetPlayerInfo()
 {
   std::ostringstream s;
-  s << "fr:"     << fixed << setprecision(3) << m_fFrameRate;
-  s << ", vq:"   << setw(2) << min(99,GetLevel()) << "%";
+  s << "fr:"     << std::fixed << std::setprecision(3) << m_fFrameRate;
+  s << ", vq:"   << std::setw(2) << std::min(99,GetLevel()) << "%";
   s << ", dc:"   << m_codecname;
-  s << ", Mb/s:" << fixed << setprecision(2) << (double)GetVideoBitrate() / (1024.0*1024.0);
+  s << ", Mb/s:" << std::fixed << std::setprecision(2) << (double)GetVideoBitrate() / (1024.0*1024.0);
   s << ", drop:" << m_iDroppedFrames;
   s << ", skip:" << g_renderManager.GetSkippedFrames();
 
@@ -1253,10 +1254,10 @@ void CDVDPlayerVideo::ResetFrameRateCalc()
 double CDVDPlayerVideo::GetCurrentPts()
 {
   double iSleepTime, iRenderPts;
-  int iBufferLevel;
+  int queued, discard;
 
   // get render stats
-  g_renderManager.GetStats(iSleepTime, iRenderPts, iBufferLevel);
+  g_renderManager.GetStats(iSleepTime, iRenderPts, queued, discard);
 
   if (iRenderPts == DVD_NOPTS_VALUE)
     return DVD_NOPTS_VALUE;
@@ -1264,7 +1265,7 @@ double CDVDPlayerVideo::GetCurrentPts()
     return DVD_NOPTS_VALUE;
   else if (m_speed == DVD_PLAYSPEED_NORMAL)
   {
-    iRenderPts -= max(0.0, DVD_SEC_TO_TIME(iSleepTime));
+    iRenderPts -= std::max(0.0, DVD_SEC_TO_TIME(iSleepTime));
 
     if (iRenderPts < 0)
       iRenderPts = 0;
@@ -1366,6 +1367,7 @@ int CDVDPlayerVideo::CalcDropRequirement(double pts, bool updateOnly)
   bool   bNewFrame;
   int    iDroppedPics = -1;
   int    iBufferLevel;
+  int    queued, discard;
 
   m_droppingStats.m_lastPts = pts;
 
@@ -1376,7 +1378,8 @@ int CDVDPlayerVideo::CalcDropRequirement(double pts, bool updateOnly)
     iDecoderPts = pts;
 
   // get render stats
-  g_renderManager.GetStats(iSleepTime, iRenderPts, iBufferLevel);
+  g_renderManager.GetStats(iSleepTime, iRenderPts, queued, discard);
+  iBufferLevel = queued + discard;
 
   if (iBufferLevel < 0)
     result |= EOS_BUFFER_LEVEL;

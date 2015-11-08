@@ -19,13 +19,27 @@
  */
 
 #include "Addon.h"
+
+#include <string.h>
+#include <ostream>
+#include <utility>
+#include <vector>
+
 #include "AddonManager.h"
 #include "addons/Service.h"
 #include "ContextMenuManager.h"
-#include "settings/Settings.h"
 #include "filesystem/Directory.h"
 #include "filesystem/File.h"
+#include "RepositoryUpdater.h"
+#include "settings/Settings.h"
 #include "system.h"
+#include "URL.h"
+#include "Util.h"
+#include "utils/log.h"
+#include "utils/StringUtils.h"
+#include "utils/URIUtils.h"
+#include "utils/Variant.h"
+
 #ifdef HAS_PYTHON
 #include "interfaces/python/XBPython.h"
 #endif
@@ -35,19 +49,9 @@
 #ifdef TARGET_FREEBSD
 #include "freebsd/FreeBSDGNUReplacements.h"
 #endif
-#include "utils/log.h"
-#include "utils/StringUtils.h"
-#include "utils/URIUtils.h"
-#include "utils/Variant.h"
-#include "URL.h"
-#include "Util.h"
-#include <vector>
-#include <string.h>
-#include <ostream>
 
 using XFILE::CDirectory;
 using XFILE::CFile;
-using namespace std;
 
 namespace ADDON
 {
@@ -177,7 +181,7 @@ AddonProps::AddonProps(const cp_extension_t *ext)
     std::string language;
     language = CAddonMgr::GetInstance().GetExtValue(metadata->configuration, "language");
     if (!language.empty())
-      extrainfo.insert(make_pair("language",language));
+      extrainfo.insert(std::make_pair("language",language));
     broken = CAddonMgr::GetInstance().GetExtValue(metadata->configuration, "broken");
     EMPTY_IF("nofanart",fanart)
     EMPTY_IF("noicon",icon)
@@ -257,8 +261,8 @@ void AddonProps::BuildDependencies(const cp_plugin_info_t *plugin)
   if (!plugin)
     return;
   for (unsigned int i = 0; i < plugin->num_imports; ++i)
-    dependencies.insert(make_pair(std::string(plugin->imports[i].plugin_id),
-                                  make_pair(AddonVersion(SS(plugin->imports[i].version)), plugin->imports[i].optional != 0)));
+    dependencies.insert(std::make_pair(std::string(plugin->imports[i].plugin_id),
+                                  std::make_pair(AddonVersion(SS(plugin->imports[i].version)), plugin->imports[i].optional != 0)));
 }
 
 /**
@@ -385,6 +389,11 @@ void CAddon::BuildLibName(const cp_extension_t *extension)
   {
     switch (m_props.type)
     {
+      case ADDON_PVRDLL:
+      case ADDON_ADSPDLL:
+      case ADDON_AUDIOENCODER:
+      case ADDON_AUDIODECODER:
+      case ADDON_VIZ:
       case ADDON_SCREENSAVER:
       case ADDON_SCRIPT:
       case ADDON_SCRIPT_LIBRARY:
@@ -398,23 +407,34 @@ void CAddon::BuildLibName(const cp_extension_t *extension)
       case ADDON_SCRAPER_MUSICVIDEOS:
       case ADDON_SCRAPER_TVSHOWS:
       case ADDON_SCRAPER_LIBRARY:
-      case ADDON_PVRDLL:
-      case ADDON_ADSPDLL:
       case ADDON_PLUGIN:
       case ADDON_WEB_INTERFACE:
       case ADDON_SERVICE:
       case ADDON_REPOSITORY:
-      case ADDON_AUDIOENCODER:
       case ADDON_CONTEXT_ITEM:
-      case ADDON_AUDIODECODER:
-        {
-          std::string temp = CAddonMgr::GetInstance().GetExtValue(extension->configuration, "@library");
-          m_strLibName = temp;
-        }
+        m_strLibName = CAddonMgr::GetInstance().GetExtValue(extension->configuration, "@library");
         break;
       default:
         m_strLibName.clear();
         break;
+    }
+
+    // if library attribute isn't present, look for a system-dependent one
+    if (m_strLibName.empty())
+    {
+      switch (m_props.type)
+      {
+        case ADDON_ADSPDLL:
+        case ADDON_AUDIODECODER:
+        case ADDON_AUDIOENCODER:
+        case ADDON_PVRDLL:
+        case ADDON_VIZ:
+        case ADDON_SCREENSAVER:
+          m_strLibName = CAddonMgr::GetInstance().GetPlatformLibraryName(extension->configuration);
+          break;
+        default:
+          break;
+      }
     }
   }
 }
@@ -544,7 +564,7 @@ std::string CAddon::GetSetting(const std::string& key)
   if (!LoadSettings())
     return ""; // no settings available
 
-  map<std::string, std::string>::const_iterator i = m_settings.find(key);
+  std::map<std::string, std::string>::const_iterator i = m_settings.find(key);
   if (i != m_settings.end())
     return i->second;
   return "";
@@ -593,7 +613,7 @@ void CAddon::SettingsToXML(CXBMCTinyXML &doc) const
 {
   TiXmlElement node("settings");
   doc.InsertEndChild(node);
-  for (map<std::string, std::string>::const_iterator i = m_settings.begin(); i != m_settings.end(); ++i)
+  for (std::map<std::string, std::string>::const_iterator i = m_settings.begin(); i != m_settings.end(); ++i)
   {
     TiXmlElement nodeSetting("setting");
     nodeSetting.SetAttribute("id", i->first.c_str());
@@ -647,6 +667,9 @@ void OnEnabled(const std::string& id)
 
   if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_CONTEXT_ITEM))
     CContextMenuManager::GetInstance().Register(std::static_pointer_cast<CContextMenuAddon>(addon));
+
+  if (CAddonMgr::GetInstance().GetAddon(id, addon, ADDON_REPOSITORY))
+    CRepositoryUpdater::GetInstance().ScheduleUpdate(); //notify updater there is a new addon
 }
 
 void OnDisabled(const std::string& id)
@@ -688,6 +711,9 @@ void OnPostInstall(const AddonPtr& addon, bool update, bool modal)
   if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_CONTEXT_ITEM))
     CContextMenuManager::GetInstance().Register(std::static_pointer_cast<CContextMenuAddon>(localAddon));
 
+  if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_REPOSITORY))
+    CRepositoryUpdater::GetInstance().ScheduleUpdate(); //notify updater there is a new addon or version
+
   addon->OnPostInstall(update, modal);
 }
 
@@ -699,6 +725,13 @@ void OnPreUnInstall(const AddonPtr& addon)
 
   if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_CONTEXT_ITEM))
     CContextMenuManager::GetInstance().Unregister(std::static_pointer_cast<CContextMenuAddon>(localAddon));
+
+  if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_REPOSITORY))
+  {
+    CAddonDatabase database;
+    database.Open();
+    database.DeleteRepository(addon->ID());
+  }
 
   addon->OnPreUnInstall();
 }

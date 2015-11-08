@@ -18,42 +18,49 @@
  *
  */
 
-#include "threads/SystemClock.h"
-#include "FileItem.h"
 #include "VideoInfoScanner.h"
+
+#include <utility>
+
+#include "dialogs/GUIDialogExtendedProgressBar.h"
+#include "dialogs/GUIDialogOK.h"
+#include "dialogs/GUIDialogProgress.h"
 #include "events/EventLog.h"
 #include "events/MediaLibraryEvent.h"
+#include "FileItem.h"
 #include "filesystem/DirectoryCache.h"
-#include "Util.h"
-#include "NfoFile.h"
-#include "utils/RegExp.h"
-#include "utils/md5.h"
+#include "filesystem/File.h"
 #include "filesystem/MultiPathDirectory.h"
 #include "filesystem/StackDirectory.h"
-#include "VideoInfoDownloader.h"
 #include "GUIInfoManager.h"
-#include "filesystem/File.h"
-#include "dialogs/GUIDialogExtendedProgressBar.h"
-#include "dialogs/GUIDialogProgress.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "dialogs/GUIDialogOK.h"
+#include "guilib/GUIWindowManager.h"
+#include "guilib/LocalizeStrings.h"
+#include "GUIUserMessages.h"
 #include "interfaces/AnnouncementManager.h"
+#include "messaging/ApplicationMessenger.h"
+#include "messaging/helpers/DialogHelper.h"
+#include "NfoFile.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
-#include "utils/StringUtils.h"
-#include "guilib/LocalizeStrings.h"
-#include "guilib/GUIWindowManager.h"
+#include "TextureCache.h"
+#include "threads/SystemClock.h"
+#include "URL.h"
+#include "Util.h"
 #include "utils/log.h"
+#include "utils/md5.h"
+#include "utils/RegExp.h"
+#include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/Variant.h"
 #include "video/VideoLibraryQueue.h"
 #include "video/VideoThumbLoader.h"
-#include "TextureCache.h"
-#include "GUIUserMessages.h"
-#include "URL.h"
+#include "VideoInfoDownloader.h"
 
 using namespace XFILE;
 using namespace ADDON;
+using namespace KODI::MESSAGING;
+
+using KODI::MESSAGING::HELPERS::DialogResponse;
 
 namespace VIDEO
 {
@@ -2037,6 +2044,7 @@ namespace VIDEO
         scrUrl = m_nfoReader.ScraperUrl();
         info = m_nfoReader.GetScraperInfo();
 
+        StringUtils::RemoveCRLF(scrUrl.m_url[0].m_url);
         CLog::Log(LOGDEBUG, "VideoInfoScanner: Fetching url '%s' using %s scraper (content: '%s')",
           scrUrl.m_url[0].m_url.c_str(), info->Name().c_str(), TranslateContent(info->Content()).c_str());
 
@@ -2060,7 +2068,7 @@ namespace VIDEO
       CGUIDialogOK::ShowAndGetInput(CVariant{20448}, CVariant{20449});
       return false;
     }
-    return CGUIDialogYesNo::ShowAndGetInput(CVariant{20448}, CVariant{20450});
+    return HELPERS::ShowYesNoDialogText(CVariant{20448}, CVariant{20450}) == DialogResponse::YES;
   }
 
   bool CVideoInfoScanner::ProgressCancelled(CGUIDialogProgress* progress, int heading, const std::string &line1)

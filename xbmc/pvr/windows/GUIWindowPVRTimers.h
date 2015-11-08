@@ -1,5 +1,4 @@
 #pragma once
-
 /*
  *      Copyright (C) 2012-2013 Team XBMC
  *      http://xbmc.org
@@ -50,7 +49,6 @@ namespace PVR
   private:
     bool ActionDeleteTimer(CFileItem *item);
     bool ActionShowTimer(CFileItem *item);
-    bool ShowTimerSettings(CFileItem *item);
     bool ShowNewTimerDialog(void);
 
     bool OnContextButtonActivate(CFileItem *item, CONTEXT_BUTTON button);

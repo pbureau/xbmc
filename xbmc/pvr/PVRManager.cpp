@@ -18,55 +18,58 @@
  *
  */
 
+#include "PVRManager.h"
+
+#include <cassert>
+#include <utility>
+
+#include "addons/AddonInstaller.h"
 #include "Application.h"
-#include "messaging/ApplicationMessenger.h"
-#include "GUIInfoManager.h"
-#include "Util.h"
-#include "dialogs/GUIDialogOK.h"
-#include "dialogs/GUIDialogNumeric.h"
-#include "dialogs/GUIDialogProgress.h"
 #include "dialogs/GUIDialogExtendedProgressBar.h"
 #include "dialogs/GUIDialogKaiToast.h"
-#include "dialogs/GUIDialogYesNo.h"
+#include "dialogs/GUIDialogNumeric.h"
+#include "dialogs/GUIDialogOK.h"
+#include "dialogs/GUIDialogProgress.h"
+#include "epg/EpgContainer.h"
+#include "GUIInfoManager.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
+#include "interfaces/AnnouncementManager.h"
+#include "messaging/ApplicationMessenger.h"
+#include "messaging/helpers/DialogHelper.h"
 #include "music/tags/MusicInfoTag.h"
-#include "settings/MediaSettings.h"
+#include "network/Network.h"
+#include "pvr/addons/PVRClients.h"
+#include "pvr/channels/PVRChannel.h"
+#include "pvr/channels/PVRChannelGroupInternal.h"
+#include "pvr/channels/PVRChannelGroupsContainer.h"
+#include "pvr/dialogs/GUIDialogPVRChannelManager.h"
+#include "pvr/dialogs/GUIDialogPVRGroupManager.h"
+#include "pvr/PVRActionListener.h"
+#include "pvr/PVRDatabase.h"
+#include "pvr/PVRGUIInfo.h"
+#include "pvr/recordings/PVRRecordings.h"
+#include "pvr/timers/PVRTimers.h"
+#include "pvr/windows/GUIWindowPVRBase.h"
 #include "settings/lib/Setting.h"
+#include "settings/MediaSettings.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
-#include "windows/GUIWindowPVRBase.h"
+#include "Util.h"
+#include "utils/JobManager.h"
 #include "utils/log.h"
 #include "utils/Stopwatch.h"
 #include "utils/StringUtils.h"
-#include "utils/JobManager.h"
 #include "utils/Variant.h"
-#include "interfaces/AnnouncementManager.h"
 #include "video/VideoDatabase.h"
-#include "network/Network.h"
-
-#include "PVRManager.h"
-#include "PVRDatabase.h"
-#include "PVRGUIInfo.h"
-#include "PVRActionListener.h"
-#include "addons/PVRClients.h"
-#include "channels/PVRChannel.h"
-#include "channels/PVRChannelGroupsContainer.h"
-#include "channels/PVRChannelGroupInternal.h"
-#include "epg/EpgContainer.h"
-#include "recordings/PVRRecordings.h"
-#include "timers/PVRTimers.h"
-#include "addons/AddonInstaller.h"
-#include "dialogs/GUIDialogPVRChannelManager.h"
-#include "dialogs/GUIDialogPVRGroupManager.h"
-
-#include <assert.h>
 
 using namespace MUSIC_INFO;
 using namespace PVR;
 using namespace EPG;
 using namespace ANNOUNCEMENT;
 using namespace KODI::MESSAGING;
+
+using KODI::MESSAGING::HELPERS::DialogResponse;
 
 int CPVRManager::m_pvrWindowIds[10] = {
     WINDOW_TV_CHANNELS,
@@ -184,7 +187,7 @@ void CPVRManager::OnSettingAction(const CSetting *setting)
   else if (settingId == CSettings::SETTING_PVRMANAGER_RESETDB)
   {
     if (CheckParentalPIN(g_localizeStrings.Get(19262)) &&
-        CGUIDialogYesNo::ShowAndGetInput(CVariant{19098}, CVariant{19186}))
+      HELPERS::ShowYesNoDialogText(CVariant{19098}, CVariant{19186}) == DialogResponse::YES)
     {
       CDateTime::ResetTimezoneBias();
       ResetDatabase(false);
@@ -192,7 +195,7 @@ void CPVRManager::OnSettingAction(const CSetting *setting)
   }
   else if (settingId == CSettings::SETTING_EPG_RESETEPG)
   {
-    if (CGUIDialogYesNo::ShowAndGetInput(CVariant{19098}, CVariant{19188}))
+    if (HELPERS::ShowYesNoDialogText(CVariant{19098}, CVariant{19188}) == DialogResponse::YES)
     {
       CDateTime::ResetTimezoneBias();
       ResetDatabase(true);
@@ -271,12 +274,12 @@ bool CPVRManager::InstallAddonAllowed(const std::string& strAddonId) const
       (!IsPVRWindowActive() && !IsPlaying());
 }
 
-void CPVRManager::MarkAsOutdated(const std::string& strAddonId, const std::string& strReferer)
+void CPVRManager::MarkAsOutdated(const std::string& strAddonId)
 {
   if (IsStarted() && CSettings::GetInstance().GetInt(CSettings::SETTING_GENERAL_ADDONUPDATES) == AUTO_UPDATES_ON)
   {
     CSingleLock lock(m_critSection);
-    m_outdatedAddons.insert(make_pair(strAddonId, strReferer));
+    m_outdatedAddons.push_back(strAddonId);
   }
 }
 
@@ -287,9 +290,9 @@ bool CPVRManager::UpgradeOutdatedAddons(void)
     return true;
 
   // there's add-ons that couldn't be updated
-  for (std::map<std::string, std::string>::iterator it = m_outdatedAddons.begin(); it != m_outdatedAddons.end(); ++it)
+  for (auto it = m_outdatedAddons.begin(); it != m_outdatedAddons.end(); ++it)
   {
-    if (!InstallAddonAllowed(it->first))
+    if (!InstallAddonAllowed(*it))
     {
       // we can't upgrade right now
       return true;
@@ -299,7 +302,7 @@ bool CPVRManager::UpgradeOutdatedAddons(void)
   // all outdated add-ons can be upgraded now
   CLog::Log(LOGINFO, "PVR - upgrading outdated add-ons");
 
-  std::map<std::string, std::string> outdatedAddons = m_outdatedAddons;
+  auto outdatedAddons = m_outdatedAddons;
   // stop threads and unload
   SetState(ManagerStateInterrupted);
   g_EpgContainer.Stop();
@@ -308,10 +311,10 @@ bool CPVRManager::UpgradeOutdatedAddons(void)
   Cleanup();
 
   // upgrade all add-ons
-  for (std::map<std::string, std::string>::iterator it = outdatedAddons.begin(); it != outdatedAddons.end(); ++it)
+  for (auto it = outdatedAddons.begin(); it != outdatedAddons.end(); ++it)
   {
-    CLog::Log(LOGINFO, "PVR - updating add-on '%s'", it->first.c_str());
-    CAddonInstaller::GetInstance().Install(it->first, true, it->second, false);
+    CLog::Log(LOGINFO, "PVR - updating add-on '%s'", (*it).c_str());
+    CAddonInstaller::GetInstance().InstallOrUpdate(*it, false);
   }
 
   // reload
@@ -397,8 +400,6 @@ public:
     g_PVRManager.Start(false);
     return true;
   }
-private:
-  int m_openWindowId;
 };
 
 void CPVRManager::Start(bool bAsync /* = false */)
@@ -1506,13 +1507,12 @@ bool CPVRManager::CanSystemPowerdown(bool bAskUser /*= true*/) const
         }
 
         // Inform user about PVR being busy. Ask if user wants to powerdown anyway.
-        bool bCanceled = false;
-        bReturn = CGUIDialogYesNo::ShowAndGetInput(CVariant{19685}, // "Confirm shutdown"
-                                                   CVariant{text},
-                                                   bCanceled,
-                                                   CVariant{222},   // "Cancel"
-                                                   CVariant{19696}, // "Shutdown anyway"
-                                                   10000); //This is a timeout and IS NOT a CVariant
+        bReturn = HELPERS::DialogResponse::YES == 
+          HELPERS::ShowYesNoDialogText(CVariant{19685}, // "Confirm shutdown"
+                                       CVariant{text},
+                                       CVariant{222}, // "Shutdown anyway",
+                                       CVariant{19696}, // "Cancel"
+                                       10000); // timeout value before closing
       }
       else
         bReturn = false; // do not powerdown (busy, but no user interaction requested).

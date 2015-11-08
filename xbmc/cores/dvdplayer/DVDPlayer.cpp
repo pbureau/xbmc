@@ -20,6 +20,7 @@
 
 #include "system.h"
 #include "DVDPlayer.h"
+#include "DVDPlayerRadioRDS.h"
 
 #include "DVDInputStreams/DVDInputStream.h"
 #include "DVDInputStreams/DVDFactoryInputStream.h"
@@ -81,7 +82,6 @@
 #endif
 #include "DVDPlayerAudio.h"
 
-using namespace std;
 using namespace PVR;
 using namespace KODI::MESSAGING;
 
@@ -377,6 +377,8 @@ int CSelectionStreams::IndexOf(StreamType type, CDVDPlayer& p) const
     return IndexOf(type, p.m_CurrentSubtitle.source, p.m_CurrentSubtitle.id);
   else if(type == STREAM_TELETEXT)
     return IndexOf(type, p.m_CurrentTeletext.source, p.m_CurrentTeletext.id);
+  else if(type == STREAM_RADIO_RDS)
+    return IndexOf(type, p.m_CurrentRadioRDS.source, p.m_CurrentRadioRDS.id);
 
   return -1;
 }
@@ -422,7 +424,7 @@ void CSelectionStreams::Update(CDVDInputStream* input, CDVDDemux* demuxer, std::
   if(input && input->IsStreamType(DVDSTREAM_TYPE_DVD))
   {
     CDVDInputStreamNavigator* nav = (CDVDInputStreamNavigator*)input;
-    string filename = nav->GetFileName();
+    std::string filename = nav->GetFileName();
     int source = Source(STREAM_SOURCE_NAV, filename);
 
     int count;
@@ -464,7 +466,7 @@ void CSelectionStreams::Update(CDVDInputStream* input, CDVDDemux* demuxer, std::
   }
   else if(demuxer)
   {
-    string filename = demuxer->GetFileName();
+    std::string filename = demuxer->GetFileName();
     int count = demuxer->GetNrOfStreams();
     int source;
     if(input) /* hack to know this is sub decoder */
@@ -558,6 +560,7 @@ void CDVDPlayer::CreatePlayers()
   }
   m_dvdPlayerSubtitle = new CDVDPlayerSubtitle(&m_overlayContainer);
   m_dvdPlayerTeletext = new CDVDTeletextData();
+  m_dvdPlayerRadioRDS = new CDVDRadioRDSData();
   m_players_created = true;
 }
 
@@ -569,6 +572,7 @@ void CDVDPlayer::DestroyPlayers()
   delete m_dvdPlayerAudio;
   delete m_dvdPlayerSubtitle;
   delete m_dvdPlayerTeletext;
+  delete m_dvdPlayerRadioRDS;
   m_players_created = false;
 }
 
@@ -579,6 +583,7 @@ CDVDPlayer::CDVDPlayer(IPlayerCallback& callback)
       m_CurrentVideo(STREAM_VIDEO, DVDPLAYER_VIDEO),
       m_CurrentSubtitle(STREAM_SUBTITLE, DVDPLAYER_SUBTITLE),
       m_CurrentTeletext(STREAM_TELETEXT, DVDPLAYER_TELETEXT),
+      m_CurrentRadioRDS(STREAM_RADIO_RDS, DVDPLAYER_RDS),
       m_messenger("player"),
       m_ready(true),
       m_DemuxerPausePending(false)
@@ -720,6 +725,7 @@ void CDVDPlayer::OnStartup()
   m_CurrentAudio.Clear();
   m_CurrentSubtitle.Clear();
   m_CurrentTeletext.Clear();
+  m_CurrentRadioRDS.Clear();
 
   m_messenger.Init();
 
@@ -914,6 +920,17 @@ void CDVDPlayer::OpenDefaultStreams(bool reset)
   }
   if(!valid)
     CloseStream(m_CurrentTeletext, false);
+
+  // open RDS stream
+  streams = m_SelectionStreams.Get(STREAM_RADIO_RDS);
+  valid   = false;
+  for(SelectionStreams::iterator it = streams.begin(); it != streams.end() && !valid; ++it)
+  {
+    if(OpenStream(m_CurrentRadioRDS, it->id, it->source))
+      valid = true;
+  }
+  if(!valid)
+    CloseStream(m_CurrentRadioRDS, false);
 }
 
 bool CDVDPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
@@ -1433,11 +1450,14 @@ void CDVDPlayer::Process()
         m_dvdPlayerSubtitle->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
       if(m_CurrentTeletext.inited)
         m_dvdPlayerTeletext->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
+      if(m_CurrentRadioRDS.inited)
+        m_dvdPlayerRadioRDS->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_EOF));
 
       m_CurrentAudio.inited = false;
       m_CurrentVideo.inited = false;
       m_CurrentSubtitle.inited = false;
       m_CurrentTeletext.inited = false;
+      m_CurrentRadioRDS.inited = false;
 
       // if we are caching, start playing it again
       SetCaching(CACHESTATE_DONE);
@@ -1464,6 +1484,7 @@ void CDVDPlayer::Process()
       m_CurrentVideo.started    = false;
       m_CurrentSubtitle.started = false;
       m_CurrentTeletext.started = false;
+      m_CurrentRadioRDS.started = false;
 
       break;
     }
@@ -1476,6 +1497,7 @@ void CDVDPlayer::Process()
     CheckBetterStream(m_CurrentVideo,    pStream);
     CheckBetterStream(m_CurrentSubtitle, pStream);
     CheckBetterStream(m_CurrentTeletext, pStream);
+    CheckBetterStream(m_CurrentRadioRDS, pStream);
 
     // demux video stream
     if (CSettings::GetInstance().GetBool(CSettings::SETTING_SUBTITLES_PARSECAPTIONS) && CheckIsCurrent(m_CurrentVideo, pStream, pPacket))
@@ -1556,6 +1578,8 @@ void CDVDPlayer::ProcessPacket(CDemuxStream* pStream, DemuxPacket* pPacket)
     ProcessSubData(pStream, pPacket);
   else if (CheckIsCurrent(m_CurrentTeletext, pStream, pPacket))
     ProcessTeletextData(pStream, pPacket);
+  else if (CheckIsCurrent(m_CurrentRadioRDS, pStream, pPacket))
+    ProcessRadioRDSData(pStream, pPacket);
   else
   {
     pStream->SetDiscard(AVDISCARD_ALL);
@@ -1674,6 +1698,22 @@ void CDVDPlayer::ProcessTeletextData(CDemuxStream* pStream, DemuxPacket* pPacket
     drop = true;
 
   m_dvdPlayerTeletext->SendMessage(new CDVDMsgDemuxerPacket(pPacket, drop));
+}
+
+void CDVDPlayer::ProcessRadioRDSData(CDemuxStream* pStream, DemuxPacket* pPacket)
+{
+  CheckStreamChanges(m_CurrentRadioRDS, pStream);
+
+  UpdateTimestamps(m_CurrentRadioRDS, pPacket);
+
+  bool drop = false;
+  if (CheckPlayerInit(m_CurrentRadioRDS))
+    drop = true;
+
+  if (CheckSceneSkip(m_CurrentRadioRDS))
+    drop = true;
+
+  m_dvdPlayerRadioRDS->SendMessage(new CDVDMsgDemuxerPacket(pPacket, drop));
 }
 
 bool CDVDPlayer::GetCachingTimes(double& level, double& delay, double& offset)
@@ -1906,7 +1946,7 @@ void CDVDPlayer::HandlePlaySpeed()
         {
           error  = (int)DVD_TIME_TO_MSEC(m_clock.GetClock()) - m_SpeedState.lastseekpts;
 
-          if(abs(error) > 1000)
+          if(std::abs(error) > 1000)
           {
             CLog::Log(LOGDEBUG, "CDVDPlayer::Process - Seeking to catch up");
             m_SpeedState.lastseekpts = (int)DVD_TIME_TO_MSEC(m_clock.GetClock());
@@ -1981,6 +2021,8 @@ bool CDVDPlayer::CheckPlayerInit(CCurrentStream& current)
         m_CurrentSubtitle.startpts = current.dts;
       if(m_CurrentTeletext.startpts != DVD_NOPTS_VALUE)
         m_CurrentTeletext.startpts = current.dts;
+      if(m_CurrentRadioRDS.startpts != DVD_NOPTS_VALUE)
+        m_CurrentRadioRDS.startpts = current.dts;
     }
 
     if(current.dts < current.startpts)
@@ -2062,7 +2104,7 @@ void CDVDPlayer::UpdateTimestamps(CCurrentStream& current, DemuxPacket* pPacket)
 
   /* send a playback state structure periodically */
   if(current.dts_state == DVD_NOPTS_VALUE
-  || abs(current.dts - current.dts_state) > DVD_MSEC_TO_TIME(200))
+  || std::abs(current.dts - current.dts_state) > DVD_MSEC_TO_TIME(200))
   {
     current.dts_state = current.dts;
     if (current.inited)
@@ -2191,7 +2233,7 @@ void CDVDPlayer::CheckAutoSceneSkip()
   || m_CurrentVideo.dts == DVD_NOPTS_VALUE)
     return;
 
-  const int64_t clock = m_omxplayer_mode ? GetTime() : DVD_TIME_TO_MSEC(min(m_CurrentAudio.dts, m_CurrentVideo.dts) + m_offset_pts);
+  const int64_t clock = m_omxplayer_mode ? GetTime() : DVD_TIME_TO_MSEC(std::min(m_CurrentAudio.dts, m_CurrentVideo.dts) + m_offset_pts);
 
   CEdl::Cut cut;
   if(!m_Edl.InCut(clock, &cut))
@@ -2284,6 +2326,8 @@ IDVDStreamPlayer* CDVDPlayer::GetStreamPlayer(unsigned int target)
     return m_dvdPlayerSubtitle;
   if(target == DVDPLAYER_TELETEXT)
     return m_dvdPlayerTeletext;
+  if(target == DVDPLAYER_RDS)
+    return m_dvdPlayerRadioRDS;
   return NULL;
 }
 
@@ -2313,6 +2357,7 @@ void CDVDPlayer::OnExit()
     CloseStream(m_CurrentSubtitle, false);  // clear overlay container
 
     CloseStream(m_CurrentTeletext, !m_bAbortRequest);
+    CloseStream(m_CurrentRadioRDS, !m_bAbortRequest);
 
     // destroy objects
     SAFE_DELETE(m_pDemuxer);
@@ -2854,6 +2899,11 @@ bool CDVDPlayer::HasAudio() const
   return m_HasAudio;
 }
 
+bool CDVDPlayer::HasRDS() const
+{
+  return m_CurrentRadioRDS.id >= 0;
+}
+
 bool CDVDPlayer::IsPassthrough() const
 {
   return m_dvdPlayerAudio->IsPassthrough();
@@ -3225,6 +3275,14 @@ void CDVDPlayer::LoadPage(int p, int sp, unsigned char* buffer)
   return m_dvdPlayerTeletext->LoadPage(p, sp, buffer);
 }
 
+std::string CDVDPlayer::GetRadioText(unsigned int line)
+{
+  if (m_CurrentRadioRDS.id < 0)
+      return "";
+
+  return m_dvdPlayerRadioRDS->GetRadioText(line);
+}
+
 void CDVDPlayer::SeekTime(int64_t iTime)
 {
   int seekOffset = (int)(iTime - GetTime());
@@ -3317,7 +3375,7 @@ bool CDVDPlayer::OpenStream(CCurrentStream& current, int iStream, int source, bo
     if(!m_pSubtitleDemuxer || m_pSubtitleDemuxer->GetFileName() != st.filename)
     {
       CLog::Log(LOGNOTICE, "Opening Subtitle file: %s", st.filename.c_str());
-      unique_ptr<CDVDDemuxVobsub> demux(new CDVDDemuxVobsub());
+      std::unique_ptr<CDVDDemuxVobsub> demux(new CDVDDemuxVobsub());
       if(!demux->Open(st.filename, source, st.filename2))
         return false;
       m_pSubtitleDemuxer = demux.release();
@@ -3390,6 +3448,9 @@ bool CDVDPlayer::OpenStream(CCurrentStream& current, int iStream, int source, bo
       break;
     case STREAM_TELETEXT:
       res = OpenTeletextStream(hint);
+      break;
+    case STREAM_RADIO_RDS:
+      res = OpenRadioRDSStream(hint);
       break;
     default:
       res = false;
@@ -3568,6 +3629,17 @@ bool CDVDPlayer::OpenTeletextStream(CDVDStreamInfo& hint)
   return true;
 }
 
+bool CDVDPlayer::OpenRadioRDSStream(CDVDStreamInfo& hint)
+{
+  if (!m_dvdPlayerRadioRDS->CheckStream(hint))
+    return false;
+
+  if(!OpenStreamPlayer(m_CurrentRadioRDS, hint, true))
+    return false;
+
+  return true;
+}
+
 bool CDVDPlayer::CloseStream(CCurrentStream& current, bool bWaitForBuffers)
 {
   if (current.id < 0)
@@ -3645,6 +3717,10 @@ void CDVDPlayer::FlushBuffers(bool queued, double pts, bool accurate, bool sync)
   m_CurrentTeletext.dts      = DVD_NOPTS_VALUE;
   m_CurrentTeletext.startpts = startpts;
 
+  m_CurrentRadioRDS.inited   = false;
+  m_CurrentRadioRDS.dts      = DVD_NOPTS_VALUE;
+  m_CurrentRadioRDS.startpts = startpts;
+
   if(queued)
   {
     m_dvdPlayerAudio->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_RESET));
@@ -3652,6 +3728,7 @@ void CDVDPlayer::FlushBuffers(bool queued, double pts, bool accurate, bool sync)
     m_dvdPlayerVideo->SendMessage(new CDVDMsg(CDVDMsg::VIDEO_NOSKIP));
     m_dvdPlayerSubtitle->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_RESET));
     m_dvdPlayerTeletext->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_RESET));
+    m_dvdPlayerRadioRDS->SendMessage(new CDVDMsg(CDVDMsg::GENERAL_RESET));
     SynchronizePlayers(SYNCSOURCE_ALL);
   }
   else
@@ -3660,6 +3737,7 @@ void CDVDPlayer::FlushBuffers(bool queued, double pts, bool accurate, bool sync)
     m_dvdPlayerVideo->Flush();
     m_dvdPlayerSubtitle->Flush();
     m_dvdPlayerTeletext->Flush();
+    m_dvdPlayerRadioRDS->Flush();
 
     // clear subtitle and menu overlays
     m_overlayContainer.Clear();
@@ -3683,6 +3761,7 @@ void CDVDPlayer::FlushBuffers(bool queued, double pts, bool accurate, bool sync)
       m_CurrentVideo.started    = false;
       m_CurrentSubtitle.started = false;
       m_CurrentTeletext.started = false;
+      m_CurrentRadioRDS.started = false;
     }
 
     if(pts != DVD_NOPTS_VALUE && sync)
@@ -4319,7 +4398,7 @@ double CDVDPlayer::GetQueueTime()
 {
   int a = m_dvdPlayerAudio->GetLevel();
   int v = m_dvdPlayerVideo->GetLevel();
-  return max(a, v) * 8000.0 / 100;
+  return std::max(a, v) * 8000.0 / 100;
 }
 
 void CDVDPlayer::GetVideoStreamInfo(SPlayerVideoStreamInfo &info)
@@ -4590,14 +4669,14 @@ void CDVDPlayer::UpdatePlayState(double timeout)
   double level, delay, offset;
   if(GetCachingTimes(level, delay, offset))
   {
-    state.cache_delay  = max(0.0, delay);
-    state.cache_level  = max(0.0, min(1.0, level));
+    state.cache_delay  = std::max(0.0, delay);
+    state.cache_level  = std::max(0.0, std::min(1.0, level));
     state.cache_offset = offset;
   }
   else
   {
     state.cache_delay  = 0.0;
-    state.cache_level  = min(1.0, GetQueueTime() / 8000.0);
+    state.cache_level  = std::min(1.0, GetQueueTime() / 8000.0);
     state.cache_offset = GetQueueTime() / state.time_total;
   }
 
@@ -4733,7 +4812,6 @@ bool CDVDPlayer::SwitchChannel(const CPVRChannelPtr &channel)
 bool CDVDPlayer::CachePVRStream(void) const
 {
   return m_pInputStream->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER) &&
-      (!g_PVRManager.IsPlayingRecording() ||
-          (m_item.HasPVRRecordingInfoTag() && m_item.GetPVRRecordingInfoTag()->IsBeingRecorded()))&&
+      !g_PVRManager.IsPlayingRecording() &&
       g_advancedSettings.m_bPVRCacheInDvdPlayer;
 }

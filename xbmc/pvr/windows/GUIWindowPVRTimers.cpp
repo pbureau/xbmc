@@ -18,23 +18,24 @@
  *
  */
 
-#include "GUIWindowPVRTimers.h"
-
 #include "ContextMenuManager.h"
 #include "GUIInfoManager.h"
-#include "guilib/GUIKeyboardFactory.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogYesNo.h"
+#include "guilib/GUIKeyboardFactory.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
-#include "pvr/PVRManager.h"
-#include "pvr/dialogs/GUIDialogPVRTimerSettings.h"
-#include "pvr/timers/PVRTimers.h"
-#include "pvr/addons/PVRClients.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
+
+#include "pvr/PVRManager.h"
+#include "pvr/dialogs/GUIDialogPVRTimerSettings.h"
+#include "pvr/timers/PVRTimers.h"
+#include "pvr/addons/PVRClients.h"
+
+#include "GUIWindowPVRTimers.h"
 
 using namespace PVR;
 
@@ -72,39 +73,31 @@ void CGUIWindowPVRTimers::GetContextButtons(int itemNumber, CContextButtons &but
     return;
   CFileItemPtr pItem = m_vecItems->Get(itemNumber);
 
-  /* Check for a empty file item list, means only a
-     file item with the name "Add timer..." is present */
-  if (URIUtils::PathEquals(pItem->GetPath(), CPVRTimersPath::PATH_ADDTIMER))
-  {
-    buttons.Add(CONTEXT_BUTTON_ADD, 19056);             /* new timer */
-  }
-  else
+  if (!URIUtils::PathEquals(pItem->GetPath(), CPVRTimersPath::PATH_ADDTIMER))
   {
     if (pItem->GetPVRTimerInfoTag()->GetEpgInfoTag())
-      buttons.Add(CONTEXT_BUTTON_INFO, 19047);          /* epg info */
+      buttons.Add(CONTEXT_BUTTON_INFO, 19047);          /* Programme information */
 
-    buttons.Add(CONTEXT_BUTTON_FIND, 19003);            /* Find similar program */
-
-    if (pItem->GetPVRTimerInfoTag()->HasTimerType() &&
-        !pItem->GetPVRTimerInfoTag()->GetTimerType()->IsReadOnly())
+    if (pItem->GetPVRTimerInfoTag()->HasTimerType())
     {
       if (pItem->GetPVRTimerInfoTag()->GetTimerType()->SupportsEnableDisable())
       {
         if (pItem->GetPVRTimerInfoTag()->m_state == PVR_TIMER_STATE_DISABLED)
-          buttons.Add(CONTEXT_BUTTON_ACTIVATE, 843);    /* activate timer */
+          buttons.Add(CONTEXT_BUTTON_ACTIVATE, 843);    /* Activate */
         else
-          buttons.Add(CONTEXT_BUTTON_ACTIVATE, 844);    /* deactivate timer */
+          buttons.Add(CONTEXT_BUTTON_ACTIVATE, 844);    /* Deactivate */
       }
 
-      buttons.Add(CONTEXT_BUTTON_DELETE, 117);          /* delete */
-      buttons.Add(CONTEXT_BUTTON_EDIT, 19057);          /* edit timer */
+      if (!pItem->GetPVRTimerInfoTag()->GetTimerType()->IsReadOnly())
+      {
+        buttons.Add(CONTEXT_BUTTON_DELETE, 117);        /* Delete */
+        buttons.Add(CONTEXT_BUTTON_EDIT, 21450);        /* Edit */
 
-      // As epg-based timers will get it's title from the epg tag, they should not be renamable.
-      if (pItem->GetPVRTimerInfoTag()->IsManual())
-        buttons.Add(CONTEXT_BUTTON_RENAME, 118);        /* rename */
+        // As epg-based timers will get it's title from the epg tag, they should not be renamable.
+        if (pItem->GetPVRTimerInfoTag()->IsManual())
+          buttons.Add(CONTEXT_BUTTON_RENAME, 118);      /* Rename */
+      }
     }
-
-    buttons.Add(CONTEXT_BUTTON_ADD, 19056);             /* new timer */
 
     if (g_PVRClients->HasMenuHooks(pItem->GetPVRTimerInfoTag()->m_iClientId, PVR_MENUHOOK_TIMER))
       buttons.Add(CONTEXT_BUTTON_MENU_HOOKS, 19195);    /* PVR client specific action */
@@ -293,7 +286,7 @@ bool CGUIWindowPVRTimers::OnContextButtonDelete(CFileItem *item, CONTEXT_BUTTON 
 
     bool bDeleteSchedule(false);
     if (ConfirmDeleteTimer(item, bDeleteSchedule))
-      g_PVRTimers->DeleteTimer(*item, false, bDeleteSchedule);
+      CPVRTimers::DeleteTimer(*item, false, bDeleteSchedule);
   }
 
   return bReturn;
@@ -309,7 +302,7 @@ bool CGUIWindowPVRTimers::OnContextButtonEdit(CFileItem *item, CONTEXT_BUTTON bu
     if (!item->HasPVRTimerInfoTag())
       return bReturn;
 
-    if (ShowTimerSettings(item))
+    if (ShowTimerSettings(item) && !item->GetPVRTimerInfoTag()->GetTimerType()->IsReadOnly())
       g_PVRTimers->UpdateTimer(*item);
   }
 
@@ -352,7 +345,7 @@ bool CGUIWindowPVRTimers::ActionDeleteTimer(CFileItem *item)
 {
   /* check if the timer tag is valid */
   CPVRTimerInfoTagPtr timerTag = item->GetPVRTimerInfoTag();
-  if (!timerTag || (timerTag->m_iClientIndex == -1))
+  if (!timerTag || (timerTag->m_iClientIndex == PVR_TIMER_NO_CLIENT_INDEX))
     return false;
 
   bool bDeleteSchedule(false);
@@ -360,7 +353,7 @@ bool CGUIWindowPVRTimers::ActionDeleteTimer(CFileItem *item)
     return false;
 
   /* delete the timer */
-  bool bReturn = g_PVRTimers->DeleteTimer(*item, false, bDeleteSchedule);
+  bool bReturn = CPVRTimers::DeleteTimer(*item, false, bDeleteSchedule);
 
   if (bReturn && (m_vecItems->GetObjectCount() == 0))
   {
@@ -388,7 +381,7 @@ bool CGUIWindowPVRTimers::ActionShowTimer(CFileItem *item)
   }
   else
   {
-    if (ShowTimerSettings(item))
+    if (ShowTimerSettings(item) && !item->GetPVRTimerInfoTag()->GetTimerType()->IsReadOnly())
     {
       /* Update timer on pvr backend */
       bReturn = g_PVRTimers->UpdateTimer(*item);
@@ -414,29 +407,4 @@ bool CGUIWindowPVRTimers::ShowNewTimerDialog(void)
   delete newItem;
 
   return bReturn;
-}
-
-bool CGUIWindowPVRTimers::ShowTimerSettings(CFileItem *item)
-{
-  /* Check item is TV timer information tag */
-  if (!item->IsPVRTimer())
-  {
-    CLog::Log(LOGERROR, "CGUIWindowPVRTimers: Can't open timer settings dialog, no timer info tag!");
-    return false;
-  }
-
-  /* Load timer settings dialog */
-  CGUIDialogPVRTimerSettings* pDlgInfo = (CGUIDialogPVRTimerSettings*)g_windowManager.GetWindow(WINDOW_DIALOG_PVR_TIMER_SETTING);
-
-  if (!pDlgInfo)
-    return false;
-
-  /* inform dialog about the file item */
-  pDlgInfo->SetTimer(item);
-
-  /* Open dialog window */
-  pDlgInfo->Open();
-
-  /* Get modify flag from window and return it to caller */
-  return pDlgInfo->IsConfirmed();
 }

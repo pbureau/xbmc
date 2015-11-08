@@ -21,10 +21,11 @@
 #include "URL.h"
 #include "XBDateTime.h"
 #include "utils/Job.h"
+#include "settings/lib/ISettingCallback.h"
 #include "settings/lib/ISettingsHandler.h"
 #include <string>
 
-class CWakeOnAccess : private IJobCallback, public ISettingsHandler
+class CWakeOnAccess : private IJobCallback, public ISettingCallback, public ISettingsHandler
 {
 public:
   static CWakeOnAccess &GetInstance();
@@ -34,9 +35,9 @@ public:
 
   void QueueMACDiscoveryForAllRemotes();
 
-  virtual void OnJobComplete(unsigned int jobID, bool success, CJob *job);
-  virtual void OnSettingsLoaded();
-  virtual void OnSettingsSaved();
+  virtual void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  virtual void OnSettingChanged(const CSetting *setting) override;
+  virtual void OnSettingsLoaded() override;
 
   // struct to keep per host settings
   struct WakeUpEntry

@@ -371,9 +371,22 @@ void CGUIDialogKeyboardGeneric::Backspace()
 {
   if (m_codingtable && m_hzcode.length() > 0)
   {
-    m_hzcode.erase(m_hzcode.length() - 1, 1);
-    SetControlLabel(CTL_LABEL_HZCODE, m_hzcode);
-    ChangeWordList(0);
+    std::wstring tmp;
+    g_charsetConverter.utf8ToW(m_hzcode, tmp);
+    tmp.erase(tmp.length() - 1, 1);
+    g_charsetConverter.wToUTF8(tmp, m_hzcode);
+    
+    switch (m_codingtable->GetType())
+    {
+    case IInputCodingTable::TYPE_WORD_LIST:
+      SetControlLabel(CTL_LABEL_HZCODE, m_hzcode);
+      ChangeWordList(0);
+      break;
+
+    case IInputCodingTable::TYPE_CONVERT_STRING:
+      SetEditText(m_codingtable->ConvertString(m_hzcode));
+      break;
+    }
   }
   else
   {
@@ -381,6 +394,9 @@ void CGUIDialogKeyboardGeneric::Backspace()
     CGUIControl *edit = GetControl(CTL_EDIT);
     if (edit)
       edit->OnAction(CAction(ACTION_BACKSPACE));
+
+    if (m_codingtable && m_codingtable->GetType() == IInputCodingTable::TYPE_CONVERT_STRING)
+      m_codingtable->SetTextPrev(GetText());
   }
 }
 
@@ -417,7 +433,26 @@ void CGUIDialogKeyboardGeneric::UpdateButtons()
     m_currentLayout = 0;
   CKeyboardLayout layout = m_layouts.empty() ? CKeyboardLayout() : m_layouts[m_currentLayout];
   m_codingtable = layout.GetCodingTable();
+  if (m_codingtable && !m_codingtable->IsInitialized())
+    m_codingtable->Initialize();
+
+  bool bShowWordList = false;
   if (m_codingtable)
+  {
+    switch (m_codingtable->GetType())
+    {
+    case IInputCodingTable::TYPE_WORD_LIST:
+      bShowWordList = true;
+      break;
+
+    case IInputCodingTable::TYPE_CONVERT_STRING:
+      m_codingtable->SetTextPrev(GetText());
+      m_hzcode.clear();
+      break;
+    }
+  }
+
+  if (bShowWordList)
   {
     SET_CONTROL_VISIBLE(CTL_LABEL_HZCODE);
     SET_CONTROL_VISIBLE(CTL_LABEL_HZLIST);
@@ -456,6 +491,12 @@ void CGUIDialogKeyboardGeneric::UpdateButtons()
 
 void CGUIDialogKeyboardGeneric::OnDeinitWindow(int nextWindowID)
 {
+  for (auto& layout : m_layouts)
+  {
+    auto codingTable = layout.GetCodingTable();
+    if (codingTable && codingTable->IsInitialized())
+      codingTable->Deinitialize();
+  }
   // call base class
   CGUIDialog::OnDeinitWindow(nextWindowID);
   // reset the heading (we don't always have this)
@@ -600,7 +641,7 @@ void CGUIDialogKeyboardGeneric::ChangeWordList(int direct)
   else
   {
     ShowWordList(direct);
-    if (direct > 0 && m_pos + m_num == m_words.size())
+    if (direct > 0 && m_pos + m_num == static_cast<int>(m_words.size()))
       m_codingtable->GetWordListPage(m_hzcode, false);
   }
 }
@@ -619,9 +660,9 @@ void CGUIDialogKeyboardGeneric::ShowWordList(int direct)
   {
     if (direct > 0)
       m_pos += m_num;
-    if (m_pos > m_words.size() - 1)
+    if (m_pos > static_cast<int>(m_words.size()) - 1)
       m_pos = 0;
-    for (i = 0; m_pos + i < m_words.size(); i++)
+    for (i = 0; m_pos + i < static_cast<int>(m_words.size()); i++)
     {
       if ((i > 0 && width + GetStringWidth(m_words[m_pos + i]) + numwidth > m_listwidth) || i > 9)
         break;
@@ -656,7 +697,7 @@ void CGUIDialogKeyboardGeneric::ShowWordList(int direct)
   hzlist.erase(hzlist.find_last_not_of(L" ") + 1);
   if (m_pos > 0)
     hzlist.insert(0, 1, L'<');
-  if (m_pos + m_num < m_words.size())
+  if (m_pos + m_num < static_cast<int>(m_words.size()))
     hzlist.insert(hzlist.length(), 1, L'>');
   std::string utf8String;
   g_charsetConverter.wToUTF8(hzlist, utf8String);
@@ -667,25 +708,41 @@ bool CGUIDialogKeyboardGeneric::CodingCharacter(const std::string &ch)
 {
   if (!m_codingtable)
     return false;
-  if (m_codingtable->GetCodeChars().find(ch) != std::string::npos)
+
+  switch (m_codingtable->GetType())
   {
-    m_hzcode += ch;
-    SetControlLabel(CTL_LABEL_HZCODE, m_hzcode);
-    ChangeWordList(0);
-    return true;
-  }
-  if (ch[0] >= '0' && ch[0] <= '9')
-  {
-    int i = m_pos + (int)ch[0] - 48;
-    if (i < (m_pos + m_num))
+  case IInputCodingTable::TYPE_CONVERT_STRING:
+    if (!ch.empty() && ch[0] != 0)
     {
-      m_hzcode = "";
-      SetControlLabel(CTL_LABEL_HZCODE, m_hzcode);
-      std::string utf8String;
-      g_charsetConverter.wToUTF8(m_words[i], utf8String);
-      NormalCharacter(utf8String);
+      m_hzcode += ch;
+      SetEditText(m_codingtable->ConvertString(m_hzcode));
+      return true;
     }
-    return true;
+    break;
+
+  case IInputCodingTable::TYPE_WORD_LIST:
+    if (m_codingtable->GetCodeChars().find(ch) != std::string::npos)
+    {
+      m_hzcode += ch;
+      SetControlLabel(CTL_LABEL_HZCODE, m_hzcode);
+      ChangeWordList(0);
+      return true;
+    }
+    if (ch[0] >= '0' && ch[0] <= '9')
+    {
+      int i = m_pos + (int)ch[0] - 48;
+      if (i < (m_pos + m_num))
+      {
+        m_hzcode = "";
+        SetControlLabel(CTL_LABEL_HZCODE, m_hzcode);
+        std::string utf8String;
+        g_charsetConverter.wToUTF8(m_words[i], utf8String);
+        NormalCharacter(utf8String);
+      }
+      return true;
+    }
+    break;
   }
+
   return false;
 }

@@ -19,31 +19,31 @@
  */
 
 #include "LangInfo.h"
-#include "Application.h"
-#include "messaging/ApplicationMessenger.h"
-#include "FileItem.h"
-#include "Util.h"
+
+#include <algorithm>
+
 #include "addons/AddonInstaller.h"
 #include "addons/AddonManager.h"
 #include "addons/LanguageResource.h"
+#include "addons/RepositoryUpdater.h"
+#include "Application.h"
+#include "FileItem.h"
 #include "guilib/LocalizeStrings.h"
+#include "messaging/ApplicationMessenger.h"
 #include "pvr/PVRManager.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/lib/Setting.h"
 #include "settings/Settings.h"
+#include "Util.h"
 #include "utils/CharsetConverter.h"
-#include "utils/log.h"
 #include "utils/LangCodeExpander.h"
+#include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/Weather.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
 
-#include <algorithm>
-#include <locale>
-#include <utility>
-#include <set>
 
 using namespace PVR;
 using namespace KODI::MESSAGING;
@@ -263,13 +263,13 @@ void CLangInfo::CRegion::SetGlobalLocale()
   std::string strLocale;
   if (m_strRegionLocaleName.length() > 0)
   {
+#ifdef TARGET_WINDOWS
     std::string strLang, strRegion;
     g_LangCodeExpander.ConvertToISO6391(m_strLangLocaleName, strLang);
     g_LangCodeExpander.ConvertToISO6391(m_strRegionLocaleName, strRegion);
-#ifdef TARGET_WINDOWS
     strLocale = strLang + "-" + strRegion;
 #else
-    strLocale = strLang + "_" + strRegion;
+    strLocale = m_strLangLocaleName + "_" + m_strRegionLocaleName;
 #endif
 #ifdef TARGET_POSIX
     strLocale += ".UTF-8";
@@ -576,7 +576,7 @@ void CLangInfo::SetDefaults()
 std::string CLangInfo::GetGuiCharSet() const
 {
   CSettingString* charsetSetting = static_cast<CSettingString*>(CSettings::GetInstance().GetSetting(CSettings::SETTING_LOCALE_CHARSET));
-  if (charsetSetting->IsDefault())
+  if (charsetSetting == NULL || charsetSetting->IsDefault())
     return m_strGuiCharSet;
 
   return charsetSetting->GetValue();
@@ -658,7 +658,8 @@ bool CLangInfo::SetLanguage(bool& fallback, const std::string &strLanguage /* = 
       if (addondb.Open())
       {
         // update the addon repositories to check if there's a matching language addon available for download
-        CAddonInstaller::GetInstance().UpdateRepos(true, true);
+        ADDON::CRepositoryUpdater::GetInstance().CheckForUpdates();
+        ADDON::CRepositoryUpdater::GetInstance().Await();
 
         ADDON::VECADDONS languageAddons;
         if (addondb.GetAddons(languageAddons, ADDON::ADDON_RESOURCE_LANGUAGE) && !languageAddons.empty())
@@ -666,7 +667,7 @@ bool CLangInfo::SetLanguage(bool& fallback, const std::string &strLanguage /* = 
           // try to get the proper language addon by its name from all available language addons
           if (ADDON::CLanguageResource::FindLanguageAddonByName(language, newLanguage, languageAddons))
           {
-            if (CAddonInstaller::GetInstance().Install(newLanguage, true, "", false, false))
+            if (CAddonInstaller::GetInstance().InstallOrUpdate(newLanguage, false, false))
             {
               CLog::Log(LOGINFO, "CLangInfo: successfully installed language addon \"%s\" matching current language \"%s\"", newLanguage.c_str(), language.c_str());
               foundMatchingAddon = true;
@@ -1139,24 +1140,30 @@ void CLangInfo::SettingOptionsISO6391LanguagesFiller(const CSetting *setting, st
     list.push_back(std::make_pair(*language, *language));
 }
 
-void CLangInfo::SettingOptionsStreamLanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
+void CLangInfo::SettingOptionsAudioStreamLanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
+{
+  list.push_back(make_pair(g_localizeStrings.Get(308), "original"));
+  list.push_back(make_pair(g_localizeStrings.Get(309), "default"));
+
+  AddLanguages(list);
+}
+
+void CLangInfo::SettingOptionsSubtitleStreamLanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
   list.push_back(make_pair(g_localizeStrings.Get(231), "none"));
   list.push_back(make_pair(g_localizeStrings.Get(13207), "forced_only"));
   list.push_back(make_pair(g_localizeStrings.Get(308), "original"));
   list.push_back(make_pair(g_localizeStrings.Get(309), "default"));
 
-  std::string dummy;
-  std::vector<std::pair<std::string, std::string>> languages;
-  SettingOptionsISO6391LanguagesFiller(NULL, languages, dummy, NULL);
-  SettingOptionsLanguageNamesFiller(NULL, languages, dummy, NULL);
+  AddLanguages(list);
+}
 
-  // convert the vector to a set to remove duplicates
-  std::set<std::pair<std::string, std::string>, SortLanguage> tmp(
-      languages.begin(), languages.end(), SortLanguage());
+void CLangInfo::SettingOptionsSubtitleDownloadlanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
+{
+  list.push_back(make_pair(g_localizeStrings.Get(308), "original"));
+  list.push_back(make_pair(g_localizeStrings.Get(309), "default"));
 
-  list.reserve(list.size() + tmp.size());
-  list.insert(list.end(), tmp.begin(), tmp.end());
+  AddLanguages(list);
 }
 
 void CLangInfo::SettingOptionsRegionsFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
@@ -1396,4 +1403,19 @@ void CLangInfo::SettingOptionsSpeedUnitsFiller(const CSetting *setting, std::vec
 
   if (!match && !list.empty())
     current = list[0].second;
+}
+
+void CLangInfo::AddLanguages(std::vector< std::pair<std::string, std::string> > &list)
+{
+  std::string dummy;
+  std::vector<std::pair<std::string, std::string>> languages;
+  SettingOptionsISO6391LanguagesFiller(NULL, languages, dummy, NULL);
+  SettingOptionsLanguageNamesFiller(NULL, languages, dummy, NULL);
+
+  // convert the vector to a set to remove duplicates
+  std::set<std::pair<std::string, std::string>, SortLanguage> tmp(
+    languages.begin(), languages.end(), SortLanguage());
+
+  list.reserve(list.size() + tmp.size());
+  list.insert(list.end(), tmp.begin(), tmp.end());
 }

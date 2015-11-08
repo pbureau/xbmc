@@ -28,7 +28,6 @@
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 
-using namespace std;
 using namespace ADDON;
 using namespace ActiveAE;
 
@@ -102,14 +101,14 @@ void CActiveAEDSPAddon::OnPostUnInstall()
     CActiveAEDSP::GetInstance().Activate(true);
 }
 
-bool CActiveAEDSPAddon::CanInstall(const std::string &referer)
+bool CActiveAEDSPAddon::CanInstall()
 {
   if (!CActiveAEDSP::GetInstance().InstallAddonAllowed(ID()))
   {
-    CActiveAEDSP::GetInstance().MarkAsOutdated(ID(), referer);
+    CActiveAEDSP::GetInstance().MarkAsOutdated(ID());
     return false;
   }
-  return CAddon::CanInstall(referer);
+  return CAddon::CanInstall();
 }
 
 void CActiveAEDSPAddon::ResetProperties(int iClientId /* = AE_DSP_INVALID_ADDON_ID */)
@@ -293,7 +292,7 @@ bool CActiveAEDSPAddon::CheckAPIVersion(void)
 
 bool CActiveAEDSPAddon::GetAddonProperties(void)
 {
-  string strDSPName, strFriendlyName, strAudioDSPVersion;
+  std::string strDSPName, strFriendlyName, strAudioDSPVersion;
   AE_DSP_ADDON_CAPABILITIES addonCapabilities;
 
   /* get the capabilities */
@@ -375,7 +374,7 @@ bool CActiveAEDSPAddon::HaveMenuHooks(AE_DSP_MENUHOOK_CAT cat) const
 {
   if (m_bReadyToUse && m_menuhooks.size() > 0)
   {
-    for (unsigned int i = 0; i < m_menuhooks.size(); i++)
+    for (unsigned int i = 0; i < m_menuhooks.size(); ++i)
     {
       if (m_menuhooks[i].category == cat || m_menuhooks[i].category == AE_DSP_MENUHOOK_ALL)
         return true;
@@ -693,9 +692,9 @@ unsigned int CActiveAEDSPAddon::MasterProcess(const ADDON_HANDLE handle, float *
   return 0;
 }
 
-string CActiveAEDSPAddon::MasterProcessGetStreamInfoString(const ADDON_HANDLE handle)
+std::string CActiveAEDSPAddon::MasterProcessGetStreamInfoString(const ADDON_HANDLE handle)
 {
-  string strReturn;
+  std::string strReturn;
 
   if (!m_bReadyToUse)
     return strReturn;

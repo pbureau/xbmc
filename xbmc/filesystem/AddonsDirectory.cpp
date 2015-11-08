@@ -28,6 +28,8 @@
 #include "FileItem.h"
 #include "addons/AddonInstaller.h"
 #include "addons/PluginSource.h"
+#include "addons/RepositoryUpdater.h"
+#include "dialogs/GUIDialogOK.h"
 #include "guilib/TextureManager.h"
 #include "File.h"
 #include "SpecialProtocol.h"
@@ -136,8 +138,7 @@ static void SetUpdateAvailProperties(CFileItemList &items)
       const AddonVersion installedVersion = AddonVersion(items[i]->GetProperty("Addon.Version").asString());
       AddonPtr repoAddon;
       database.GetAddon(addonId, repoAddon);
-      if (repoAddon && repoAddon->Version() > installedVersion &&
-          !database.IsAddonBlacklisted(addonId, repoAddon->Version().asString()))
+      if (repoAddon && repoAddon->Version() > installedVersion)
       {
         items[i]->SetProperty("Addon.Status", g_localizeStrings.Get(24068));
         items[i]->SetProperty("Addon.UpdateAvail", true);
@@ -329,15 +330,12 @@ static bool HaveOrphaned()
 
 static void OutdatedAddons(const CURL& path, CFileItemList &items)
 {
-  VECADDONS addons;
-  // Wait for running update to complete
-  CAddonInstaller::GetInstance().UpdateRepos(false, true);
-  CAddonMgr::GetInstance().GetAllOutdatedAddons(addons);
+  VECADDONS addons = CAddonMgr::GetInstance().GetOutdated();
   CAddonsDirectory::GenerateAddonListing(path, addons, items, g_localizeStrings.Get(24043));
 
   if (items.Size() > 1)
   {
-    CFileItemPtr item(new CFileItem("addons://update_all/", true));
+    CFileItemPtr item(new CFileItem("addons://update_all/", false));
     item->SetLabel(g_localizeStrings.Get(24122));
     item->SetSpecialSort(SortSpecialOnTop);
     items.Add(item);
@@ -372,12 +370,22 @@ static bool Browse(const CURL& path, CFileItemList &items)
     AddonPtr addon;
     if (!CAddonMgr::GetInstance().GetAddon(repo, addon, ADDON_REPOSITORY))
       return false;
-    //Wait for runnig update to complete
-    CAddonInstaller::GetInstance().UpdateRepos(false, true);
+
     CAddonDatabase database;
     database.Open();
-    if (!database.GetRepository(addon->ID(), addons))
-      return false;
+    if (!database.GetRepositoryContent(addon->ID(), addons))
+    {
+      //Repo content is invalid. Ask for update and wait.
+      CRepositoryUpdater::GetInstance().CheckForUpdates(std::static_pointer_cast<CRepository>(addon));
+      CRepositoryUpdater::GetInstance().Await();
+
+      if (!database.GetRepositoryContent(addon->ID(), addons))
+      {
+        CGUIDialogOK::ShowAndGetInput(CVariant{addon->Name()}, CVariant{24991});
+        return false;
+      }
+    }
+
     items.SetProperty("reponame", addon->Name());
     items.SetLabel(addon->Name());
   }
@@ -468,13 +476,22 @@ bool CAddonsDirectory::GetDirectory(const CURL& url, CFileItemList &items)
     OrphanedAddons(path, items);
     return true;
   }
-  //Pvr hardcodes this view so keep for compatibility
-  else if (endpoint == "disabled" && path.GetFileName() == "xbmc.pvrclient")
+  // PVR & adsp hardcodes this view so keep for compatibility
+  else if (endpoint == "disabled")
   {
     VECADDONS addons;
-    if (CAddonMgr::GetInstance().GetAddons(ADDON_PVRDLL, addons, false))
+    ADDON::TYPE type;
+
+    if (path.GetFileName() == "xbmc.pvrclient")
+      type = ADDON_PVRDLL;
+    else if (path.GetFileName() == "kodi.adsp")
+      type = ADDON_ADSPDLL;
+    else
+      type = ADDON_UNKNOWN;
+
+    if (type != ADDON_UNKNOWN && CAddonMgr::GetInstance().GetAddons(type, addons, false))
     {
-      CAddonsDirectory::GenerateAddonListing(path, addons, items, TranslateType(ADDON_PVRDLL, true));
+      CAddonsDirectory::GenerateAddonListing(path, addons, items, TranslateType(type, true));
       return true;
     }
     return false;

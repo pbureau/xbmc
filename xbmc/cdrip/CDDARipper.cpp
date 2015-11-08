@@ -47,7 +47,6 @@
 #include "addons/AddonManager.h"
 #include "addons/AudioEncoder.h"
 
-using namespace std;
 using namespace ADDON;
 using namespace XFILE;
 using namespace MUSIC_INFO;
@@ -113,7 +112,7 @@ bool CCDDARipper::RipCD()
   {
     CFileItemPtr pItem = vecItems[i];
     CMusicInfoTagLoaderFactory factory;
-    unique_ptr<IMusicInfoTagLoader> pLoader (factory.CreateLoader(*pItem));
+    std::unique_ptr<IMusicInfoTagLoader> pLoader (factory.CreateLoader(*pItem));
     if (NULL != pLoader.get())
     {
       pLoader->Load(pItem->GetPath(), *pItem->GetMusicInfoTag()); // get tag from file
@@ -220,9 +219,9 @@ std::string CCDDARipper::GetAlbumDirName(const MUSIC_INFO::CMusicInfoTag& infoTa
   // replace %A with album artist name
   if (strAlbumDir.find("%A") != std::string::npos)
   {
-    std::string strAlbumArtist = StringUtils::Join(infoTag.GetAlbumArtist(), g_advancedSettings.m_musicItemSeparator);
+    std::string strAlbumArtist = infoTag.GetAlbumArtistString();
     if (strAlbumArtist.empty())
-      strAlbumArtist = StringUtils::Join(infoTag.GetArtist(), g_advancedSettings.m_musicItemSeparator);
+      strAlbumArtist = infoTag.GetArtistString();
     if (strAlbumArtist.empty())
       strAlbumArtist = "Unknown Artist";
     else

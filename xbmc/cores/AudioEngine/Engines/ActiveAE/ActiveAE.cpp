@@ -163,10 +163,22 @@ void CEngineStats::SetDSP(bool state)
   m_hasDSP = state;
 }
 
+void CEngineStats::SetCurrentSinkFormat(AEAudioFormat SinkFormat)
+{
+  CSingleLock lock(m_lock);
+  m_sinkFormat = SinkFormat;
+}
+
 bool CEngineStats::HasDSP()
 {
   CSingleLock lock(m_lock);
   return m_hasDSP;
+}
+
+AEAudioFormat CEngineStats::GetCurrentSinkFormat()
+{
+  CSingleLock lock(m_lock);
+  return m_sinkFormat;
 }
 
 CActiveAE::CActiveAE() :
@@ -541,9 +553,9 @@ void CActiveAE::StateMachine(int signal, Protocol *port, Message *msg)
         case CActiveAEControlProtocol::STREAMFFMPEGINFO:
           MsgStreamFFmpegInfo *info;
           info = (MsgStreamFFmpegInfo*)msg->data;
-          par->stream->m_profile = info->profile;
-          par->stream->m_matrixEncoding = info->matrix_encoding;
-          par->stream->m_audioServiceType = info->audio_service_type;
+          info->stream->m_profile = info->profile;
+          info->stream->m_matrixEncoding = info->matrix_encoding;
+          info->stream->m_audioServiceType = info->audio_service_type;
           return;
         case CActiveAEControlProtocol::STREAMFADE:
           MsgStreamFade *fade;
@@ -1644,6 +1656,7 @@ bool CActiveAE::InitSink()
       m_sinkHasVolume = data->hasVolume;
       m_stats.SetSinkCacheTotal(data->cacheTotal);
       m_stats.SetSinkLatency(data->latency);
+      m_stats.SetCurrentSinkFormat(m_sinkFormat);
     }
     reply->Release();
   }
@@ -1652,6 +1665,9 @@ bool CActiveAE::InitSink()
     CLog::Log(LOGERROR, "ActiveAE::%s - failed to init", __FUNCTION__);
     m_stats.SetSinkCacheTotal(0);
     m_stats.SetSinkLatency(0);
+    AEAudioFormat invalidFormat;
+    invalidFormat.m_dataFormat = AE_FMT_INVALID;
+    m_stats.SetCurrentSinkFormat(invalidFormat);
     m_extError = true;
     return false;
   }
@@ -2012,7 +2028,7 @@ bool CActiveAE::RunStages()
             {
               // copy the samples into the viz input buffer
               CSampleBuffer *viz = m_vizBuffersInput->GetFreeBuffer();
-              int samples = std::min(512, out->pkt->nb_samples);
+              int samples = out->pkt->nb_samples;
               int bytes = samples * out->pkt->config.channels / out->pkt->planes * out->pkt->bytes_per_sample;
               for(int i= 0; i < out->pkt->planes; i++)
               {
@@ -2035,8 +2051,7 @@ bool CActiveAE::RunStages()
                 break;
               else
               {
-                int samples;
-                samples = std::min(512, buf->pkt->nb_samples);
+                int samples = buf->pkt->nb_samples;
                 m_audioCallback->OnAudioData((float*)(buf->pkt->data[0]), samples);
                 buf->Return();
                 m_vizBuffers->m_outputSamples.pop_front();
@@ -2499,6 +2514,11 @@ bool CActiveAE::HasDSP()
 {
   return m_stats.HasDSP();
 };
+
+AEAudioFormat CActiveAE::GetCurrentSinkFormat()
+{
+  return m_stats.GetCurrentSinkFormat();
+}
 
 void CActiveAE::OnLostDevice()
 {

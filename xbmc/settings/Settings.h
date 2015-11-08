@@ -57,6 +57,7 @@ public:
   static const std::string SETTING_LOOKANDFEEL_SOUNDSKIN;
   static const std::string SETTING_LOOKANDFEEL_ENABLERSSFEEDS;
   static const std::string SETTING_LOOKANDFEEL_RSSEDIT;
+  static const std::string SETTING_LOOKANDFEEL_STEREOSTRENGTH;
   static const std::string SETTING_LOCALE_LANGUAGE;
   static const std::string SETTING_LOCALE_COUNTRY;
   static const std::string SETTING_LOCALE_CHARSET;
@@ -92,11 +93,13 @@ public:
   static const std::string SETTING_VIDEOLIBRARY_TVSHOWSINCLUDEALLSEASONSANDSPECIALS;
   static const std::string SETTING_VIDEOLIBRARY_SHOWALLITEMS;
   static const std::string SETTING_VIDEOLIBRARY_GROUPMOVIESETS;
+  static const std::string SETTING_VIDEOLIBRARY_GROUPSINGLEITEMSETS;
   static const std::string SETTING_VIDEOLIBRARY_UPDATEONSTARTUP;
   static const std::string SETTING_VIDEOLIBRARY_BACKGROUNDUPDATE;
   static const std::string SETTING_VIDEOLIBRARY_CLEANUP;
   static const std::string SETTING_VIDEOLIBRARY_EXPORT;
   static const std::string SETTING_VIDEOLIBRARY_IMPORT;
+  static const std::string SETTING_VIDEOLIBRARY_SHOWEMPTYTVSHOWS;
   static const std::string SETTING_LOCALE_AUDIOLANGUAGE;
   static const std::string SETTING_VIDEOPLAYER_PREFERDEFAULTFLAG;
   static const std::string SETTING_VIDEOPLAYER_AUTOPLAYNEXTITEM;
@@ -115,6 +118,7 @@ public:
   static const std::string SETTING_VIDEOPLAYER_HQSCALERS;
   static const std::string SETTING_VIDEOPLAYER_USEAMCODEC;
   static const std::string SETTING_VIDEOPLAYER_USEMEDIACODEC;
+  static const std::string SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE;
   static const std::string SETTING_VIDEOPLAYER_USEVDPAU;
   static const std::string SETTING_VIDEOPLAYER_USEVDPAUMIXER;
   static const std::string SETTING_VIDEOPLAYER_USEVDPAUMPEG2;
@@ -160,6 +164,7 @@ public:
   static const std::string SETTING_DVDS_PLAYERREGION;
   static const std::string SETTING_DVDS_AUTOMENU;
   static const std::string SETTING_DISC_PLAYBACK;
+  static const std::string SETTING_BLURAY_PLAYERREGION;
   static const std::string SETTING_ACCESSIBILITY_AUDIOVISUAL;
   static const std::string SETTING_ACCESSIBILITY_AUDIOHEARING;
   static const std::string SETTING_ACCESSIBILITY_SUBHEARING;
@@ -235,11 +240,8 @@ public:
   static const std::string SETTING_MUSICPLAYER_VISUALISATION;
   static const std::string SETTING_MUSICFILES_USETAGS;
   static const std::string SETTING_MUSICFILES_TRACKFORMAT;
-  static const std::string SETTING_MUSICFILES_TRACKFORMATRIGHT;
   static const std::string SETTING_MUSICFILES_NOWPLAYINGTRACKFORMAT;
-  static const std::string SETTING_MUSICFILES_NOWPLAYINGTRACKFORMATRIGHT;
   static const std::string SETTING_MUSICFILES_LIBRARYTRACKFORMAT;
-  static const std::string SETTING_MUSICFILES_LIBRARYTRACKFORMATRIGHT;
   static const std::string SETTING_MUSICFILES_FINDREMOTETHUMBS;
   static const std::string SETTING_AUDIOCDS_AUTOACTION;
   static const std::string SETTING_AUDIOCDS_USECDDB;
@@ -248,20 +250,10 @@ public:
   static const std::string SETTING_AUDIOCDS_ENCODER;
   static const std::string SETTING_AUDIOCDS_SETTINGS;
   static const std::string SETTING_AUDIOCDS_EJECTONRIP;
-  static const std::string SETTING_KARAOKE_ENABLED;
-  static const std::string SETTING_KARAOKE_AUTOPOPUPSELECTOR;
-  static const std::string SETTING_KARAOKE_FONT;
-  static const std::string SETTING_KARAOKE_FONTHEIGHT;
-  static const std::string SETTING_KARAOKE_FONTCOLORS;
-  static const std::string SETTING_KARAOKE_CHARSET;
-  static const std::string SETTING_KARAOKE_EXPORT;
-  static const std::string SETTING_KARAOKE_IMPORTCSV;
   static const std::string SETTING_MYMUSIC_STARTWINDOW;
   static const std::string SETTING_MYMUSIC_SONGTHUMBINVIS;
   static const std::string SETTING_MYMUSIC_DEFAULTLIBVIEW;
-  static const std::string SETTING_PICTURES_USETAGS;
   static const std::string SETTING_PICTURES_GENERATETHUMBS;
-  static const std::string SETTING_PICTURES_USEEXIFROTATION;
   static const std::string SETTING_PICTURES_SHOWVIDEOS;
   static const std::string SETTING_PICTURES_DISPLAYRESOLUTION;
   static const std::string SETTING_SLIDESHOW_STAYTIME;
@@ -293,7 +285,7 @@ public:
   static const std::string SETTING_SERVICES_AIRPLAYVOLUMECONTROL;
   static const std::string SETTING_SERVICES_USEAIRPLAYPASSWORD;
   static const std::string SETTING_SERVICES_AIRPLAYPASSWORD;
-  static const std::string SETTING_SERVICES_AIRPLAYIOS8COMPAT;
+  static const std::string SETTING_SERVICES_AIRPLAYVIDEOSUPPORT;
   static const std::string SETTING_SMB_WINSSERVER;
   static const std::string SETTING_SMB_WORKGROUP;
   static const std::string SETTING_VIDEOSCREEN_MONITOR;
@@ -329,6 +321,7 @@ public:
   static const std::string SETTING_AUDIOOUTPUT_DTSPASSTHROUGH;
   static const std::string SETTING_AUDIOOUTPUT_TRUEHDPASSTHROUGH;
   static const std::string SETTING_AUDIOOUTPUT_DTSHDPASSTHROUGH;
+  static const std::string SETTING_AUDIOOUTPUT_SUPPORTSDTSHDCPUDECODING;
   static const std::string SETTING_INPUT_PERIPHERALS;
   static const std::string SETTING_INPUT_ENABLEMOUSE;
   static const std::string SETTING_INPUT_ENABLEJOYSTICK;

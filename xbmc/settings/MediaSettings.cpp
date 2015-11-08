@@ -27,9 +27,10 @@
 #include "PlayListPlayer.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogFileBrowser.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "interfaces/Builtins.h"
+#include "interfaces/builtins/Builtins.h"
 #include "music/MusicDatabase.h"
+#include "messaging/ApplicationMessenger.h"
+#include "messaging/helpers/DialogHelper.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/lib/Setting.h"
 #include "settings/Settings.h"
@@ -42,6 +43,10 @@
 #include "utils/Variant.h"
 #include "video/VideoDatabase.h"
 #include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
+
+using namespace KODI::MESSAGING;
+
+using KODI::MESSAGING::HELPERS::DialogResponse;
 
 CMediaSettings::CMediaSettings()
 {
@@ -313,57 +318,13 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
     return;
 
   const std::string &settingId = setting->GetId();
-  if (settingId == CSettings::SETTING_KARAOKE_EXPORT)
+  if (settingId == CSettings::SETTING_MUSICLIBRARY_CLEANUP)
   {
-    CContextButtons choices;
-    choices.Add(1, g_localizeStrings.Get(22034));
-    choices.Add(2, g_localizeStrings.Get(22035));
-
-    int retVal = CGUIDialogContextMenu::ShowAndGetChoice(choices);
-    if ( retVal > 0 )
-    {
-      std::string path(CProfilesManager::GetInstance().GetDatabaseFolder());
-      VECSOURCES shares;
-      g_mediaManager.GetLocalDrives(shares);
-      if (CGUIDialogFileBrowser::ShowAndGetDirectory(shares, g_localizeStrings.Get(661), path, true))
-      {
-        CMusicDatabase musicdatabase;
-        musicdatabase.Open();
-
-        if ( retVal == 1 )
-        {
-          path = URIUtils::AddFileToFolder(path, "karaoke.html");
-          musicdatabase.ExportKaraokeInfo( path, true );
-        }
-        else
-        {
-          path = URIUtils::AddFileToFolder(path, "karaoke.csv");
-          musicdatabase.ExportKaraokeInfo( path, false );
-        }
-        musicdatabase.Close();
-      }
-    }
-  }
-  else if (settingId == CSettings::SETTING_KARAOKE_IMPORTCSV)
-  {
-    std::string path(CProfilesManager::GetInstance().GetDatabaseFolder());
-    VECSOURCES shares;
-    g_mediaManager.GetLocalDrives(shares);
-    if (CGUIDialogFileBrowser::ShowAndGetFile(shares, "karaoke.csv", g_localizeStrings.Get(651) , path))
-    {
-      CMusicDatabase musicdatabase;
-      musicdatabase.Open();
-      musicdatabase.ImportKaraokeInfo(path);
-      musicdatabase.Close();
-    }
-  }
-  else if (settingId == CSettings::SETTING_MUSICLIBRARY_CLEANUP)
-  {
-    if (CGUIDialogYesNo::ShowAndGetInput(CVariant{313}, CVariant{333}))
+    if (HELPERS::ShowYesNoDialogText(CVariant{313}, CVariant{333}) == DialogResponse::YES)
       g_application.StartMusicCleanup(true);
   }
   else if (settingId == CSettings::SETTING_MUSICLIBRARY_EXPORT)
-    CBuiltins::Execute("exportlibrary(music)");
+    CBuiltins::GetInstance().Execute("exportlibrary(music)");
   else if (settingId == CSettings::SETTING_MUSICLIBRARY_IMPORT)
   {
     std::string path;
@@ -382,11 +343,11 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
   }
   else if (settingId == CSettings::SETTING_VIDEOLIBRARY_CLEANUP)
   {
-    if (CGUIDialogYesNo::ShowAndGetInput(CVariant{313}, CVariant{333}))
+    if (HELPERS::ShowYesNoDialogText(CVariant{313}, CVariant{333}) == DialogResponse::YES)
       g_application.StartVideoCleanup(true);
   }
   else if (settingId == CSettings::SETTING_VIDEOLIBRARY_EXPORT)
-    CBuiltins::Execute("exportlibrary(video)");
+    CBuiltins::GetInstance().Execute("exportlibrary(video)");
   else if (settingId == CSettings::SETTING_VIDEOLIBRARY_IMPORT)
   {
     std::string path;

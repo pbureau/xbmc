@@ -18,21 +18,22 @@
  *
  */
 
-#include "GUIDialogPVRGuideInfo.h"
 #include "Application.h"
-#include "guilib/GUIWindowManager.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogYesNo.h"
+#include "epg/EpgInfoTag.h"
+#include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 
 #include "pvr/PVRManager.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
-#include "epg/EpgInfoTag.h"
 #include "pvr/timers/PVRTimers.h"
 #include "pvr/timers/PVRTimerInfoTag.h"
 #include "pvr/windows/GUIWindowPVRBase.h"
+
+#include "GUIDialogPVRGuideInfo.h"
 
 #include <utility>
 
@@ -66,17 +67,13 @@ bool CGUIDialogPVRGuideInfo::ActionStartTimer(const CEpgInfoTagPtr &tag)
   if (!channel || !g_PVRManager.CheckParentalLock(channel))
     return false;
 
-  // prompt user for confirmation of channel record
-  if (CGUIDialogYesNo::ShowAndGetInput(CVariant{264} /* "Record" */, CVariant{tag->Title()}))
-  {
-    Close();
+  Close();
 
-    CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(tag);
-    if (newTimer)
-      bReturn = CPVRTimers::AddTimer(newTimer);
-    else
-      bReturn = false;
-  }
+  CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(tag);
+  if (newTimer)
+    bReturn = CPVRTimers::AddTimer(newTimer);
+  else
+    bReturn = false;
 
   return bReturn;
 }
@@ -87,36 +84,11 @@ bool CGUIDialogPVRGuideInfo::ActionCancelTimer(CFileItemPtr timer)
   if (!timer || !timer->HasPVRTimerInfoTag())
     return bReturn;
 
-  bool bDelete(false);
-  bool bDeleteScheduled(false);
-
-  if (timer->GetPVRTimerInfoTag()->IsRepeating())
-  {
-    // prompt user for confirmation for deleting the complete repeating timer, including scheduled timers.
-    bool bCancel(false);
-    bDeleteScheduled = CGUIDialogYesNo::ShowAndGetInput(
-                                                        CVariant{122}, // "Confirm delete"
-                                                        CVariant{840}, // "You are about to delete a repeating timer. Do you also want to delete all timers currently scheduled by this timer?"
-                                                        CVariant{""},
-                                                        CVariant{timer->GetPVRTimerInfoTag()->Title()},
-                                                        bCancel);
-    bDelete = !bCancel;
-  }
-  else
-  {
-    // prompt user for confirmation for deleting the timer
-    bDelete = CGUIDialogYesNo::ShowAndGetInput(
-                                               CVariant{122}, // "Confirm delete"
-                                               CVariant{19040}, // Timer
-                                               CVariant{""},
-                                               CVariant{timer->GetPVRTimerInfoTag()->Title()});
-    bDeleteScheduled = false;
-  }
-
-  if (bDelete)
+  bool bDeleteSchedule(false);
+  if (CGUIWindowPVRBase::ConfirmDeleteTimer(timer.get(), bDeleteSchedule))
   {
     Close();
-    bReturn = CPVRTimers::DeleteTimer(*timer, false, bDeleteScheduled);
+    bReturn = CPVRTimers::DeleteTimer(*timer, false, bDeleteSchedule);
   }
 
   return bReturn;
@@ -273,10 +245,7 @@ void CGUIDialogPVRGuideInfo::OnInitWindow()
   if (!match || !match->HasPVRTimerInfoTag())
   {
     /* no timer present on this tag */
-    if (tag->StartAsLocalTime() < CDateTime::GetCurrentDateTime())
-      SET_CONTROL_LABEL(CONTROL_BTN_RECORD, 264);    // Record
-    else
-      SET_CONTROL_LABEL(CONTROL_BTN_RECORD, 19061);  // Add timer
+    SET_CONTROL_LABEL(CONTROL_BTN_RECORD, 264);      // Record
   }
   else
   {

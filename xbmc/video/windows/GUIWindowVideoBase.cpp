@@ -35,7 +35,6 @@
 #include "PlayListPlayer.h"
 #include "GUIPassword.h"
 #include "filesystem/StackDirectory.h"
-#include "video/dialogs/GUIDialogFileStacking.h"
 #include "filesystem/VideoDatabaseDirectory.h"
 #include "PartyModeManager.h"
 #include "guilib/GUIWindowManager.h"
@@ -154,7 +153,7 @@ bool CGUIWindowVideoBase::OnMessage(CGUIMessage& message)
         }
         else if (iAction == ACTION_SHOW_INFO)
         {
-          return OnInfo(iItem);
+          return OnItemInfo(iItem);
         }
         else if (iAction == ACTION_PLAYER_PLAY)
         {
@@ -202,7 +201,7 @@ bool CGUIWindowVideoBase::OnMessage(CGUIMessage& message)
   return CGUIMediaWindow::OnMessage(message);
 }
 
-void CGUIWindowVideoBase::OnInfo(CFileItem* pItem, ADDON::ScraperPtr& scraper)
+void CGUIWindowVideoBase::OnItemInfo(CFileItem* pItem, ADDON::ScraperPtr& scraper)
 {
   if (!pItem)
     return;
@@ -378,6 +377,8 @@ bool CGUIWindowVideoBase::ShowIMDB(CFileItemPtr item, const ScraperPtr &info2, b
     *item->GetVideoInfoTag() = movieDetails;
     pDlgInfo->SetMovie(item.get());
     pDlgInfo->Open();
+    if (pDlgInfo->HasUpdatedUserrating())
+      return true;
     needsRefresh = pDlgInfo->NeedRefresh();
     if (!needsRefresh)
       return pDlgInfo->HasUpdatedThumb();
@@ -672,7 +673,7 @@ bool CGUIWindowVideoBase::OnFileAction(int iItem, int action)
   case SELECT_ACTION_PLAY_OR_RESUME:
     return OnResumeItem(iItem);
   case SELECT_ACTION_INFO:
-    if (OnInfo(iItem))
+    if (OnItemInfo(iItem))
       return true;
     break;
   case SELECT_ACTION_MORE:
@@ -692,7 +693,7 @@ bool CGUIWindowVideoBase::OnFileAction(int iItem, int action)
   return OnClick(iItem);
 }
 
-bool CGUIWindowVideoBase::OnInfo(int iItem) 
+bool CGUIWindowVideoBase::OnItemInfo(int iItem) 
 {
   if (iItem < 0 || iItem >= m_vecItems->Size())
     return false;
@@ -735,9 +736,12 @@ bool CGUIWindowVideoBase::OnInfo(int iItem)
       return true;
   }
 
-  OnInfo(item.get(), scraper);
+  OnItemInfo(item.get(), scraper);
 
-  return true;
+  // Return whether or not we have information to display.
+  // Note: This will cause the default select action to start
+  // playback in case it's set to "Show information".
+  return item->HasVideoInfoTag();
 }
 
 void CGUIWindowVideoBase::OnRestartItem(int iItem)
@@ -908,18 +912,28 @@ bool CGUIWindowVideoBase::OnPlayStackPart(int iItem)
     return false;
 
   CFileItemList parts;
-  CDirectory::GetDirectory(path,parts);
-  CGUIDialogFileStacking* dlg = (CGUIDialogFileStacking*)g_windowManager.GetWindow(WINDOW_DIALOG_FILESTACKING);
-  if (!dlg) return true;
-  dlg->SetNumberOfFiles(parts.Size());
-  dlg->Open();
-  int selectedFile = dlg->GetSelectedFile();
-  if (selectedFile > 0)
+  CDirectory::GetDirectory(path, parts);
+
+  for (int i = 0; i < parts.Size(); i++)
+    parts[i]->SetLabel(StringUtils::Format(g_localizeStrings.Get(23051).c_str(), i+1));
+
+  CGUIDialogSelect* pDialog = (CGUIDialogSelect*)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
+
+  pDialog->Reset();
+  pDialog->SetHeading(CVariant{20324});
+  pDialog->SetItems(parts);
+  pDialog->Open();
+
+  if (!pDialog->IsConfirmed())
+    return false;
+
+  int selectedFile = pDialog->GetSelectedLabel();
+  if (selectedFile >= 0)
   {
     // ISO stack
     if (CFileItem(CStackDirectory::GetFirstStackedFile(path),false).IsDiscImage())
     {
-      std::string resumeString = CGUIWindowVideoBase::GetResumeString(*(parts[selectedFile - 1].get()));
+      std::string resumeString = CGUIWindowVideoBase::GetResumeString(*(parts[selectedFile].get()));
       stack->m_lStartOffset = 0;
       if (!resumeString.empty()) 
       {
@@ -928,7 +942,7 @@ bool CGUIWindowVideoBase::OnPlayStackPart(int iItem)
         choices.Add(SELECT_ACTION_PLAY, 12021);   // Start from beginning
         int value = CGUIDialogContextMenu::ShowAndGetChoice(choices);
         if (value == SELECT_ACTION_RESUME)
-          GetResumeItemOffset(parts[selectedFile - 1].get(), stack->m_lStartOffset, stack->m_lStartPartNumber);
+          GetResumeItemOffset(parts[selectedFile].get(), stack->m_lStartOffset, stack->m_lStartPartNumber);
         else if (value != SELECT_ACTION_PLAY)
           return false; // if not selected PLAY, then we changed our mind so return
       }
@@ -937,11 +951,11 @@ bool CGUIWindowVideoBase::OnPlayStackPart(int iItem)
     // regular stack
     else
     {
-      if (selectedFile > 1)
+      if (selectedFile > 0)
       {
         std::vector<int> times;
         if (m_database.GetStackTimes(path,times))
-          stack->m_lStartOffset = times[selectedFile-2]*75; // wtf?
+          stack->m_lStartOffset = times[selectedFile - 1] * 75;
       }
       else
         stack->m_lStartOffset = 0;
@@ -1023,7 +1037,7 @@ bool CGUIWindowVideoBase::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
     return OnFileAction(itemNumber, SELECT_ACTION_RESUME);
 
   case CONTEXT_BUTTON_INFO:
-    OnInfo(itemNumber);
+    OnItemInfo(itemNumber);
     return true;
 
   case CONTEXT_BUTTON_STOP_SCANNING:
@@ -1054,7 +1068,7 @@ bool CGUIWindowVideoBase::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
         OnScan(strPath, true);
       }
       else
-        OnInfo(item.get(),info);
+        OnItemInfo(item.get(),info);
 
       return true;
     }
@@ -1404,7 +1418,8 @@ void CGUIWindowVideoBase::GetGroupedItems(CFileItemList &items)
        (CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOLIBRARY_GROUPMOVIESETS) || (StringUtils::EqualsNoCase(group, "sets") && mixed)))
     {
       CFileItemList groupedItems;
-      if (GroupUtils::Group(GroupBySet, m_strFilterPath, items, groupedItems, GroupAttributeIgnoreSingleItems))
+      GroupAttribute groupAttributes = CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOLIBRARY_GROUPSINGLEITEMSETS) ? GroupAttributeNone : GroupAttributeIgnoreSingleItems;
+      if (GroupUtils::GroupAndMix(GroupBySet, m_strFilterPath, items, groupedItems, groupAttributes))
       {
         items.ClearItems();
         items.Append(groupedItems);
@@ -1465,7 +1480,7 @@ void CGUIWindowVideoBase::AddToDatabase(int iItem)
   CFileItemList items;
   if (!CDirectory::GetDirectory("videodb://movies/genres/", items))
     return;
-  pSelect->SetItems(&items);
+  pSelect->SetItems(items);
   pSelect->EnableButton(true, 531); // New Genre
   pSelect->Open();
   std::string strGenre;
@@ -1714,9 +1729,8 @@ void CGUIWindowVideoBase::OnAssignContent(const std::string &path)
       if (OnUnAssignContent(path, 20442, 20443))
         bScan = true;
     }
+    db.SetScraperForPath(path, info, settings);
   }
-
-  db.SetScraperForPath(path,info,settings);
 
   if (bScan)
   {

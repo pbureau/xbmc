@@ -24,6 +24,7 @@
 #include "XBApplicationEx.h"
 
 #include "guilib/IMsgTargetCallback.h"
+#include "guilib/Resolution.h"
 #include "utils/GlobalsHandling.h"
 #include "messaging/IMessageTarget.h"
 
@@ -72,7 +73,6 @@ namespace MEDIA_DETECT
 #include "interfaces/IActionListener.h"
 
 class CSeekHandler;
-class CKaraokeLyricsManager;
 class CInertialScrollingHandler;
 class DPMSSupport;
 class CSplash;
@@ -135,16 +135,16 @@ public:
 
   CApplication(void);
   virtual ~CApplication(void);
-  virtual bool Initialize();
-  virtual void FrameMove(bool processEvents, bool processGUI = true);
-  virtual void Render();
+  virtual bool Initialize() override;
+  virtual void FrameMove(bool processEvents, bool processGUI = true) override;
+  virtual void Render() override;
   virtual bool RenderNoPresent();
   virtual void Preflight();
-  virtual bool Create();
-  virtual bool Cleanup();
+  virtual bool Create() override;
+  virtual bool Cleanup() override;
 
   bool CreateGUI();
-  bool InitWindow();
+  bool InitWindow(RESOLUTION res = RES_INVALID);
   bool DestroyWindow();
   void StartServices();
   void StopServices();
@@ -162,17 +162,17 @@ public:
   const std::string& CurrentFile();
   CFileItem& CurrentFileItem();
   CFileItem& CurrentUnstackedItem();
-  virtual bool OnMessage(CGUIMessage& message);
+  virtual bool OnMessage(CGUIMessage& message) override;
   PLAYERCOREID GetCurrentPlayer();
-  virtual void OnPlayBackEnded();
-  virtual void OnPlayBackStarted();
-  virtual void OnPlayBackPaused();
-  virtual void OnPlayBackResumed();
-  virtual void OnPlayBackStopped();
-  virtual void OnQueueNextItem();
-  virtual void OnPlayBackSeek(int iTime, int seekOffset);
-  virtual void OnPlayBackSeekChapter(int iChapter);
-  virtual void OnPlayBackSpeedChanged(int iSpeed);
+  virtual void OnPlayBackEnded() override;
+  virtual void OnPlayBackStarted() override;
+  virtual void OnPlayBackPaused() override;
+  virtual void OnPlayBackResumed() override;
+  virtual void OnPlayBackStopped() override;
+  virtual void OnQueueNextItem() override;
+  virtual void OnPlayBackSeek(int iTime, int seekOffset) override;
+  virtual void OnPlayBackSeekChapter(int iChapter) override;
+  virtual void OnPlayBackSpeedChanged(int iSpeed) override;
 
   virtual int  GetMessageMask() override;
   virtual void OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg) override;
@@ -205,7 +205,7 @@ public:
   void CloseNetworkShares();
 
   void ShowAppMigrationMessage();
-  virtual void Process();
+  virtual void Process() override;
   void ProcessSlow();
   void ResetScreenSaver();
   float GetVolume(bool percentage = true) const;
@@ -284,7 +284,7 @@ public:
   void UpdateLibraries();
   void CheckMusicPlaylist();
 
-  bool ExecuteXBMCAction(std::string action);
+  bool ExecuteXBMCAction(std::string action, const CGUIListItemPtr &item = NULL);
 
   static bool OnEvent(XBMC_Event& newEvent);
 
@@ -318,8 +318,6 @@ public:
   } PlayState;
   PlayState m_ePlayState;
   CCriticalSection m_playStateMutex;
-
-  CKaraokeLyricsManager* m_pKaraokeMgr;
 
   PLAYERCOREID m_eForcedNextPlayer;
   std::string m_strPlayListFile;
@@ -372,7 +370,7 @@ public:
 
   bool SwitchToFullScreen(bool force = false);
 
-  void SetRenderGUI(bool renderGUI);
+  void SetRenderGUI(bool renderGUI) override;
   bool GetRenderGUI() const { return m_renderGUI; };
 
   bool SetLanguage(const std::string &strLanguage);
@@ -394,14 +392,14 @@ public:
   void UnregisterActionListener(IActionListener *listener);
 
 protected:
-  virtual bool OnSettingsSaving() const;
+  virtual bool OnSettingsSaving() const override;
 
-  virtual bool Load(const TiXmlNode *settings);
-  virtual bool Save(TiXmlNode *settings) const;
+  virtual bool Load(const TiXmlNode *settings) override;
+  virtual bool Save(TiXmlNode *settings) const override;
 
-  virtual void OnSettingChanged(const CSetting *setting);
-  virtual void OnSettingAction(const CSetting *setting);
-  virtual bool OnSettingUpdate(CSetting* &setting, const char *oldSettingId, const TiXmlNode *oldSettingNode);
+  virtual void OnSettingChanged(const CSetting *setting) override;
+  virtual void OnSettingAction(const CSetting *setting) override;
+  virtual bool OnSettingUpdate(CSetting* &setting, const char *oldSettingId, const TiXmlNode *oldSettingNode) override;
 
   bool LoadSkin(const std::string& skinID);
   bool LoadSkin(const std::shared_ptr<ADDON::CSkinInfo>& skin);
@@ -414,6 +412,7 @@ protected:
   bool NotifyActionListeners(const CAction &action) const;
 
   bool m_skinReverting;
+  std::string m_skinReloadSettingIgnore;
 
   bool m_loggingIn;
 
@@ -494,6 +493,10 @@ protected:
   bool InitDirectoriesOSX();
   bool InitDirectoriesWin32();
   void CreateUserDirs();
+
+  /*! \brief Helper method to determine how to handle TMSG_SHUTDOWN
+  */
+  void HandleShutdownMessage();
 
   CInertialScrollingHandler *m_pInertialScrollingHandler;
   CNetwork    *m_network;

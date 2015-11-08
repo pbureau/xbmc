@@ -1,5 +1,4 @@
 #pragma once
-
 /*
  *      Copyright (C) 2012-2013 Team XBMC
  *      http://xbmc.org
@@ -72,9 +71,21 @@ namespace PVR
     virtual void ResetObservers(void) {};
     virtual void Notify(const Observable &obs, const ObservableMessage msg);
     virtual void SetInvalid();
+    virtual bool CanBeActivated() const;
 
     static std::string GetSelectedItemPath(bool bRadio);
     static void SetSelectedItemPath(bool bRadio, const std::string &path);
+
+    /*!
+     * @brief Open a dialog to confirm timer delete.
+     * @param item the timer to delete.
+     * @param bDeleteSchedule in: ignored
+     *                        out, for one shot timer scheduled by a repeating timer: true to also delete the
+     *                             repeating timer that has scheduled this timer, false to only delete the one shot timer.
+     *                        out, for one shot timer not scheduled by a repeating timer: ignored
+     * @return true, to proceed with delete, false otherwise.
+     */
+    static bool ConfirmDeleteTimer(CFileItem *item, bool &bDeleteSchedule);
 
   protected:
     CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile);
@@ -92,7 +103,7 @@ namespace PVR
     virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
     virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
     virtual bool ShowTimerSettings(CFileItem *item);
-    virtual bool StartRecordFile(CFileItem *item, bool bAdvanced = false);
+    virtual bool AddTimer(CFileItem *item, bool bAdvanced = false);
     virtual bool StopRecordFile(CFileItem *item);
     virtual void ShowEPGInfo(CFileItem *item);
     virtual void ShowRecordingInfo(CFileItem *item);
@@ -100,17 +111,6 @@ namespace PVR
     virtual void UpdateSelectedItemPath();
     virtual bool IsValidMessage(CGUIMessage& message);
     void CheckResumeRecording(CFileItem *item);
-
-    /*!
-     * @brief Open a dialog to confirm timer delete.
-     * @param item the timer to delete.
-     * @param bDeleteSchedule in: ignored
-     *                        out, for timer schedules: true to delete the timers currently
-     *                             scheduled by the timer schedule, false otherwise.
-     *                        out, for one shot timers: ignored
-     * @return true, if the timer shall be deleted, false otherwise.
-     */
-    static bool ConfirmDeleteTimer(CFileItem *item, bool &bDeleteSchedule);
 
     static std::map<bool, std::string> m_selectedItemPaths;
 

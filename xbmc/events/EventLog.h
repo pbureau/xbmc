@@ -57,6 +57,9 @@ public:
 
   bool Execute(const std::string& eventIdentifier);
 
+  std::string EventLevelToString(EventLevel level);
+  EventLevel EventLevelFromString(const std::string& level);
+
   void ShowFullEventLog(EventLevel level = EventLevelBasic, bool includeHigherLevels = true);
 
 protected:
@@ -65,7 +68,7 @@ protected:
   CEventLog const& operator=(CEventLog const&);
 
   // implementation of ISettingCallback
-  virtual void OnSettingAction(const CSetting *setting);
+  virtual void OnSettingAction(const CSetting *setting) override;
 
 private:
   void SendMessage(const EventPtr& event, int message);

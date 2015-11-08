@@ -112,9 +112,6 @@
     <Filter Include="windowing">
       <UniqueIdentifier>{dbf79aa0-53a6-4bec-855b-e8d2cbb73689}</UniqueIdentifier>
     </Filter>
-    <Filter Include="music\karaoke">
-      <UniqueIdentifier>{9d2be696-b6dd-4be1-aa8c-260816b48c12}</UniqueIdentifier>
-    </Filter>
     <Filter Include="cdrip">
       <UniqueIdentifier>{d0d6c121-8cef-4bf9-aba5-bff57ae46e26}</UniqueIdentifier>
     </Filter>
@@ -364,6 +361,12 @@
     <Filter Include="events\windows">
       <UniqueIdentifier>{87d4e872-1a96-49a2-9ef0-78dd9fc30da9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="messaging\helpers">
+      <UniqueIdentifier>{b0eadc46-feeb-4aca-9898-590e6b8d29b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="interfaces\builtins">
+      <UniqueIdentifier>{248ffbc4-43f5-4aaf-b259-2dd4f840fcef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\xbmc\win32\pch.cpp">
@@ -412,6 +415,9 @@
       <Filter>cores\dvdplayer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\cores\dvdplayer\DVDPlayerAudio.cpp">
+      <Filter>cores\dvdplayer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\cores\dvdplayer\DVDPlayerRadioRDS.cpp">
       <Filter>cores\dvdplayer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\cores\dvdplayer\DVDPlayerSubtitle.cpp">
@@ -765,6 +771,9 @@
     <ClCompile Include="..\..\xbmc\addons\Repository.cpp">
       <Filter>addons</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\addons\RepositoryUpdater.cpp">
+      <Filter>addons</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\xbmc\addons\Skin.cpp">
       <Filter>addons</Filter>
     </ClCompile>
@@ -792,39 +801,6 @@
     <ClCompile Include="..\..\xbmc\MediaSource.cpp" />
     <ClCompile Include="..\..\xbmc\MediaSource.cpp" />
     <ClCompile Include="..\..\xbmc\MediaSource.cpp" />
-    <ClCompile Include="..\..\xbmc\music\karaoke\GUIDialogKaraokeSongSelector.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\GUIWindowKaraokeLyrics.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyrics.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricscdg.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricsfactory.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricsmanager.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricstext.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricstextkar.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricstextlrc.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokelyricstextustar.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokewindowbackground.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\music\Album.cpp">
       <Filter>music</Filter>
     </ClCompile>
@@ -931,9 +907,6 @@
     <ClCompile Include="..\..\xbmc\MediaSource.cpp" />
     <ClCompile Include="..\..\xbmc\SystemGlobals.cpp" />
     <ClCompile Include="..\..\xbmc\xbmc.cpp" />
-    <ClCompile Include="..\..\xbmc\guilib\AnimatedGif.cpp">
-      <Filter>guilib</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\guilib\D3DResource.cpp">
       <Filter>guilib</Filter>
     </ClCompile>
@@ -1216,9 +1189,6 @@
     <ClCompile Include="..\..\xbmc\music\windows\GUIWindowMusicPlaylistEditor.cpp">
       <Filter>music\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\windows\GUIWindowMusicSongs.cpp">
-      <Filter>music\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\music\windows\GUIWindowVisualisation.cpp">
       <Filter>music\windows</Filter>
     </ClCompile>
@@ -1390,9 +1360,6 @@
     <ClCompile Include="..\..\xbmc\utils\AsyncFileCopy.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\utils\AutoPtrHandle.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\utils\BitstreamStats.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -1522,9 +1489,6 @@
     <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogAudioSubtitleSettings.cpp">
       <Filter>video\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogFileStacking.cpp">
-      <Filter>video\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\video\dialogs\GUIDialogFullScreenInfo.cpp">
       <Filter>video\dialogs</Filter>
     </ClCompile>
@@ -1578,9 +1542,6 @@
     </ClCompile>
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogCache.cpp">
       <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\interfaces\Builtins.cpp">
-      <Filter>interfaces</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\interfaces\AnnouncementManager.cpp">
       <Filter>interfaces</Filter>
@@ -1702,6 +1663,9 @@
     <ClCompile Include="..\..\xbmc\pvr\dialogs\GUIDialogPVRGuideSearch.cpp">
       <Filter>pvr\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\pvr\dialogs\GUIDialogPVRRadioRDSInfo.cpp">
+      <Filter>pvr\dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\xbmc\pvr\dialogs\GUIDialogPVRRecordingInfo.cpp">
       <Filter>pvr\dialogs</Filter>
     </ClCompile>
@@ -1721,6 +1685,9 @@
       <Filter>pvr\channels</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\pvr\channels\PVRChannelGroupsContainer.cpp">
+      <Filter>pvr\channels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\pvr\channels\PVRRadioRDSInfoTag.cpp">
       <Filter>pvr\channels</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\pvr\addons\PVRClient.cpp">
@@ -1872,9 +1839,6 @@
     </ClCompile>
     <ClCompile Include="..\..\xbmc\peripherals\devices\PeripheralTuner.cpp">
       <Filter>peripherals\devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\peripherals\dialogs\GUIDialogPeripheralManager.cpp">
-      <Filter>peripherals\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\peripherals\dialogs\GUIDialogPeripheralSettings.cpp">
       <Filter>peripherals\dialogs</Filter>
@@ -2301,9 +2265,6 @@
     <ClCompile Include="..\..\xbmc\utils\DatabaseUtils.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\music\karaoke\karaokevideobackground.cpp">
-      <Filter>music\karaoke</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\utils\EndianSwap.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -2534,6 +2495,9 @@
       <Filter>interfaces\legacy</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\interfaces\legacy\InfoTagMusic.cpp">
+      <Filter>interfaces\legacy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\legacy\InfoTagRadioRDS.cpp">
       <Filter>interfaces\legacy</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\interfaces\legacy\InfoTagVideo.cpp">
@@ -3195,6 +3159,75 @@
     <ClCompile Include="..\..\xbmc\video\jobs\VideoLibraryRefreshingJob.cpp">
       <Filter>video\jobs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\guilib\Gif.cpp">
+      <Filter>guilib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\messaging\helpers\DialogHelper.cpp">
+      <Filter>messaging\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\AddonBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\AndroidBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\ApplicationBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\Builtins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\CECBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\GUIBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\GUIContainerBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\GUIControlBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\LibraryBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\OpticalBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\PictureBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\PlayerBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\ProfileBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\PVRBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\SkinBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\SystemBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\interfaces\builtins\WeatherBuiltins.cpp">
+      <Filter>interfaces\builtins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\addons\AddonCallbacksAudioEngine.cpp">
+      <Filter>addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\input\InputCodingTableKorean.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\music\tags\MusicInfoTagLoaderFFmpeg.cpp">
+      <Filter>music\tags</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\pvr\PVRSettings.cpp">
+      <Filter>pvr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\xbmc\win32\pch.h">
@@ -3246,6 +3279,9 @@
       <Filter>cores\dvdplayer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\cores\dvdplayer\DVDPlayerAudio.h">
+      <Filter>cores\dvdplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\cores\dvdplayer\DVDPlayerRadioRDS.h">
       <Filter>cores\dvdplayer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\cores\dvdplayer\DVDPlayerSubtitle.h">
@@ -3689,6 +3725,9 @@
     <ClInclude Include="..\..\xbmc\addons\Repository.h">
       <Filter>addons</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\xbmc\addons\RepositoryUpdater.h">
+      <Filter>addons</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\xbmc\addons\Skin.h">
       <Filter>addons</Filter>
     </ClInclude>
@@ -3712,42 +3751,6 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\GUIDialog.h">
       <Filter>guilib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\cdgdata.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\GUIDialogKaraokeSongSelector.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\GUIWindowKaraokeLyrics.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyrics.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricscdg.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricsfactory.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricsmanager.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricstext.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricstextkar.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricstextlrc.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokelyricstextustar.h">
-      <Filter>music\karaoke</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokewindowbackground.h">
-      <Filter>music\karaoke</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\music\Album.h">
       <Filter>music</Filter>
@@ -3856,9 +3859,6 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\Application.h" />
     <ClInclude Include="..\..\xbmc\system.h" />
-    <ClInclude Include="..\..\xbmc\guilib\AnimatedGif.h">
-      <Filter>guilib</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\D3DResource.h">
       <Filter>guilib</Filter>
     </ClInclude>
@@ -4189,9 +4189,6 @@
     <ClInclude Include="..\..\xbmc\music\windows\GUIWindowMusicPlaylistEditor.h">
       <Filter>music\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\windows\GUIWindowMusicSongs.h">
-      <Filter>music\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\music\windows\GUIWindowVisualisation.h">
       <Filter>music\windows</Filter>
     </ClInclude>
@@ -4378,9 +4375,6 @@
     <ClInclude Include="..\..\xbmc\utils\AsyncFileCopy.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\xbmc\utils\AutoPtrHandle.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\utils\BitstreamStats.h">
       <Filter>utils</Filter>
     </ClInclude>
@@ -4525,9 +4519,6 @@
     <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogAudioSubtitleSettings.h">
       <Filter>video\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogFileStacking.h">
-      <Filter>video\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\video\dialogs\GUIDialogFullScreenInfo.h">
       <Filter>video\dialogs</Filter>
     </ClInclude>
@@ -4590,9 +4581,6 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\dialogs\GUIDialogCache.h">
       <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\interfaces\Builtins.h">
-      <Filter>interfaces</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\interfaces\IActionListener.h">
       <Filter>interfaces</Filter>
@@ -4723,6 +4711,9 @@
     <ClInclude Include="..\..\xbmc\pvr\dialogs\GUIDialogPVRGuideSearch.h">
       <Filter>pvr\dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\xbmc\pvr\dialogs\GUIDialogPVRRadioRDSInfo.h">
+      <Filter>pvr\dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\xbmc\pvr\dialogs\GUIDialogPVRRecordingInfo.h">
       <Filter>pvr\dialogs</Filter>
     </ClInclude>
@@ -4739,6 +4730,9 @@
       <Filter>pvr\channels</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\pvr\channels\PVRChannelGroups.h">
+      <Filter>pvr\channels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\pvr\channels\PVRRadioRDSInfoTag.h">
       <Filter>pvr\channels</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\pvr\addons\PVRClient.h">
@@ -4828,6 +4822,9 @@
     <ClInclude Include="..\..\xbmc\guilib\DirtyRegionTracker.h">
       <Filter>guilib</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\xbmc\guilib\DllLibGif.h">
+      <Filter>guilib</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\DirtyRegion.h">
       <Filter>guilib</Filter>
     </ClInclude>
@@ -4902,9 +4899,6 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\peripherals\devices\PeripheralTuner.h">
       <Filter>peripherals\devices</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\peripherals\dialogs\GUIDialogPeripheralManager.h">
-      <Filter>peripherals\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\peripherals\dialogs\GUIDialogPeripheralSettings.h">
       <Filter>peripherals\dialogs</Filter>
@@ -5455,6 +5449,9 @@
     <ClInclude Include="..\..\xbmc\interfaces\legacy\InfoTagMusic.h">
       <Filter>interfaces\legacy</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\legacy\InfoTagRadioRDS.h">
+      <Filter>interfaces\legacy</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\xbmc\interfaces\legacy\InfoTagVideo.h">
       <Filter>interfaces\legacy</Filter>
     </ClInclude>
@@ -5577,9 +5574,6 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\cximage.h">
       <Filter>guilib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\music\karaoke\karaokevideobackground.h">
-      <Filter>music\karaoke</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\video\FFmpegVideoDecoder.h">
       <Filter>video</Filter>
@@ -6192,6 +6186,81 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\utils\win32\memcpy_sse2.h">
       <Filter>utils\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\guilib\Gif.h">
+      <Filter>guilib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\messaging\helpers\DialogHelper.h">
+      <Filter>messaging\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\AddonBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\AndroidBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\ApplicationBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\Builtins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\CECBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\GUIBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\GUIContainerBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\GUIControlBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\LibraryBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\OpticalBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\PictureBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\PlayerBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\ProfileBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\PVRBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\SkinBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\SystemBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\interfaces\builtins\WeatherBuiltins.h">
+      <Filter>interfaces\builtins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\addons\AddonCallbacksAudioEngine.h">
+      <Filter>addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\cores\AudioEngine\Utils\AEStreamData.h">
+      <Filter>cores\AudioEngine\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\utils\ScopeGuard.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\input\InputCodingTableKorean.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\music\tags\MusicInfoTagLoaderFFmpeg.h">
+      <Filter>music\tags</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\pvr\PVRSettings.h">
+      <Filter>pvr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

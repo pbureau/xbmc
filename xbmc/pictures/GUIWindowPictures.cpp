@@ -51,7 +51,6 @@
 #define CONTROL_BTNSORTASC          4
 #define CONTROL_LABELFILES         12
 
-using namespace std;
 using namespace XFILE;
 using namespace PLAYLIST;
 
@@ -163,7 +162,7 @@ bool CGUIWindowPictures::OnMessage(CGUIMessage& message)
         }
         else if (iAction == ACTION_SHOW_INFO)
         {
-          OnInfo(iItem);
+          OnItemInfo(iItem);
           return true;
         }
       }
@@ -212,7 +211,7 @@ void CGUIWindowPictures::OnPrepareFileItems(CFileItemList& items)
     if (StringUtils::EqualsNoCase(items[i]->GetLabel(), "folder.jpg"))
       items.Remove(i);
 
-  if (items.GetFolderCount()==items.Size() || !CSettings::GetInstance().GetBool(CSettings::SETTING_PICTURES_USETAGS))
+  if (items.GetFolderCount() == items.Size())
     return;
 
   // Start the music info loader thread
@@ -501,8 +500,6 @@ void CGUIWindowPictures::GetContextButtons(int itemNumber, CContextButtons &butt
     }
   }
   CGUIMediaWindow::GetContextButtons(itemNumber, buttons);
-  if (item && !item->GetProperty("pluginreplacecontextitems").asBoolean())
-    buttons.Add(CONTEXT_BUTTON_SETTINGS, 5);                  // Settings
 
   CContextMenuManager::GetInstance().AddVisibleItems(item, buttons);
 }
@@ -528,7 +525,7 @@ bool CGUIWindowPictures::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
       OnSlideShowRecursive(item->GetPath());
     return true;
   case CONTEXT_BUTTON_INFO:
-    OnInfo(itemNumber);
+    OnItemInfo(itemNumber);
     return true;
   case CONTEXT_BUTTON_REFRESH_THUMBS:
     OnRegenerateThumbs();
@@ -538,9 +535,6 @@ bool CGUIWindowPictures::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
     return true;
   case CONTEXT_BUTTON_RENAME:
     OnRenameItem(itemNumber);
-    return true;
-  case CONTEXT_BUTTON_SETTINGS:
-    g_windowManager.ActivateWindow(WINDOW_SETTINGS_MYPICTURES);
     return true;
   case CONTEXT_BUTTON_GOTO_ROOT:
     Update("");
@@ -562,7 +556,7 @@ void CGUIWindowPictures::OnItemLoaded(CFileItem *pItem)
 void CGUIWindowPictures::LoadPlayList(const std::string& strPlayList)
 {
   CLog::Log(LOGDEBUG,"CGUIWindowPictures::LoadPlayList()... converting playlist into slideshow: %s", strPlayList.c_str());
-  unique_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
+  std::unique_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
   if ( NULL != pPlayList.get())
   {
     if (!pPlayList->Load(strPlayList))
@@ -599,7 +593,7 @@ void CGUIWindowPictures::LoadPlayList(const std::string& strPlayList)
   }
 }
 
-void CGUIWindowPictures::OnInfo(int itemNumber)
+void CGUIWindowPictures::OnItemInfo(int itemNumber)
 {
   CFileItemPtr item = (itemNumber >= 0 && itemNumber < m_vecItems->Size()) ? m_vecItems->Get(itemNumber) : CFileItemPtr();
   if (!item)

@@ -31,7 +31,6 @@
 #define HAS_DVD_SWSCALE
 #define HAS_DVDPLAYER
 #define HAS_EVENT_SERVER
-#define HAS_KARAOKE
 #define HAS_SCREENSAVER
 #define HAS_PYTHON
 #define HAS_VIDEO_PLAYBACK
@@ -84,6 +83,10 @@
   #define HAS_MDNS_EMBEDDED
 #endif
 
+#if defined(HAVE_LIBGIF)
+  #define HAS_GIFLIB
+#endif
+
 /**********************
  * Non-free Components
  **********************/
@@ -124,6 +127,7 @@
 #define HAVE_LIBVORBISENC
 #define HAS_MYSQL
 #define HAS_UPNP
+#define HAS_GIFLIB
 
 #define DECLARE_UNUSED(a,b) a b;
 #endif
@@ -261,7 +265,7 @@
 /****************
  * default skin
  ****************/
-#if defined(HAS_TOUCH_SKIN) && defined(TARGET_DARWIN_IOS) && !defined(TARGET_DARWIN_IOS_ATV2)
+#if defined(HAS_TOUCH_SKIN) && defined(TARGET_DARWIN_IOS)
 #define DEFAULT_SKIN          "skin.re-touched"
 #else
 #define DEFAULT_SKIN          "skin.confluence"

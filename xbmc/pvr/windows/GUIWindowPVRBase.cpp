@@ -18,39 +18,39 @@
  *
  */
 
-#include "GUIWindowPVRBase.h"
-
 #include "Application.h"
-#include "messaging/ApplicationMessenger.h"
-#include "dialogs/GUIDialogNumeric.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 #include "dialogs/GUIDialogKaiToast.h"
+#include "dialogs/GUIDialogNumeric.h"
 #include "dialogs/GUIDialogOK.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "dialogs/GUIDialogSelect.h"
 #include "dialogs/GUIDialogProgress.h"
+#include "dialogs/GUIDialogSelect.h"
+#include "dialogs/GUIDialogYesNo.h"
+#include "epg/Epg.h"
+#include "epg/GUIEPGGridContainer.h"
 #include "filesystem/StackDirectory.h"
-#include "input/Key.h"
 #include "guilib/GUIMessage.h"
 #include "guilib/GUIWindowManager.h"
-#include "GUIWindowPVRRecordings.h"
+#include "input/Key.h"
+#include "messaging/ApplicationMessenger.h"
+#include "settings/MediaSettings.h"
+#include "settings/Settings.h"
+#include "threads/SingleLock.h"
+#include "utils/Observer.h"
+#include "utils/StringUtils.h"
+#include "utils/Variant.h"
+
 #include "pvr/PVRManager.h"
 #include "pvr/addons/PVRClients.h"
 #include "pvr/dialogs/GUIDialogPVRGuideInfo.h"
 #include "pvr/dialogs/GUIDialogPVRRecordingInfo.h"
 #include "pvr/dialogs/GUIDialogPVRTimerSettings.h"
 #include "pvr/timers/PVRTimers.h"
-#include "epg/Epg.h"
-#include "epg/GUIEPGGridContainer.h"
-#include "settings/MediaSettings.h"
-#include "settings/Settings.h"
-#include "threads/SingleLock.h"
-#include "utils/StringUtils.h"
-#include "utils/Observer.h"
-#include "utils/Variant.h"
+
+#include "GUIWindowPVRBase.h"
+#include "GUIWindowPVRRecordings.h"
 
 #include <utility>
-
-#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 
 #define MAX_INVALIDATION_FREQUENCY 2000 // limit to one invalidation per X milliseconds
 
@@ -299,6 +299,12 @@ void CGUIWindowPVRBase::SetInvalid()
   }
 }
 
+bool CGUIWindowPVRBase::CanBeActivated() const
+{
+  // No activation if PVR is not enabled.
+  return CSettings::GetInstance().GetBool(CSettings::SETTING_PVRMANAGER_ENABLED);
+}
+
 bool CGUIWindowPVRBase::OpenGroupSelectionDialog(void)
 {
   CGUIDialogSelect *dialog = (CGUIDialogSelect*)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
@@ -310,7 +316,7 @@ bool CGUIWindowPVRBase::OpenGroupSelectionDialog(void)
 
   dialog->Reset();
   dialog->SetHeading(CVariant{g_localizeStrings.Get(19146)});
-  dialog->SetItems(&options);
+  dialog->SetItems(options);
   dialog->SetMultiSelection(false);
   dialog->SetSelected(m_group->GroupName());
   dialog->Open();
@@ -448,7 +454,7 @@ bool CGUIWindowPVRBase::ShowTimerSettings(CFileItem *item)
   return pDlgInfo->IsConfirmed();
 }
 
-bool CGUIWindowPVRBase::StartRecordFile(CFileItem *item, bool bAdvanced)
+bool CGUIWindowPVRBase::AddTimer(CFileItem *item, bool bAdvanced)
 {
   if (!item->HasEPGInfoTag())
     return false;
@@ -483,11 +489,6 @@ bool CGUIWindowPVRBase::StartRecordFile(CFileItem *item, bool bAdvanced)
   }
   else
   {
-    // ask for confirmation before starting a timer
-    if (!CGUIDialogYesNo::ShowAndGetInput(
-        CVariant{264} /* "Record" */, CVariant{tag->PVRChannelName()}, CVariant{""}, CVariant{tag->Title()}))
-      return false;
-  
     CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(tag);
 
     if (newTimer)
@@ -509,9 +510,9 @@ bool CGUIWindowPVRBase::StopRecordFile(CFileItem *item)
   if (!timer || !timer->HasPVRTimerInfoTag())
     return false;
 
-  bool bDeleteScheduled(false);
-  if (ConfirmDeleteTimer(timer.get(), bDeleteScheduled))
-    return g_PVRTimers->DeleteTimer(*timer, false, bDeleteScheduled);
+  bool bDeleteSchedule(false);
+  if (ConfirmDeleteTimer(timer.get(), bDeleteSchedule))
+    return CPVRTimers::DeleteTimer(*timer, false, bDeleteSchedule);
 
   return false;
 }
@@ -769,21 +770,6 @@ bool CGUIWindowPVRBase::ActionRecord(CFileItem *item)
 
   if (epgTag->Timer() == NULL)
   {
-    /* create a confirmation dialog */
-    CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*) g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
-    if (!pDialog)
-      return bReturn;
-
-    pDialog->SetHeading(CVariant{264});
-    pDialog->SetLine(0, CVariant{""});
-    pDialog->SetLine(1, CVariant{epgTag->Title()});
-    pDialog->SetLine(2, CVariant{""});
-    pDialog->Open();
-
-    /* prompt for the user's confirmation */
-    if (!pDialog->IsConfirmed())
-      return bReturn;
-
     CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(epgTag);
     if (newTimer)
     {
@@ -807,7 +793,7 @@ bool CGUIWindowPVRBase::UpdateEpgForChannel(CFileItem *item)
 {
   CPVRChannelPtr channel(item->GetPVRChannelInfoTag());
 
-  CEpg *epg = channel->GetEPG();
+  CEpgPtr epg = channel->GetEPG();
   if (!epg)
     return false;
 
@@ -830,27 +816,33 @@ bool CGUIWindowPVRBase::ConfirmDeleteTimer(CFileItem *item, bool &bDeleteSchedul
 {
   bool bConfirmed(false);
 
-  if (item->GetPVRTimerInfoTag()->IsRepeating())
+  if (item->GetPVRTimerInfoTag()->GetTimerScheduleId() != PVR_TIMER_NO_PARENT)
   {
-    // prompt user for confirmation for deleting the complete repeating timer, including scheduled timers.
+    // timer was scheduled by a repeating timer. prompt user for confirmation for deleting the complete repeating timer, including scheduled timers.
     bool bCancel(false);
     bDeleteSchedule = CGUIDialogYesNo::ShowAndGetInput(
                         CVariant{122}, // "Confirm delete"
-                        CVariant{840}, // "You are about to delete a repeating timer. Do you also want to delete all timers currently scheduled by this timer?"
+                        CVariant{840}, // "Do you only want to delete this timer or also the repeating timer that has scheduled it?"
                         CVariant{""},
                         CVariant{item->GetPVRTimerInfoTag()->Title()},
-                        bCancel);
+                        bCancel,
+                        CVariant{841}, // "Only this"
+                        CVariant{593}, // "All"
+                        0); // no autoclose
     bConfirmed = !bCancel;
   }
   else
   {
+    bDeleteSchedule = false;
+
     // prompt user for confirmation for deleting the timer
     bConfirmed = CGUIDialogYesNo::ShowAndGetInput(
-                        CVariant{122}, // Confirm delete
-                        CVariant{19040}, // Timer
+                        CVariant{122}, // "Confirm delete"
+                        item->GetPVRTimerInfoTag()->IsRepeating()
+                          ? CVariant{845}  // "Are you sure you want to delete this repeating timer and all timers it has scheduled?"
+                          : CVariant{846}, // "Are you sure you want to delete this timer?"
                         CVariant{""},
                         CVariant{item->GetPVRTimerInfoTag()->Title()});
-    bDeleteSchedule = false;
   }
 
   return bConfirmed;

@@ -48,9 +48,6 @@
 #include "music/MusicDbUrl.h"
 #include "settings/Settings.h"
 
-#include "utils/log.h"
-
-using namespace std;
 using namespace XFILE::MUSICDATABASEDIRECTORY;
 
 //  Constructor is protected use ParseURL()
@@ -74,18 +71,18 @@ CDirectoryNode* CDirectoryNode::ParseURL(const std::string& strPath)
   std::string strDirectory=url.GetFileName();
   URIUtils::RemoveSlashAtEnd(strDirectory);
 
-  vector<string> Path = StringUtils::Split(strDirectory, '/');
+  std::vector<std::string> Path = StringUtils::Split(strDirectory, '/');
   Path.insert(Path.begin(), "");
 
-  CDirectoryNode* pNode   = NULL;
-  CDirectoryNode* pParent = NULL;
-  NODE_TYPE NodeType      = NODE_TYPE_ROOT;
+  CDirectoryNode* pNode=NULL;
+  CDirectoryNode* pParent=NULL;
+  NODE_TYPE NodeType=NODE_TYPE_ROOT;
 
   for (int i=0; i<(int)Path.size(); ++i)
   {
-    pNode    = CDirectoryNode::CreateNode(NodeType, Path[i], pParent);
-    NodeType = pNode ? pNode->GetChildType() : NODE_TYPE_NONE;
-    pParent  = pNode;
+    pNode=CDirectoryNode::CreateNode(NodeType, Path[i], pParent);
+    NodeType= pNode ? pNode->GetChildType() : NODE_TYPE_NONE;
+    pParent=pNode;
   }
 
   // Add all the additional URL options to the last node
@@ -98,7 +95,7 @@ CDirectoryNode* CDirectoryNode::ParseURL(const std::string& strPath)
 //  returns the database ids of the path,
 void CDirectoryNode::GetDatabaseInfo(const std::string& strPath, CQueryParams& params)
 {
-  unique_ptr<CDirectoryNode> pNode(CDirectoryNode::ParseURL(strPath));
+  std::unique_ptr<CDirectoryNode> pNode(CDirectoryNode::ParseURL(strPath));
 
   if (!pNode.get())
     return;
@@ -203,7 +200,7 @@ bool CDirectoryNode::GetContent(CFileItemList& items) const
 //  Creates a musicdb url
 std::string CDirectoryNode::BuildPath() const
 {
-  vector<string> array;
+  std::vector<std::string> array;
 
   if (!m_strName.empty())
     array.insert(array.begin(), m_strName);
@@ -222,7 +219,7 @@ std::string CDirectoryNode::BuildPath() const
   for (int i=0; i<(int)array.size(); ++i)
     strPath+=array[i]+"/";
 
-  string options = m_options.GetOptionsString();
+  std::string options = m_options.GetOptionsString();
   if (!options.empty())
     strPath += "?" + options;
 
@@ -265,7 +262,7 @@ bool CDirectoryNode::GetChilds(CFileItemList& items)
   if (CanCache() && items.Load())
     return true;
 
-  unique_ptr<CDirectoryNode> pNode(CDirectoryNode::CreateNode(GetChildType(), "", this));
+  std::unique_ptr<CDirectoryNode> pNode(CDirectoryNode::CreateNode(GetChildType(), "", this));
 
   bool bSuccess=false;
   if (pNode.get())

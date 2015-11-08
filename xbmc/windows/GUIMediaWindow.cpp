@@ -50,7 +50,7 @@
 #include "guilib/GUIKeyboardFactory.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
-#include "interfaces/Builtins.h"
+#include "interfaces/builtins/Builtins.h"
 #include "interfaces/generic/ScriptInvocationManager.h"
 #include "input/Key.h"
 #include "network/Network.h"
@@ -690,7 +690,7 @@ bool CGUIMediaWindow::GetDirectory(const std::string &strDirectory, CFileItemLis
   // TODO: Do we want to limit the directories we apply the video ones to?
   if (iWindow == WINDOW_VIDEO_NAV)
     regexps = g_advancedSettings.m_videoExcludeFromListingRegExps;
-  if (iWindow == WINDOW_MUSIC_FILES)
+  if (iWindow == WINDOW_MUSIC_FILES || iWindow == WINDOW_MUSIC_NAV)
     regexps = g_advancedSettings.m_audioExcludeFromListingRegExps;
   if (iWindow == WINDOW_PICTURES)
     regexps = g_advancedSettings.m_pictureExcludeFromListingRegExps;
@@ -1027,13 +1027,10 @@ bool CGUIMediaWindow::OnClick(int iItem)
     }
     else if (StringUtils::StartsWithNoCase(pItem->GetPath(), "addons://more/"))
     {
-      CBuiltins::Execute("ActivateWindow(AddonBrowser,addons://all/xbmc.addon." + pItem->GetPath().substr(14) + ",return)");
+      CBuiltins::GetInstance().Execute("ActivateWindow(AddonBrowser,addons://all/xbmc.addon." + pItem->GetPath().substr(14) + ",return)");
       return true;
     }
 
-    // If karaoke song is being played AND popup autoselector is enabled, the playlist should not be added
-    bool do_not_add_karaoke = CSettings::GetInstance().GetBool(CSettings::SETTING_KARAOKE_ENABLED) &&
-      CSettings::GetInstance().GetBool(CSettings::SETTING_KARAOKE_AUTOPOPUPSELECTOR) && pItem->IsKaraoke();
     bool autoplay = m_guiState.get() && m_guiState->AutoPlayNextItem();
 
     if (m_vecItems->IsPlugin())
@@ -1053,7 +1050,7 @@ bool CGUIMediaWindow::OnClick(int iItem)
     }
 
     if (autoplay && !g_partyModeManager.IsEnabled() && 
-        !pItem->IsPlayList() && !do_not_add_karaoke)
+        !pItem->IsPlayList())
     {
       return OnPlayAndQueueMedia(pItem);
     }
@@ -1582,7 +1579,8 @@ void CGUIMediaWindow::GetContextButtons(int itemNumber, CContextButtons &buttons
   // TODO: FAVOURITES Conditions on masterlock and localisation
   if (!item->IsParentFolder() && !item->IsPath("add") && !item->IsPath("newplaylist://") &&
       !URIUtils::IsProtocol(item->GetPath(), "newsmartplaylist") && !URIUtils::IsProtocol(item->GetPath(), "newtag") &&
-      !URIUtils::PathStarts(item->GetPath(), "addons://more/") && !URIUtils::IsProtocol(item->GetPath(), "musicsearch"))
+      !URIUtils::PathStarts(item->GetPath(), "addons://more/") && !URIUtils::IsProtocol(item->GetPath(), "musicsearch") &&
+      !URIUtils::PathStarts(item->GetPath(), "pvr://guide/") && !URIUtils::PathStarts(item->GetPath(), "pvr://timers/"))
   {
     if (XFILE::CFavouritesDirectory::IsFavourite(item.get(), GetID()))
       buttons.Add(CONTEXT_BUTTON_ADD_FAVOURITE, 14077);     // Remove Favourite
