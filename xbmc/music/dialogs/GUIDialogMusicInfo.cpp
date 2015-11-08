@@ -41,6 +41,8 @@
 #include "utils/log.h"
 #include "music/windows/GUIWindowMusicBase.h"
 
+#include "GUIUserMessages.h"
+
 using namespace std;
 using namespace XFILE;
 
@@ -90,6 +92,16 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
     }
     break;
 
+  case GUI_MSG_NOTIFY_ALL:
+    {
+      if (message.GetParam1() == GUI_MSG_UPDATE)
+      {
+          // Catch notifications from the ListProvider, afer a directory is fetched
+          Update();
+          return true;
+      }
+    }
+    break;
 
   case GUI_MSG_CLICKED:
     {
@@ -267,6 +279,111 @@ void CGUIDialogMusicInfo::Update()
     CONTROL_ENABLE(CONTROL_BTN_GET_FANART);
 
     SetLabel(CONTROL_TEXTAREA, m_artist.strBiography);
+#if 1
+    // Manage the discography list with extra content
+    CGUIMessage messageExtraContent(GUI_MSG_EXTRA_CONTENT_GET, GetID(), CONTROL_LIST, 0, 0);
+    OnMessage(messageExtraContent);
+    std::vector< CGUIListItemPtr> * m_itemsExtra = (std::vector<CGUIListItemPtr>*)messageExtraContent.GetPointer();
+    CGUIInfoLabel label_year = CGUIInfoLabel("$INFO[listItem.Year]", "0000", CONTROL_LIST);
+
+    if( m_itemsExtra != NULL && !m_itemsExtra->empty() )
+    {
+        for (int i = 0; i < (int)m_itemsExtra->size(); i++)
+        {
+            CGUIListItemPtr item = m_itemsExtra->at(i);
+            CLog::Log(LOGDEBUG,"%s:::%s label in dialog is %s, %s", __FILE__, __FUNCTION__, 
+                    item->GetLabel().c_str(),
+                    label_year.GetItemLabel(item.get(), false).c_str());
+        }
+
+        CFileItemList* albumSongs_copy = new CFileItemList;
+        albumSongs_copy->Clear();
+        CFileItemList* albumSongs_end= new CFileItemList;
+        albumSongs_end->Clear();
+
+        // Compare the database content with extra content
+        for (int i = 0; i < (int)m_albumSongs->Size(); i++)
+        {
+            CGUIInfoLabel label_year = CGUIInfoLabel("$INFO[listItem.Year]", "", CONTROL_LIST);
+            //CGUIListItemPtr item_db_current = m_albumSongs[i];
+            CFileItemPtr item_db_current = m_albumSongs->Get(i);
+            CLog::Log(LOGDEBUG,"%s:::%s item: %s, %s", __FILE__, __FUNCTION__, 
+                    item_db_current->GetLabel().c_str(),
+                    item_db_current->GetLabel2().c_str());
+
+            // items from the db, mark item as 'playable', (fallback for isboolean() is false by default)
+            //item_db_current->SetProperty("isplayable", true);
+            // FIXME: Pas utile on peut utiliser listitem.dbid pour verifier si l'item est dans la db
+
+            for (int j = 0; j < (int)m_itemsExtra->size(); j++)
+            {
+                CGUIListItemPtr item_extra_current = m_itemsExtra->at(j);
+
+                if( !StringUtils::CompareNoCase(item_db_current->GetLabel(), item_extra_current->GetLabel()) )
+                    //StringUtils::CompareNoCase(item_db_current->GetLabel2(), label_year.GetItemLabel(item_extra_current.get(), false)))
+                {
+                    // Item is both in the db and extra content, complete db item if usefull
+                    if( item_db_current->GetLabel2().empty() )
+                    {
+                        // Missing date
+                        item_db_current->SetLabel2(label_year.GetItemLabel(item_extra_current.get(), false));
+                    }
+                    if( !StringUtils::CompareNoCase("DefaultAlbumCover.png", item_db_current->GetArt("thumb")) )
+                    {
+                        // Missing art
+                        item_db_current->SetArt("thumb", item_extra_current->GetArt("thumb"));
+                    }
+
+                    // Mark the extra item as duplicate
+                    item_extra_current->SetProperty("extra_duplicate", true);
+                }
+            }
+
+            // Make sure the year field is correctly set 
+            std::string label2 = item_db_current->GetLabel2();
+            if(label2.size() > 0)
+                item_db_current->GetMusicInfoTag()->SetYear(std::stoi(label2));
+            // Item is in the db are always added to the list, items not playable are added in the end list
+            if( item_db_current->GetMusicInfoTag()->GetDatabaseId() > 0 )
+                albumSongs_copy->Add(item_db_current);
+            else
+                albumSongs_end->Add(item_db_current);
+        }
+#if 1
+        // Complete the list with items in extra content only
+        for (int i = 0; i < (int)m_itemsExtra->size(); i++)
+        {
+            CGUIListItemPtr item_extra_current = m_itemsExtra->at(i);
+
+            if( !item_extra_current->GetProperty("extra_duplicate").asBoolean() )
+            {
+                CLog::Log(LOGDEBUG,"%s:::%s adding: %s", __FILE__, __FUNCTION__, 
+                        item_extra_current->GetLabel().c_str());
+                albumSongs_end->Add(dynamic_pointer_cast<CFileItem>(item_extra_current));
+            }
+        }
+#endif
+        // Sort the album lists by year
+        albumSongs_copy->Sort(SortByYear, SortOrderAscending);
+        albumSongs_end->Sort(SortByYear, SortOrderAscending);
+
+        // Append both lists
+        m_albumSongs->Assign(*albumSongs_copy);
+        m_albumSongs->Append(*albumSongs_end);
+        delete albumSongs_end;
+        delete albumSongs_copy;
+
+        for (int i = 0; i < (int)m_albumSongs->Size(); i++)
+        {
+            CGUIListItemPtr item = m_albumSongs->Get(i);
+            CLog::Log(LOGDEBUG,"%s:::%s label after is %s, %s, %s", __FILE__, __FUNCTION__, 
+                    item->GetLabel().c_str(),
+                    item->GetLabel2().c_str(),
+                    item->GetArt("thumb").c_str());
+        }
+#endif
+    }
+    // Bind the content with the Control_List container 
     CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);
     OnMessage(message);
 

@@ -123,6 +123,7 @@ protected:
   bool InsideLayout(const CGUIListItemLayout *layout, const CPoint &point) const;
   virtual void OnFocus();
   void UpdateListProvider(bool forceRefresh = false);
+  void UpdateListProviderExtra(bool forceRefresh = false);
 
   int ScrollCorrectionRange() const;
   inline float Size() const;
@@ -140,6 +141,7 @@ protected:
   int m_itemsPerPage;
 
   std::vector< CGUIListItemPtr > m_items;
+  std::vector< CGUIListItemPtr > m_itemsExtra;
   typedef std::vector<CGUIListItemPtr> ::iterator iItems;
   CGUIListItemPtr m_lastItem;
 
@@ -159,6 +161,7 @@ protected:
   CScroller m_scroller;
 
   IListProvider *m_listProvider;
+  IListProvider *m_listProviderExtra;
 
   bool m_wasReset;  // true if we've received a Reset message until we've rendered once.  Allows
                     // us to make sure we don't tell the infomanager that we've been moving when

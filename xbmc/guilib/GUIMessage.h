@@ -165,6 +165,10 @@
  \brief Select the given fileItem in the target containter
  */
 #define GUI_MSG_FILEITEM_SELECT 50
+/*!
+ \brief Get a pointer to the extra content file list 
+ */
+#define GUI_MSG_EXTRA_CONTENT_GET 51
 
 #define GUI_MSG_USER         1000
 

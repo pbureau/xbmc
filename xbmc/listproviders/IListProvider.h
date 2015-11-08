@@ -43,6 +43,7 @@ public:
    \return the list provider, NULL if none.
    */
   static IListProvider *Create(const TiXmlNode *node, int parentID);
+  static IListProvider *CreateExtra(const TiXmlNode *node, int parentID);
 
   /*! \brief Update the list content
    \return true if the content has changed, false otherwise.

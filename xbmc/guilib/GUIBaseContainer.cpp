@@ -34,6 +34,7 @@
 #include "listproviders/IListProvider.h"
 #include "settings/Settings.h"
 #include "guiinfo/GUIInfoLabels.h"
+#include "GUIUserMessages.h"
 
 using namespace std;
 
@@ -60,6 +61,7 @@ CGUIBaseContainer::CGUIBaseContainer(int parentID, int controlID, float posX, fl
   m_scrollItemsPerFrame = 0.0f;
   m_type = VIEW_TYPE_NONE;
   m_listProvider = NULL;
+  m_listProviderExtra = NULL;
   m_autoScrollMoveTime = 0;
   m_autoScrollDelayTime = 0;
   m_autoScrollIsReversed = false;
@@ -69,6 +71,7 @@ CGUIBaseContainer::CGUIBaseContainer(int parentID, int controlID, float posX, fl
 CGUIBaseContainer::~CGUIBaseContainer(void)
 {
   delete m_listProvider;
+  delete m_listProviderExtra;
 }
 
 void CGUIBaseContainer::DoProcess(unsigned int currentTime, CDirtyRegionList &dirtyregions)
@@ -442,6 +445,16 @@ bool CGUIBaseContainer::OnMessage(CGUIMessage& message)
         (*it)->Select(false);
       m_items[sel]->Select(true);
 
+      return true;
+    }
+    else if (message.GetMessage() == GUI_MSG_EXTRA_CONTENT_GET)
+    {
+      // Return the extra content file list
+      CLog::Log(LOGDEBUG,"CGUIBaseContainer::OnMessage : EXTRA_CONTENT_GET");
+      if(m_listProviderExtra->IsUpdating())
+          message.SetPointer(NULL);
+      else
+          message.SetPointer(&m_itemsExtra);
       return true;
     }
     else if (message.GetMessage() == GUI_MSG_SETFOCUS)
@@ -841,6 +854,11 @@ void CGUIBaseContainer::AllocResources()
     UpdateListProvider(true);
     SelectItem(m_listProvider->GetDefaultItem());
   }
+  /* Update extra content */
+  if(m_listProviderExtra)
+  {
+    UpdateListProviderExtra(true);
+  }
 }
 
 void CGUIBaseContainer::FreeResources(bool immediately)
@@ -852,6 +870,14 @@ void CGUIBaseContainer::FreeResources(bool immediately)
       Reset();
 
     m_listProvider->Reset(immediately);
+  }
+  /* Reset extra content */
+  if (m_listProviderExtra)
+  {
+    if (immediately)
+      Reset();
+
+    m_listProviderExtra->Reset(immediately);
   }
   m_scroller.Stop();
 }
@@ -905,6 +931,23 @@ void CGUIBaseContainer::UpdateVisibility(const CGUIListItem *item)
   }
 
   UpdateListProvider();
+  // Update extra content
+  UpdateListProviderExtra();
+}
+
+void CGUIBaseContainer::UpdateListProviderExtra(bool forceRefresh /* = false */)
+{
+  if (m_listProviderExtra)
+  {
+    if (m_listProviderExtra->Update(forceRefresh))
+    {
+      m_listProviderExtra->Fetch(m_itemsExtra);
+
+      // Force update of parent when extra content is fetched
+      CGUIMessage msg(GUI_MSG_NOTIFY_ALL, GetID(), GetParentID(), GUI_MSG_UPDATE);
+      g_windowManager.SendMessage(msg);
+    }
+  }
 }
 
 void CGUIBaseContainer::UpdateListProvider(bool forceRefresh /* = false */)
@@ -913,7 +956,6 @@ void CGUIBaseContainer::UpdateListProvider(bool forceRefresh /* = false */)
   {
     if (m_listProvider->Update(forceRefresh))
     {
-      CLog::Log(LOGDEBUG,"CGUIBaseContainer::UpdateListProvider");
       // save the current item
       int currentItem = GetSelectedItem();
       CGUIListItem *current = (currentItem >= 0 && currentItem < (int)m_items.size()) ? m_items[currentItem].get() : NULL;
@@ -922,11 +964,6 @@ void CGUIBaseContainer::UpdateListProvider(bool forceRefresh /* = false */)
       SetPageControlRange();
       // update the newly selected item
       bool found = false;
-      for (int i = 0; i < (int)m_items.size(); i++)
-      {
-        CGUIListItemPtr item = m_items[i];
-        CLog::Log(LOGDEBUG,"CGUIBaseContainer::UpdateListProvider: label is %s", item->GetLabel().c_str());
-      }
       for (int i = 0; i < (int)m_items.size(); i++)
       {
         if (m_items[i].get() == current)
@@ -1137,6 +1174,11 @@ void CGUIBaseContainer::LoadListProvider(TiXmlElement *content, int defaultItem,
   m_listProvider = IListProvider::Create(content, GetParentID());
   if (m_listProvider)
     m_listProvider->SetDefaultItem(defaultItem, defaultAlways);
+  /* List Provider for extra content */
+  delete m_listProviderExtra;
+  m_listProviderExtra = IListProvider::CreateExtra(content, GetParentID());
+  if (m_listProviderExtra)
+    m_listProviderExtra->SetDefaultItem(defaultItem, defaultAlways);
 }
 
 void CGUIBaseContainer::SetListProvider(IListProvider *provider)

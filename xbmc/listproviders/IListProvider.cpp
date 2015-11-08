@@ -37,3 +37,19 @@ IListProvider *IListProvider::Create(const TiXmlNode *node, int parentID)
   }
   return NULL;
 }
+
+/* Create a list provider for the <extracontent> tag */
+IListProvider *IListProvider::CreateExtra(const TiXmlNode *node, int parentID)
+{
+  const TiXmlElement *root = node->FirstChildElement("extracontent");
+  if (root)
+  {
+    //const TiXmlElement *item = root->FirstChildElement("item");
+    //if (item)
+      //return new CStaticListProvider(root, parentID);
+
+    if (!root->NoChildren())
+      return new CDirectoryProvider(root, parentID);
+  }
+  return NULL;
+}
