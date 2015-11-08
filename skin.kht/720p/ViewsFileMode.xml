@@ -251,6 +251,8 @@
             <control type="group">
                 <visible>Control.IsVisible(500)</visible>
                 <include>VisibleFadeEffect</include>
+                <left>45</left>
+                <top>50</top>
                 <!-- Panel background image -->
                 <control type="image">
                     <left>0</left>
@@ -609,15 +611,25 @@
             <control type="group">
                 <visible>Control.IsVisible(506)</visible>
                 <include>VisibleFadeEffect</include>
-                <!-- Panel background image -->
+                <!-- Page background -->
                 <control type="image">
                     <left>0</left>
                     <top>0</top>
-                    <width>720</width>
-                    <height>300</height>
+                    <width>1280</width>
+                    <height>720</height>
+                    <aspectratio>scale</aspectratio>
+                    <texture background="true">$INFO[Container.Art(artist.fanart)]</texture>
+                    <visible>!IsEmpty(Container.Art(artist.fanart))</visible>
+                    <include>VisibleFadeEffect</include>
+                </control>
+                <!-- Panel background image -->
+                <control type="image">
+                    <left>20</left>
+                    <top>370</top>
+                    <width>575</width>
+                    <height>350</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
-                <!-- Main Panel - Albums list view -->
                 <control type="panel" id="506">
                     <left>20</left>
                     <top>20</top>
@@ -631,6 +643,7 @@
                     <pagecontrol>60</pagecontrol>
                     <scrolltime>200</scrolltime>
                     <preloaditems>2</preloaditems>
+<<<<<<< Updated upstream
                     <itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" 
                         height="150" width="150">
                         <control type="image">
@@ -884,6 +897,58 @@
                             </control>
                         </control>
 	</include>
+=======
+                </control>
+                <!-- Info Panel - Artist  details -->
+                <control type="group">
+                    <left>20</left>
+                    <top>370</top>
+                    <!--
+                    <control type="image">
+                        <width>250</width>
+                        <height>250</height>
+                        <top>20</top>
+                        <left>0</left>
+                        <bordertexture border="5">button-nofocus.png</bordertexture>
+                        <bordersize>5</bordersize>
+                        <texture background="true">$INFO[Listitem.Icon]</texture>
+                        <aspectratio>keep</aspectratio>
+                        <fadetime>400</fadetime>
+                    </control>
+                    -->
+                    <control type="label">
+                        <width>380</width>
+                        <height>30</height>
+                        <top>0</top>
+                        <left>0</left>
+                        <font>font16_title_bold</font>
+                        <textcolor>grey</textcolor>
+                        <scroll>true</scroll>
+                        <label>$INFO[ListItem.Label]</label>
+                        <textoffsetx>6</textoffsetx>
+                    </control>
+                    <control type="button">
+                        <top>315</top>
+                        <left>0</left>
+                        <width>380</width>
+                        <height>90</height>
+                        <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
+                        <visible>Container.Content(albums)</visible>
+                    </control>
+                    <control type="textbox">
+                        <label>$VAR[MusicPlotVar]</label>
+                        <top>410</top>
+                        <left>0</left>
+                        <width>380</width>
+                        <height>160</height>
+                        <font>font12</font>
+                        <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
+                        <pagecontrol>61</pagecontrol>
+                    </control>
+                </control>
+            </control>
+        </include>
+>>>>>>> Stashed changes
 	<include name="WideIconView">
 		<control type="group">
 			<visible>Control.IsVisible(505)</visible>
@@ -965,8 +1030,8 @@
             <control type="group">
                 <visible>Control.IsVisible(51)</visible>
                 <include>VisibleFadeEffect</include>
-                <left>10</left>
-                <top>17</top>
+                <left>45</left>
+                <top>50</top>
                 <!-- Panel background image -->
                 <control type="image">
                     <left>0</left>

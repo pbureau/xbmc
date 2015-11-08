@@ -711,17 +711,20 @@
 		</control>
 	</include>
 	<include name="AllArtistsView">
+            <!-- Panel background image -->
+            <control type="image">
+                <left>25</left>
+                <top>40</top>
+                <width>830</width>
+                <height>640</height>
+                <texture background="false" border="10">RecentAddedBack.png</texture>
+            </control>
+
             <control type="group">
                 <visible>Control.IsVisible(512)</visible>
                 <include>VisibleFadeEffect</include>
-                <!-- Panel background image -->
-                <control type="image">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>1150</width>
-                    <height>600</height>
-                    <texture background="false" border="10">RecentAddedBack.png</texture>
-                </control>
+                <left>45</left>
+                <top>50</top>
                 <!-- Main Panel - Artist library -->
                 <control type="panel" id="512">
                     <left>20</left>
@@ -844,6 +847,8 @@
                                         </control>
                                     </focusedlayout>
                                 </control>
+                            </control>
+<!--
                                 <control type="scrollbar" id="60">
                                     <left>1170</left>
                                     <top>80</top>
@@ -860,10 +865,19 @@
                                     <orientation>vertical</orientation>
                                     <visible>Control.IsVisible(500)</visible>
                                 </control>
+-->
+                                <!-- Right Panel background image -->
+                                <control type="image">
+                                    <left>810</left>
+                                    <top>41</top>
+                                    <width>465</width>
+                                    <height>470</height>
+                                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                                </control>
                                 <!-- Right Info Panel - Artist details -->
                                 <control type="group">
-                                    <left>750</left>
-                                    <top>0</top>
+                                    <left>845</left>
+                                    <top>50</top>
                                     <control type="image">
                                         <width>250</width>
                                         <height>250</height>
@@ -878,12 +892,23 @@
                                     <control type="label">
                                         <width>380</width>
                                         <height>30</height>
-                                        <top>272</top>
+                                        <top>275</top>
                                         <left>0</left>
                                         <font>font16_title_bold</font>
                                         <textcolor>grey</textcolor>
                                         <scroll>true</scroll>
                                         <label>$INFO[ListItem.Label]</label>
+                                        <textoffsetx>6</textoffsetx>
+                                    </control>
+                                    <control type="label">
+                                        <width>380</width>
+                                        <height>30</height>
+                                        <top>300</top>
+                                        <left>0</left>
+                                        <font>font16_title_bold</font>
+                                        <textcolor>grey</textcolor>
+                                        <scroll>true</scroll>
+                                        <label>$INFO[ListItem.Property(toto)]</label>
                                         <textoffsetx>6</textoffsetx>
                                     </control>
                                     <control type="button">
@@ -963,7 +988,6 @@
                                     <label>$INFO[ListItem.Property(Artist_Style)] $INFO[ListItem.Property(Artist_Genre)]</label>
                                     <textoffsetx>6</textoffsetx>
                             </control>
-                            -->
                             <control type="textbox">
                                 <label>$VAR[MusicPlotVar]</label>
                                 <top>410</top>
@@ -973,9 +997,10 @@
                                 <font>font12</font>
                                 <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
                                 <pagecontrol>61</pagecontrol>
+                                <visible>false</visible>
                             </control>
+                            -->
                         </control>
-                    </control>
 	</include>
 	<include name="AlbumInfoListView">
 		<control type="group">

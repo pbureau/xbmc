@@ -40,8 +40,6 @@
                     <label>Songs</label>
                 </control>
 		<control type="group" id="35000">
-                      <left>60</left>
-                      <top>60</top>
 <!--
 			<include>Window_OpenClose_Animation</include>		
 -->
