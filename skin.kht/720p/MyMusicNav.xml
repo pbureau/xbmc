@@ -13,31 +13,44 @@
 		<include>ContentPanelBackgrounds</include>
 -->
                 <include>CommonBackgroundMusic</include>
-                <control type="button" id="2201">
-                    <description>Select allArtist view</description>
-                    <textwidth>100</textwidth>
-                    <width>100</width>
-                    <onclick>ReplaceWindow(music,artists)</onclick>
-                    <onclick>Container.SetViewMode(512)</onclick>
-                    <label>Artists</label>
-                </control>
-                <control type="button" id="2202">
-                    <left>100</left>
-                    <width>100</width>
-                    <description>Select allAlbums view</description>
-                    <textwidth>100</textwidth>
-                    <onclick>ReplaceWindow(music,albums)</onclick>
-                    <onclick>Container.SetViewMode(500)</onclick>
-                    <label>Albums</label>
-                </control>
-                <control type="button" id="2203">
-                    <left>200</left>
-                    <width>100</width>
-                    <description>Select allSongs view</description>
-                    <textwidth>100</textwidth>
-                    <onclick>ReplaceWindow(music,songs)</onclick>
-                    <onclick>Container.SetViewMode(51)</onclick>
-                    <label>Songs</label>
+		<control type="group">
+                    <left>275</left>
+                    <top>5</top>
+                    <control type="button" id="2201">
+                        <description>Select allArtist view</description>
+                        <textwidth>100</textwidth>
+                        <width>100</width>
+                        <onclick>ReplaceWindow(music,artists)</onclick>
+                        <onclick>Container.SetViewMode(512)</onclick>
+                        <texturefocus>HomeSubFO.png</texturefocus>
+                        <texturenofocus>HomeSubNF.png</texturenofocus>
+                        <label>Artists</label>
+                        <align>center</align>
+                    </control>
+                    <control type="button" id="2202">
+                        <left>100</left>
+                        <width>100</width>
+                        <description>Select allAlbums view</description>
+                        <textwidth>100</textwidth>
+                        <onclick>ReplaceWindow(music,albums)</onclick>
+                        <onclick>Container.SetViewMode(500)</onclick>
+                        <texturefocus>HomeSubFO.png</texturefocus>
+                        <texturenofocus>HomeSubNF.png</texturenofocus>
+                        <label>Albums</label>
+                        <align>center</align>
+                    </control>
+                    <control type="button" id="2203">
+                        <left>200</left>
+                        <width>100</width>
+                        <description>Select allSongs view</description>
+                        <textwidth>100</textwidth>
+                        <onclick>ReplaceWindow(music,songs)</onclick>
+                        <onclick>Container.SetViewMode(51)</onclick>
+                        <texturefocus>HomeSubFO.png</texturefocus>
+                        <texturenofocus>HomeSubNF.png</texturenofocus>
+                        <label>Songs</label>
+                        <align>center</align>
+                    </control>
                 </control>
 		<control type="group" id="35000">
 <!--
