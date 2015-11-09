@@ -312,7 +312,7 @@ bool CGUIExtPanelContainer::OnMessage(CGUIMessage& message)
 
 void CGUIExtPanelContainer::OnLeft()
 {
-  CGUIAction action = GetNavigateAction(ACTION_MOVE_LEFT);
+  CGUIAction action = GetAction(ACTION_MOVE_LEFT);
   bool wrapAround = action.GetNavigation() == GetID() || !action.HasActionsMeetingCondition();
   if (m_orientation == VERTICAL && MoveLeft(wrapAround))
     return;
@@ -324,7 +324,7 @@ void CGUIExtPanelContainer::OnLeft()
 void CGUIExtPanelContainer::OnRight()
 {
   CLog::Log(LOGDEBUG,"** CGUIExtPanelContainer::OnRight **");
-  CGUIAction action = GetNavigateAction(ACTION_MOVE_RIGHT);
+  CGUIAction action = GetAction(ACTION_MOVE_RIGHT);
   bool wrapAround = action.GetNavigation() == GetID() || !action.HasActionsMeetingCondition();
   if (m_orientation == VERTICAL && MoveRight(wrapAround))
     return;
@@ -335,7 +335,7 @@ void CGUIExtPanelContainer::OnRight()
 
 void CGUIExtPanelContainer::OnUp()
 {
-  CGUIAction action = GetNavigateAction(ACTION_MOVE_UP);
+  CGUIAction action = GetAction(ACTION_MOVE_UP);
   bool wrapAround = action.GetNavigation() == GetID() || !action.HasActionsMeetingCondition();
   if (m_orientation == VERTICAL && MoveUp(wrapAround))
     return;
@@ -346,7 +346,7 @@ void CGUIExtPanelContainer::OnUp()
 
 void CGUIExtPanelContainer::OnDown()
 {
-  CGUIAction action = GetNavigateAction(ACTION_MOVE_DOWN);
+  CGUIAction action = GetAction(ACTION_MOVE_DOWN);
   bool wrapAround = action.GetNavigation() == GetID() || !action.HasActionsMeetingCondition();
   if (m_orientation == VERTICAL && MoveDown(wrapAround))
     return;

@@ -494,7 +494,7 @@ bool CGUIControlFactory::GetAnimations(TiXmlNode *control, const CRect &rect, in
   return ret;
 }
 
-bool CGUIControlFactory::GetActions(const TiXmlNode* pRootNode, const char* strTag, CGUIAction& action, const std::vector<string> actionsIgnore)
+bool CGUIControlFactory::GetActions(const TiXmlNode* pRootNode, const char* strTag, CGUIAction& action, const std::vector<std::string> actionsIgnore)
 {
   action.m_actions.clear();
   const TiXmlElement* pElement = pRootNode->FirstChildElement(strTag);
@@ -504,7 +504,7 @@ bool CGUIControlFactory::GetActions(const TiXmlNode* pRootNode, const char* strT
     {
       CGUIAction::cond_action_pair pair;
       std::string function;
-      vector<string> parameters;
+      std::vector<std::string> parameters;
 
       pair.condition = XMLUtils::GetAttribute(pElement, "condition");
       pair.action = pElement->FirstChild()->Value();

@@ -260,12 +260,12 @@ bool CGUIWindowMusicNav::OnClick(int iItem)
   // FIXME: Group in a single if(), if the actions are exactly the same
   if( m_vecItems->GetPath() == "musicdb://artists/" )
   {
-    OnInfo(iItem);
+    OnItemInfo(iItem);
     return true;
   }
   else if( m_vecItems->GetPath() == "musicdb://albums/" )
   {
-    OnInfo(iItem);
+    OnItemInfo(iItem);
     return true;
   }
 

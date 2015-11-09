@@ -358,7 +358,7 @@ void CGUIDialogMusicInfo::Update()
             {
                 CLog::Log(LOGDEBUG,"%s:::%s adding: %s", __FILE__, __FUNCTION__, 
                         item_extra_current->GetLabel().c_str());
-                albumSongs_end->Add(dynamic_pointer_cast<CFileItem>(item_extra_current));
+                albumSongs_end->Add(std::dynamic_pointer_cast<CFileItem>(item_extra_current));
             }
         }
 #endif

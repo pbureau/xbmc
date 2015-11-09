@@ -82,7 +82,7 @@ int CGUIAction::GetNavigation() const
 bool CGUIAction::RemoveActions(const std::string toremove)
 {
   std::string function;
-  vector<string> parameters;
+  std::vector<std::string> parameters;
   iActions it = m_actions.begin();
   bool ret     = false;
 
@@ -106,7 +106,7 @@ void CGUIAction::LogActions() const
   if (m_actions.size() == 0) return;
 
   std::string function;
-  vector<string> parameters;
+  std::vector<std::string> parameters;
 
   for (ciActions it = m_actions.begin() ; it != m_actions.end() ; ++it)
   {
