@@ -731,9 +731,9 @@
                     <width>780</width>
                     <height>550</height>
                     <onleft>2</onleft>
-                    <onright>60</onright>
-                    <onup>500</onup>
-                    <ondown>500</ondown>
+                    <onright>2201</onright>
+                    <onup>2201</onup>
+                    <ondown>-</ondown>
                     <viewtype label="Artist View">icon</viewtype>
                     <pagecontrol>60</pagecontrol>
                     <scrolltime>200</scrolltime>

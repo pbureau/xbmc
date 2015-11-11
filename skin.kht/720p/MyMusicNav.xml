@@ -13,9 +13,12 @@
 		<include>ContentPanelBackgrounds</include>
 -->
                 <include>CommonBackgroundMusic</include>
-		<control type="group">
+		<control type="grouplist">
                     <left>275</left>
                     <top>5</top>
+                    <ondown>35000</ondown>
+                    <itemgap>0</itemgap>
+                    <orientation>horizontal</orientation>
                     <control type="button" id="2201">
                         <description>Select allArtist view</description>
                         <textwidth>100</textwidth>
@@ -28,7 +31,6 @@
                         <align>center</align>
                     </control>
                     <control type="button" id="2202">
-                        <left>100</left>
                         <width>100</width>
                         <description>Select allAlbums view</description>
                         <textwidth>100</textwidth>
@@ -40,7 +42,6 @@
                         <align>center</align>
                     </control>
                     <control type="button" id="2203">
-                        <left>200</left>
                         <width>100</width>
                         <description>Select allSongs view</description>
                         <textwidth>100</textwidth>

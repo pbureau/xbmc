@@ -268,9 +268,9 @@
                     <width>780</width>
                     <height>550</height>
                     <onleft>2</onleft>
-                    <onright>60</onright>
-                    <onup>500</onup>
-                    <ondown>500</ondown>
+                    <onright>2202</onright>
+                    <onup>2202</onup>
+                    <ondown>-</ondown>
                     <viewtype label="Albums View">icon</viewtype>
                     <pagecontrol>60</pagecontrol>
                     <scrolltime>200</scrolltime>
@@ -392,31 +392,31 @@
                         <left>0</left>
                         <font>font16_title_bold</font>
                         <textcolor>grey</textcolor>
-                                    <scroll>true</scroll>
-                                    <label>$INFO[ListItem.Label]</label>
-                                    <textoffsetx>6</textoffsetx>
-                                </control>
-                                <control type="button">
-                                    <top>315</top>
-                                    <left>0</left>
-                                    <width>380</width>
-                                    <height>90</height>
-                                    <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
-                                    <visible>Container.Content(albums)</visible>
-                                </control>
-                                <control type="textbox">
-                                    <label>$VAR[MusicPlotVar]</label>
-                                    <top>410</top>
-                                    <left>0</left>
-                                    <width>380</width>
-                                    <height>160</height>
-                                    <font>font12</font>
-                                    <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
-                                    <pagecontrol>61</pagecontrol>
-                                </control>
-                            </control>
-                        </control>
-                    </include>
+                        <scroll>true</scroll>
+                        <label>$INFO[ListItem.Label]</label>
+                        <textoffsetx>6</textoffsetx>
+                    </control>
+                    <control type="button">
+                        <top>315</top>
+                        <left>0</left>
+                        <width>380</width>
+                        <height>90</height>
+                        <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
+                        <visible>Container.Content(albums)</visible>
+                    </control>
+                    <control type="textbox">
+                        <label>$VAR[MusicPlotVar]</label>
+                        <top>410</top>
+                        <left>0</left>
+                        <width>380</width>
+                        <height>160</height>
+                        <font>font12</font>
+                        <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
+                        <pagecontrol>61</pagecontrol>
+                    </control>
+                </control>
+            </control>
+        </include>
                     <include name="OneAlbumView">
                         <control type="group">
                             <visible>Control.IsVisible(509)</visible>
@@ -962,34 +962,34 @@
             <control type="group">
                 <visible>Control.IsVisible(51)</visible>
                 <include>VisibleFadeEffect</include>
-                <left>45</left>
-                <top>50</top>
+                <left>0</left>
+                <top>0</top>
                 <!-- Panel background image -->
                 <control type="image">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>1150</width>
-                    <height>600</height>
+                    <left>25</left>
+                    <top>40</top>
+                    <width>830</width>
+                    <height>640</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
                 <!-- Main files list - all songs -->
                 <control type="list" id="51">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>600</width>
-                    <height>561</height>
+                    <left>55</left>
+                    <top>70</top>
+                    <width>780</width>
+                    <height>550</height>
                     <onleft>2</onleft>
-                    <onright>60</onright>
-                    <onup>51</onup>
-                    <ondown>51</ondown>
+                    <onright>2203</onright>
+                    <onup>2203</onup>
+                    <ondown>-</ondown>
                     <viewtype label="All Songs">list</viewtype>
                     <pagecontrol>60</pagecontrol>
                     <scrolltime>200</scrolltime>
-                    <itemlayout height="40" width="1080">
+                    <itemlayout height="40" width="780">
                         <control type="image">
                             <left>0</left>
                             <top>0</top>
-                            <width>1080</width>
+                            <width>750</width>
                             <height>41</height>
                             <texture border="0,2,0,2">MenuItemNF.png</texture>
                         </control>
@@ -1004,7 +1004,7 @@
                         <control type="label">
                             <left>60</left>
                             <top>0</top>
-                            <width>950</width>
+                            <width>720</width>
                             <height>40</height>
                             <font>font13</font>
                             <textcolor>grey2</textcolor>
@@ -1014,50 +1014,16 @@
                             <label>$INFO[ListItem.Artist] • $INFO[ListItem.Title]</label>
                         </control>
                         <control type="label">
-                            <left>60</left>
+                            <left>685</left>
                             <top>0</top>
-                            <width>1000</width>
+                            <width>100</width>
                             <height>40</height>
                             <font>font12</font>
                             <textcolor>grey2</textcolor>
                             <selectedcolor>selected</selectedcolor>
-                            <align>right</align>
+                            <align>left</align>
                             <aligny>center</aligny>
                             <label>$INFO[ListItem.Label2]</label>
-                            <visible>!Window.IsVisible(Videos)</visible>
-                        </control>
-                        <control type="label">
-                            <left>65</left>
-                            <top>0</top>
-                            <width>940</width>
-                            <height>40</height>
-                            <font>font12</font>
-                            <textcolor>grey2</textcolor>
-                            <selectedcolor>selected</selectedcolor>
-                            <align>right</align>
-                            <aligny>center</aligny>
-                            <label>$INFO[ListItem.Label2]</label>
-                            <visible>Window.IsVisible(Videos)</visible>
-                            <animation effect="slide" start="0,0" end="40,0" delay="0" time="0" condition="![Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]">conditional</animation>
-                        </control>
-                        <control type="image">
-                            <left>1010</left>
-                            <top>8</top>
-                            <width>40</width>
-                            <height>26</height>
-                            <texture>$INFO[ListItem.VideoResolution,flagging/lists/,.png]</texture>
-                            <aspectratio>keep</aspectratio>
-                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-                            <visible>!ListItem.IsStereoscopic</visible>
-                        </control>
-                        <control type="image">
-                            <left>1010</left>
-                            <top>8</top>
-                            <width>40</width>
-                            <height>26</height>
-                            <texture>flagging/lists/3D.png</texture>
-                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-                            <visible>ListItem.IsStereoscopic</visible>
                         </control>
                         <control type="image">
                             <left>1050</left>
@@ -1077,32 +1043,21 @@
                             <visible>Window.IsVisible(Videos) + ListItem.IsResumable</visible>
                         </control>
                     </itemlayout>
-                    <focusedlayout height="40" width="1080">
+                    <focusedlayout height="40" width="780">
                         <control type="image">
                             <left>0</left>
                             <top>0</top>
-                            <width>1080</width>
+                            <width>750</width>
                             <height>41</height>
                             <texture border="0,2,0,2">MenuItemNF.png</texture>
-                            <visible>!Control.HasFocus(51)</visible>
-                            <include>VisibleFadeEffect</include>
                         </control>
                         <control type="image">
                             <left>0</left>
                             <top>0</top>
-                            <width>1080</width>
+                            <width>750</width>
                             <height>41</height>
                             <texture border="0,2,0,2">MenuItemFO.png</texture>
-                            <visible>Control.HasFocus(51)</visible>
                             <include>VisibleFadeEffect</include>
-                        </control>
-                        <control type="image">
-                            <left>875</left>
-                            <top>4</top>
-                            <width>200</width>
-                            <height>33</height>
-                            <texture border="0,0,14,0">MediaItemDetailBG.png</texture>
-                            <visible>Control.HasFocus(51) + !IsEmpty(ListItem.Label2)</visible>
                         </control>
                         <control type="image">
                             <left>10</left>
@@ -1115,7 +1070,7 @@
                         <control type="label">
                             <left>60</left>
                             <top>0</top>
-                            <width>950</width>
+                            <width>720</width>
                             <height>40</height>
                             <font>font13</font>
                             <textcolor>white</textcolor>
@@ -1125,50 +1080,16 @@
                             <label>$INFO[ListItem.Artist] • $INFO[ListItem.Title]</label>
                         </control>
                         <control type="label">
-                            <left>60</left>
+                            <left>685</left>
                             <top>0</top>
-                            <width>1000</width>
+                            <width>100</width>
                             <height>40</height>
                             <font>font12</font>
-                            <textcolor>grey2</textcolor>
+                            <textcolor>white</textcolor>
                             <selectedcolor>selected</selectedcolor>
-                            <align>right</align>
+                            <align>left</align>
                             <aligny>center</aligny>
                             <label>$INFO[ListItem.Label2]</label>
-                            <visible>!Window.IsVisible(Videos)</visible>
-                        </control>
-                        <control type="label">
-                            <left>65</left>
-                            <top>0</top>
-                            <width>940</width>
-                            <height>40</height>
-                            <font>font12</font>
-                            <textcolor>grey2</textcolor>
-                            <selectedcolor>selected</selectedcolor>
-                            <align>right</align>
-                            <aligny>center</aligny>
-                            <label>$INFO[ListItem.Label2]</label>
-                            <visible>Window.IsVisible(Videos)</visible>
-                            <animation effect="slide" start="0,0" end="40,0" delay="0" time="0" condition="![Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]">conditional</animation>
-                        </control>
-                        <control type="image">
-                            <left>1010</left>
-                            <top>8</top>
-                            <width>40</width>
-                            <height>26</height>
-                            <texture>$INFO[ListItem.VideoResolution,flagging/lists/,.png]</texture>
-                            <aspectratio>keep</aspectratio>
-                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-                            <visible>!ListItem.IsStereoscopic</visible>
-                        </control>
-                        <control type="image">
-                            <left>1010</left>
-                            <top>8</top>
-                            <width>40</width>
-                            <height>26</height>
-                            <texture>flagging/lists/3D.png</texture>
-                            <visible>Window.IsVisible(Videos) + [Container.Content(Movies) | Container.Content(Episodes) | Container.Content(MusicVideos)]</visible>
-                            <visible>ListItem.IsStereoscopic</visible>
                         </control>
                         <control type="image">
                             <left>1050</left>
@@ -1189,10 +1110,18 @@
                         </control>
                     </focusedlayout>
                 </control>
+                <!-- Right Panel background image -->
+                <control type="image">
+                    <left>810</left>
+                    <top>41</top>
+                    <width>465</width>
+                    <height>470</height>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                </control>
                 <!-- Right info panel - details on current song -->
                 <control type="group">
-                    <left>640</left>
-                    <top>0</top>
+                    <left>845</left>
+                    <top>50</top>
                     <control type="image">
                         <width>250</width>
                         <height>250</height>
@@ -1205,7 +1134,7 @@
                         <fadetime>400</fadetime>
                     </control>
                     <control type="label">
-                        <width>480</width>
+                        <width>380</width>
                         <height>30</height>
                         <top>272</top>
                         <left>0</left>
@@ -1218,12 +1147,12 @@
                     <control type="button">
                         <top>315</top>
                         <left>0</left>
-                        <width>480</width>
+                        <width>380</width>
                         <height>90</height>
                         <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
                     </control>
                     <control type="label">
-                        <width>480</width>
+                        <width>380</width>
                         <height>30</height>
                         <top>400</top>
                         <left>0</left>
@@ -1234,8 +1163,9 @@
                         <textoffsetx>6</textoffsetx>
                     </control>
                 </control>
-                <!-- Scrollbar for the main file list - To Be Removed ?? -->
+                <!--
                 <control type="scrollbar" id="60">
+                    <description>Scrollbar for the main file list - To Be Removed ??</description>
                     <left>1170</left>
                     <top>80</top>
                     <width>25</width>
@@ -1251,6 +1181,7 @@
                     <orientation>vertical</orientation>
                     <visible>Control.IsVisible(51)</visible>
                 </control>
+                -->
             </control>
 	</include>
 </includes>
