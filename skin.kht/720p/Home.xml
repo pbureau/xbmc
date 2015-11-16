@@ -8,7 +8,7 @@
               <!-- Main Panel Background -->
               <control type="image">
                   <left>45</left>
-                  <top>50</top>
+                  <top>52</top>
                   <width>500</width>
                   <height>300</height>
                   <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -17,7 +17,7 @@
               <control type="group">
                   <control type="panel" id="9000" description="ICONE">
                       <left>80</left>
-                      <top>80</top>
+                      <top>82</top>
                       <width>1150</width>
                       <onleft>9000</onleft>
                       <onright>9000</onright>

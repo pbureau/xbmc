@@ -256,7 +256,7 @@
                 <!-- Panel background image -->
                 <control type="image">
                     <left>25</left>
-                    <top>40</top>
+                    <top>50</top>
                     <width>830</width>
                     <height>640</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -264,7 +264,7 @@
                 <!-- Main Panel - Album library -->
                 <control type="panel" id="500">
                     <left>65</left>
-                    <top>70</top>
+                    <top>80</top>
                     <width>780</width>
                     <height>550</height>
                     <onleft>2</onleft>
@@ -365,7 +365,7 @@
                 <!-- Right Panel background image -->
                 <control type="image">
                     <left>810</left>
-                    <top>41</top>
+                    <top>51</top>
                     <width>465</width>
                     <height>470</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -373,7 +373,7 @@
                 <!-- Right Info Panel - Album details -->
                 <control type="group">
                     <left>845</left>
-                    <top>50</top>
+                    <top>60</top>
                     <control type="image">
                         <width>250</width>
                         <height>250</height>
@@ -381,19 +381,19 @@
                         <left>0</left>
                         <bordertexture border="5">button-nofocus.png</bordertexture>
                         <bordersize>5</bordersize>
-                        <texture background="true">$INFO[Listitem.Icon]</texture>
+                        <texture fallback="DefaultAlbumCover.png" background="true">$INFO[Listitem.Icon]</texture>
                         <aspectratio>keep</aspectratio>
                         <fadetime>400</fadetime>
                     </control>
                     <control type="label">
                         <width>380</width>
                         <height>30</height>
-                        <top>272</top>
+                        <top>276</top>
                         <left>0</left>
                         <font>font16_title_bold</font>
                         <textcolor>grey</textcolor>
                         <scroll>true</scroll>
-                        <label>$INFO[ListItem.Label]</label>
+                        <info>ListItem.Label</info>
                         <textoffsetx>6</textoffsetx>
                     </control>
                     <control type="button">
@@ -403,16 +403,6 @@
                         <height>90</height>
                         <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
                         <visible>Container.Content(albums)</visible>
-                    </control>
-                    <control type="textbox">
-                        <label>$VAR[MusicPlotVar]</label>
-                        <top>410</top>
-                        <left>0</left>
-                        <width>380</width>
-                        <height>160</height>
-                        <font>font12</font>
-                        <autoscroll time="3000" delay="2000" repeat="5000">true</autoscroll>
-                        <pagecontrol>61</pagecontrol>
                     </control>
                 </control>
             </control>
@@ -967,14 +957,14 @@
                 <!-- Panel background image -->
                 <control type="image">
                     <left>25</left>
-                    <top>40</top>
+                    <top>50</top>
                     <width>830</width>
                     <height>640</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
                 </control>
                 <!-- Main files list - all songs -->
                 <control type="list" id="51">
-                    <left>55</left>
+                    <left>65</left>
                     <top>70</top>
                     <width>780</width>
                     <height>550</height>
@@ -1004,7 +994,7 @@
                         <control type="label">
                             <left>60</left>
                             <top>0</top>
-                            <width>720</width>
+                            <width>600</width>
                             <height>40</height>
                             <font>font13</font>
                             <textcolor>grey2</textcolor>
@@ -1070,7 +1060,7 @@
                         <control type="label">
                             <left>60</left>
                             <top>0</top>
-                            <width>720</width>
+                            <width>600</width>
                             <height>40</height>
                             <font>font13</font>
                             <textcolor>white</textcolor>
@@ -1113,7 +1103,7 @@
                 <!-- Right Panel background image -->
                 <control type="image">
                     <left>810</left>
-                    <top>41</top>
+                    <top>51</top>
                     <width>465</width>
                     <height>470</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -1121,7 +1111,7 @@
                 <!-- Right info panel - details on current song -->
                 <control type="group">
                     <left>845</left>
-                    <top>50</top>
+                    <top>60</top>
                     <control type="image">
                         <width>250</width>
                         <height>250</height>

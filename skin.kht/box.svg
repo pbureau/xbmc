@@ -19,6 +19,21 @@
   <defs
      id="defs4">
     <linearGradient
+       id="linearGradient4195">
+      <stop
+         style="stop-color:#6d7d86;stop-opacity:1;"
+         offset="0"
+         id="stop4197" />
+      <stop
+         id="stop4203"
+         offset="0.49999994"
+         style="stop-color:#c2c9cd;stop-opacity:1;" />
+      <stop
+         style="stop-color:#6d7d86;stop-opacity:1;"
+         offset="1"
+         id="stop4199" />
+    </linearGradient>
+    <linearGradient
        inkscape:collect="always"
        id="linearGradient4012">
       <stop
@@ -99,15 +114,6 @@
          id="feGaussianBlur4050" />
     </filter>
     <filter
-       color-interpolation-filters="sRGB"
-       inkscape:collect="always"
-       id="filter3813-6">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="6.2225397"
-         id="feGaussianBlur3815-0" />
-    </filter>
-    <filter
        inkscape:collect="always"
        id="filter3900"
        x="-0.029949925"
@@ -131,6 +137,61 @@
          stdDeviation="6.6025397"
          id="feGaussianBlur3938" />
     </filter>
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter3900-8"
+       x="-0.029949926"
+       width="1.0598998"
+       y="-0.12080795"
+       height="1.2416159">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="7.5352003"
+         id="feGaussianBlur3902-5" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4195"
+       id="linearGradient4201"
+       x1="1533.756"
+       y1="439.29111"
+       x2="1863.4791"
+       y2="439.29111"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       color-interpolation-filters="sRGB"
+       inkscape:collect="always"
+       id="filter3900-9"
+       x="-0.029949926"
+       width="1.0598998"
+       y="-0.12080795"
+       height="1.2416159">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="7.5352003"
+         id="feGaussianBlur3902-4" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4195"
+       id="linearGradient4231"
+       gradientUnits="userSpaceOnUse"
+       x1="1533.756"
+       y1="439.29111"
+       x2="1863.4791"
+       y2="439.29111"
+       gradientTransform="translate(605.00006,0)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4195"
+       id="linearGradient4235"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(1210,0)"
+       x1="1533.756"
+       y1="439.29111"
+       x2="1863.4791"
+       y2="439.29111" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -139,9 +200,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="901.8167"
-     inkscape:cy="664.32424"
+     inkscape:zoom="0.25"
+     inkscape:cx="1491.6761"
+     inkscape:cy="239.57481"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -160,7 +221,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -168,6 +229,31 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       inkscape:export-ydpi="200"
+       inkscape:export-xdpi="200"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       ry="0"
+       rx="0"
+       y="391.5141"
+       x="2622.0879"
+       height="149.69612"
+       width="603.82391"
+       id="rect3882-9"
+       style="fill:#1b1f21;fill-opacity:1;stroke:none;filter:url(#filter3900-9)"
+       transform="matrix(2.9730198,0,0,1,-6370.7878,4)" />
+    <rect
+       inkscape:export-ydpi="200"
+       inkscape:export-xdpi="200"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       ry="0"
+       rx="0"
+       y="55.011524"
+       x="951.53967"
+       height="149.69612"
+       width="603.82391"
+       id="rect3882"
+       style="fill:#1b1f21;fill-opacity:1;stroke:none;filter:url(#filter3900)" />
     <rect
        inkscape:export-ydpi="200"
        inkscape:export-xdpi="200"
@@ -290,18 +376,6 @@
        inkscape:export-xdpi="200"
        inkscape:export-ydpi="200" />
     <rect
-       inkscape:export-ydpi="200"
-       inkscape:export-xdpi="200"
-       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
-       ry="0"
-       rx="0"
-       y="55.011524"
-       x="951.53967"
-       height="149.69612"
-       width="603.82391"
-       id="rect3882"
-       style="fill:#1b1f21;fill-opacity:1;stroke:none;filter:url(#filter3900)" />
-    <rect
        style="fill:#1b1f21;fill-opacity:1;stroke:none"
        id="rect3809-5"
        width="124.20819"
@@ -325,5 +399,41 @@
        width="124.20819"
        id="rect3922"
        style="fill:#1b1f21;fill-opacity:1;stroke:none;filter:url(#filter3936)" />
+    <rect
+       style="fill:#1b1f21;fill-opacity:1;stroke:url(#linearGradient4201);stroke-opacity:1;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-linejoin:miter"
+       id="rect3809-0-5"
+       width="603.82391"
+       height="149.69612"
+       x="1395.0881"
+       y="371.51413"
+       rx="0"
+       ry="0"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
+    <rect
+       inkscape:export-ydpi="200"
+       inkscape:export-xdpi="200"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       ry="0"
+       rx="0"
+       y="371.51413"
+       x="2000.0881"
+       height="149.69612"
+       width="603.82391"
+       id="rect4229"
+       style="fill:#1b1f21;fill-opacity:1;stroke:url(#linearGradient4231);stroke-width:4;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <rect
+       style="fill:#1b1f21;fill-opacity:1;stroke:url(#linearGradient4235);stroke-width:4;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect4233"
+       width="603.82391"
+       height="149.69612"
+       x="2605.0881"
+       y="371.51413"
+       rx="0"
+       ry="0"
+       inkscape:export-filename="/home/pbureau/Software/xbmc/skin.kht/media/RecentAddedBackWide.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
   </g>
 </svg>

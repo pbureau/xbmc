@@ -719,7 +719,7 @@
                 <!-- Panel background image -->
                 <control type="image">
                     <left>25</left>
-                    <top>40</top>
+                    <top>50</top>
                     <width>830</width>
                     <height>640</height>
                     <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -727,7 +727,7 @@
                 <!-- Main Panel - Artist library -->
                 <control type="panel" id="512">
                     <left>65</left>
-                    <top>70</top>
+                    <top>80</top>
                     <width>780</width>
                     <height>550</height>
                     <onleft>2</onleft>
@@ -828,7 +828,7 @@
                                 <!-- Right Panel background image -->
                                 <control type="image">
                                     <left>810</left>
-                                    <top>41</top>
+                                    <top>51</top>
                                     <width>465</width>
                                     <height>470</height>
                                     <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -836,7 +836,7 @@
                                 <!-- Right Info Panel - Artist details -->
                                 <control type="group">
                                     <left>845</left>
-                                    <top>50</top>
+                                    <top>60</top>
                                     <control type="image">
                                         <width>250</width>
                                         <height>250</height>
