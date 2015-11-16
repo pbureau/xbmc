@@ -401,6 +401,27 @@ void StringUtils::ToCapitalize(std::wstring &str)
   }
 }
 
+struct ConditionAlphaNum {
+   bool operator()( char ch ) const {
+      return !std::isalnum(ch);
+   }
+};
+
+bool StringUtils::EqualsNoCaseAlphaNumOnly(const std::string &str1, const std::string &str2)
+{
+  std::string cleanStr1, cleanStr2;
+  // clean str1
+  std::remove_copy_if(str1.begin(), str1.end(),            
+      std::back_inserter(cleanStr1),           
+      ConditionAlphaNum());
+  // clear str2
+  std::remove_copy_if(str2.begin(), str2.end(),            
+      std::back_inserter(cleanStr2),           
+      ConditionAlphaNum());
+
+  return EqualsNoCase(cleanStr1.c_str(), cleanStr2.c_str());
+}
+
 bool StringUtils::EqualsNoCase(const std::string &str1, const std::string &str2)
 {
   return EqualsNoCase(str1.c_str(), str2.c_str());

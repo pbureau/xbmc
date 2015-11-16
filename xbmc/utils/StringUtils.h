@@ -62,6 +62,7 @@ public:
   static void ToCapitalize(std::string &str);
   static void ToCapitalize(std::wstring &str);
   static bool EqualsNoCase(const std::string &str1, const std::string &str2);
+  static bool EqualsNoCaseAlphaNumOnly(const std::string &str1, const std::string &str2);
   static bool EqualsNoCase(const std::string &str1, const char *s2);
   static bool EqualsNoCase(const char *s1, const char *s2);
   static int  CompareNoCase(const std::string &str1, const std::string &str2);

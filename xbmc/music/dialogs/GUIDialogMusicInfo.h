@@ -52,7 +52,7 @@ protected:
   void SetLabel(int iControl, const std::string& strLabel);
   void OnGetThumb();
   void OnGetFanart();
-  void SetSongs(const VECSONGS &songs);
+  void SetSongs(const VECSONGS &infoSongs, const VECSONGS &songs);
   void SetDiscography();
   void OnSearch(const CFileItem* pItem);
 

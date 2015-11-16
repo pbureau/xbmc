@@ -19,6 +19,7 @@
  */
 
 #include "GUIDialogMusicInfo.h"
+#include "Application.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/GUIImage.h"
 #include "dialogs/GUIDialogFileBrowser.h"
@@ -123,16 +124,34 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
       else if (iControl == CONTROL_LIST)
       {
         int iAction = message.GetParam1();
-        if (m_bArtistInfo && (ACTION_SELECT_ITEM == iAction || ACTION_MOUSE_LEFT_CLICK == iAction))
+        if (ACTION_SELECT_ITEM == iAction || ACTION_MOUSE_LEFT_CLICK == iAction)
         {
           CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
           g_windowManager.SendMessage(msg);
           int iItem = msg.GetParam1();
           if (iItem < 0 || iItem >= (int)m_albumSongs->Size())
             break;
-          CFileItemPtr item = m_albumSongs->Get(iItem);
-          OnSearch(item.get());
-          return true;
+          CFileItemPtr pItem = m_albumSongs->Get(iItem);
+          bool bResult       = false;
+
+          if(m_bArtistInfo)
+          {
+            // when in artist view, show album details
+            OnSearch(pItem.get());
+            bResult = true;
+          }
+          else
+          {
+            if( pItem->GetMusicInfoTag()->GetDatabaseId() > 0 )
+            {
+              // when in album view, play the current song
+              bResult = g_application.PlayFile(*pItem) == PLAYBACK_OK;
+
+              if (pItem->m_lStartOffset == STARTOFFSET_RESUME)
+                pItem->m_lStartOffset = 0;
+            }
+          }
+          return bResult;
         }
       }
       else if (iControl == CONTROL_BTN_GET_FANART)
@@ -171,7 +190,7 @@ bool CGUIDialogMusicInfo::OnAction(const CAction &action)
 void CGUIDialogMusicInfo::SetAlbum(const CAlbum& album, const std::string &path)
 {
   m_album = album;
-  SetSongs(m_album.infoSongs);
+  SetSongs(m_album.infoSongs, m_album.songs);
   *m_albumItem = CFileItem(path, true);
   m_albumItem->GetMusicInfoTag()->SetAlbum(m_album.strAlbum);
   m_albumItem->GetMusicInfoTag()->SetAlbumArtist(m_album.GetAlbumArtist());
@@ -226,15 +245,58 @@ void CGUIDialogMusicInfo::SetArtist(const CArtist& artist, const std::string &pa
   m_albumSongs->SetContent("artists");
 }
 
-void CGUIDialogMusicInfo::SetSongs(const VECSONGS &songs)
+void CGUIDialogMusicInfo::SetSongs(const VECSONGS &infoSongs, const VECSONGS &songs)
 {
+  CLog::Log(LOGDEBUG,"%s:::%s Set %d Songs in Album", __FILE__, __FUNCTION__,
+      songs.size());
   m_albumSongs->Clear();
+
+  std::set<unsigned int> songsToSkip;
+
+  // Combine songs info from the local file DB and the fetched infoSongs
+  // First add all songs from the local files
   for (unsigned int i = 0; i < songs.size(); i++)
   {
     const CSong& song = songs[i];
     CFileItemPtr item(new CFileItem(song));
+
+    CLog::Log(LOGDEBUG,"%s:::%s Song %s / %d ", __FILE__, __FUNCTION__, songs[i].strTitle.c_str(), songs[i].iTrack);
+
+    // Add info from the infoSongs DB
+    for (unsigned int j = 0; j < infoSongs.size(); j++)
+    {
+      CLog::Log(LOGDEBUG,"%s:::%s Song %s / %d ", __FILE__, __FUNCTION__, infoSongs[j].strTitle.c_str(), infoSongs[j].iTrack);
+
+      if(songs[i].iTrack == infoSongs[j].iTrack)
+         //StringUtils::EqualsNoCaseAlphaNumOnly(songs[i].strTitle, infoSongs[j].strTitle))
+      {
+        songsToSkip.insert(j);
+        // Add duration
+        // Replace track title?
+      }
+    }
+
     m_albumSongs->Add(item);
   }
+
+  // Handle a weird case when the infosongs table does not
+  // contain any entry for the album, and returns a single empty item
+  if( !(infoSongs.size() == 1 && infoSongs[0].strTitle.empty()) )
+  {
+    // Add songs not listed by the local file DB
+    for (unsigned int j = 0; j < infoSongs.size(); j++)
+    {
+      if(songsToSkip.find(j) == songsToSkip.end())
+      {
+        const CSong& song = infoSongs[j];
+        CFileItemPtr item(new CFileItem(song));
+
+        m_albumSongs->Add(item);
+      }
+    }
+  }
+  // Sort the end result by track number
+  m_albumSongs->Sort(SortByTrackNumber, SortOrderAscending);
 }
 
 void CGUIDialogMusicInfo::SetDiscography()
@@ -244,30 +306,56 @@ void CGUIDialogMusicInfo::SetDiscography()
   database.Open();
 
   std::vector<int> albumsByArtist;
+  std::set<int> albumsToSkip;
   database.GetAlbumsByArtist(m_artist.idArtist, true, albumsByArtist);
 
-  for (unsigned int i=0;i<m_artist.discography.size();++i)
+  // Handle a weird case when the discography table does not
+  // contain any entry for the artist, and returns a single empty item
+  if( !(m_artist.discography.size() == 1 && m_artist.discography[0].first.empty()) )
   {
-    CFileItemPtr item(new CFileItem(m_artist.discography[i].first));
-    item->SetLabel2(m_artist.discography[i].second);
-
-    int idAlbum = -1;
-    for (std::vector<int>::const_iterator album = albumsByArtist.begin(); album != albumsByArtist.end(); ++album)
+    for (unsigned int i=0;i<m_artist.discography.size();++i)
     {
-      if (StringUtils::EqualsNoCase(database.GetAlbumById(*album), item->GetLabel()))
+      CFileItemPtr item(new CFileItem(m_artist.discography[i].first));
+      item->SetLabel2(m_artist.discography[i].second);
+
+      int idAlbum = -1;
+      for (std::vector<int>::const_iterator album = albumsByArtist.begin(); album != albumsByArtist.end(); ++album)
       {
-        idAlbum = *album;
-        item->GetMusicInfoTag()->SetDatabaseId(idAlbum, "album");
-        break;
+        if (StringUtils::EqualsNoCaseAlphaNumOnly(database.GetAlbumById(*album), item->GetLabel()))
+        {
+          idAlbum = *album;
+          item->GetMusicInfoTag()->SetDatabaseId(idAlbum, "album");
+          // Mark this album as already in the list
+          albumsToSkip.insert(idAlbum);
+          break;
+        }
+      }
+
+      if (idAlbum != -1) // we need this slight stupidity to get correct case for the album name
+        item->SetArt("thumb", database.GetArtForItem(idAlbum, MediaTypeAlbum, "thumb"));
+      else
+        item->SetArt("thumb", "DefaultAlbumCover.png");
+
+      m_albumSongs->Add(item);
+    }
+  }
+  // Add albums from the db in the discography
+  for (std::vector<int>::const_iterator it_album = albumsByArtist.begin(); it_album != albumsByArtist.end(); ++it_album)
+  {
+    if(albumsToSkip.find(*it_album) == albumsToSkip.end())
+    {
+      CAlbum album;
+      if (database.GetAlbum(*it_album, album))
+      {
+        CFileItemPtr item(new CFileItem(album.strAlbum));
+        if(album.iYear != 0)
+          item->SetLabel2(std::to_string(album.iYear));
+        item->GetMusicInfoTag()->SetDatabaseId(*it_album, "album");
+        item->SetArt("thumb", database.GetArtForItem(*it_album, MediaTypeAlbum, "thumb"));
+
+        m_albumSongs->Add(item);
       }
     }
-
-    if (idAlbum != -1) // we need this slight stupidity to get correct case for the album name
-      item->SetArt("thumb", database.GetArtForItem(idAlbum, MediaTypeAlbum, "thumb"));
-    else
-      item->SetArt("thumb", "DefaultAlbumCover.png");
-
-    m_albumSongs->Add(item);
   }
 }
 
@@ -318,7 +406,7 @@ void CGUIDialogMusicInfo::Update()
             {
                 CGUIListItemPtr item_extra_current = m_itemsExtra->at(j);
 
-                if( !StringUtils::CompareNoCase(item_db_current->GetLabel(), item_extra_current->GetLabel()) )
+                if( StringUtils::EqualsNoCaseAlphaNumOnly(item_db_current->GetLabel(), item_extra_current->GetLabel()) )
                     //StringUtils::CompareNoCase(item_db_current->GetLabel2(), label_year.GetItemLabel(item_extra_current.get(), false)))
                 {
                     // Item is both in the db and extra content, complete db item if usefull
@@ -327,7 +415,8 @@ void CGUIDialogMusicInfo::Update()
                         // Missing date
                         item_db_current->SetLabel2(label_year.GetItemLabel(item_extra_current.get(), false));
                     }
-                    if( !StringUtils::CompareNoCase("DefaultAlbumCover.png", item_db_current->GetArt("thumb")) )
+                    if( !StringUtils::CompareNoCase("DefaultAlbumCover.png", item_db_current->GetArt("thumb")) ||
+                        item_db_current->GetArt("thumb").empty() )
                     {
                         // Missing art
                         item_db_current->SetArt("thumb", item_extra_current->GetArt("thumb"));
@@ -340,8 +429,18 @@ void CGUIDialogMusicInfo::Update()
 
             // Make sure the year field is correctly set 
             std::string label2 = item_db_current->GetLabel2();
-            if(label2.size() > 0)
-                item_db_current->GetMusicInfoTag()->SetYear(std::stoi(label2));
+            try
+            {
+              int albumYear = std::stoi(label2);
+              item_db_current->GetMusicInfoTag()->SetYear(albumYear);
+            }
+            catch(...)
+            {
+            }
+
+            //if(label2.size() > 0)
+              //item_db_current->GetMusicInfoTag()->SetYear(std::stoi(label2));
+
             // Item is in the db are always added to the list, items not playable are added in the end list
             if( item_db_current->GetMusicInfoTag()->GetDatabaseId() > 0 )
                 albumSongs_copy->Add(item_db_current);

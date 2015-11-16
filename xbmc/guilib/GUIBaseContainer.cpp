@@ -416,7 +416,7 @@ bool CGUIBaseContainer::OnMessage(CGUIMessage& message)
     {
       if (message.GetMessage() == GUI_MSG_LABEL_BIND && message.GetPointer())
       { // bind our items
-          CLog::Log(LOGDEBUG, "------ bind items start ------");
+        CLog::Log(LOGDEBUG, "------ bind items start ------");
         Reset();
         CFileItemList *items = (CFileItemList *)message.GetPointer();
         for (int i = 0; i < items->Size(); i++)
@@ -458,7 +458,7 @@ bool CGUIBaseContainer::OnMessage(CGUIMessage& message)
     {
       // Return the extra content file list
       CLog::Log(LOGDEBUG,"CGUIBaseContainer::OnMessage : EXTRA_CONTENT_GET");
-      if(m_listProviderExtra->IsUpdating())
+      if(m_listProviderExtra && m_listProviderExtra->IsUpdating())
           message.SetPointer(NULL);
       else
           message.SetPointer(&m_itemsExtra);
@@ -1175,10 +1175,11 @@ void CGUIBaseContainer::LoadLayout(TiXmlElement *layout)
   itemElement = layout->FirstChildElement("labelxxxx");
   if(itemElement)
   {
+    CLog::Log(LOGDEBUG,"%s::%s", __FILE__, __FUNCTION__);
+
     CGUIControlFactory factory;
     CRect rect(0,0,0,0);
 
-    CLog::Log(LOGDEBUG, "*************CGUIBaseContainer::LoadLayout");
     m_labelCategoryNoArt = factory.Create(GetParentID(), rect, itemElement, false);
   }
 }
