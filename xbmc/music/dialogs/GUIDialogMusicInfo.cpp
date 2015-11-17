@@ -55,6 +55,7 @@ using namespace XFILE;
 #define  CONTROL_BTN_GET_FANART 12
 
 #define CONTROL_LIST            50
+#define CONTROL_LIST_DISCO      51
 
 CGUIDialogMusicInfo::CGUIDialogMusicInfo(void)
     : CGUIDialog(WINDOW_DIALOG_MUSIC_INFO, "DialogAlbumInfo.xml")
@@ -78,6 +79,8 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
     {
       CGUIMessage message(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST);
       OnMessage(message);
+      CGUIMessage message_disco(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST_DISCO);
+      OnMessage(message_disco);
       m_albumSongs->Clear();
     }
     break;
@@ -121,7 +124,7 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
         m_bViewReview = !m_bViewReview;
         Update();
       }
-      else if (iControl == CONTROL_LIST)
+      else if (iControl == CONTROL_LIST || iControl == CONTROL_LIST_DISCO)
       {
         int iAction = message.GetParam1();
         if (ACTION_SELECT_ITEM == iAction || ACTION_MOUSE_LEFT_CLICK == iAction)
@@ -368,10 +371,10 @@ void CGUIDialogMusicInfo::Update()
     SetLabel(CONTROL_TEXTAREA, m_artist.strBiography);
 #if 1
     // Manage the discography list with extra content
-    CGUIMessage messageExtraContent(GUI_MSG_EXTRA_CONTENT_GET, GetID(), CONTROL_LIST, 0, 0);
+    CGUIMessage messageExtraContent(GUI_MSG_EXTRA_CONTENT_GET, GetID(), CONTROL_LIST_DISCO, 0, 0);
     OnMessage(messageExtraContent);
     std::vector< CGUIListItemPtr> * m_itemsExtra = (std::vector<CGUIListItemPtr>*)messageExtraContent.GetPointer();
-    CGUIInfoLabel label_year = CGUIInfoLabel("$INFO[listItem.Year]", "0000", CONTROL_LIST);
+    CGUIInfoLabel label_year = CGUIInfoLabel("$INFO[listItem.Year]", "0000", CONTROL_LIST_DISCO);
 
     if( m_itemsExtra != NULL && !m_itemsExtra->empty() )
     {
@@ -391,7 +394,7 @@ void CGUIDialogMusicInfo::Update()
         // Compare the database content with extra content
         for (int i = 0; i < (int)m_albumSongs->Size(); i++)
         {
-            CGUIInfoLabel label_year = CGUIInfoLabel("$INFO[listItem.Year]", "", CONTROL_LIST);
+            CGUIInfoLabel label_year = CGUIInfoLabel("$INFO[listItem.Year]", "", CONTROL_LIST_DISCO);
             //CGUIListItemPtr item_db_current = m_albumSongs[i];
             CFileItemPtr item_db_current = m_albumSongs->Get(i);
             CLog::Log(LOGDEBUG,"%s:::%s item: %s, %s", __FILE__, __FUNCTION__, 
@@ -482,8 +485,10 @@ void CGUIDialogMusicInfo::Update()
 #endif
     }
     // Bind the content with the Control_List container 
-    CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);
+    CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST_DISCO, 0, 0, m_albumSongs);
     OnMessage(message);
+    CGUIMessage msg(GUI_MSG_SETFOCUS, GetID(), CONTROL_LIST_DISCO);
+    OnMessage(msg);
 
     if (GetControl(CONTROL_BTN_TRACKS)) // if no CONTROL_BTN_TRACKS found - allow skinner full visibility control over CONTROL_TEXTAREA and CONTROL_LIST
     {
@@ -508,6 +513,8 @@ void CGUIDialogMusicInfo::Update()
     SetLabel(CONTROL_TEXTAREA, m_album.strReview);
     CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);
     OnMessage(message);
+    CGUIMessage msg(GUI_MSG_SETFOCUS, GetID(), CONTROL_LIST);
+    OnMessage(msg);
 
     if (GetControl(CONTROL_BTN_TRACKS)) // if no CONTROL_BTN_TRACKS found - allow skinner full visibility control over CONTROL_TEXTAREA and CONTROL_LIST
     {
@@ -791,6 +798,7 @@ void CGUIDialogMusicInfo::OnSearch(const CFileItem* pItem)
       Update();
     }
   }
+// FIXME: if album is not in local db, fetch info using exttended info script
 }
 
 CFileItemPtr CGUIDialogMusicInfo::GetCurrentListItem(int offset)
