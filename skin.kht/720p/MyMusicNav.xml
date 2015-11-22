@@ -12,7 +12,7 @@
 		<include>CommonBackground</include>
 		<include>ContentPanelBackgrounds</include>
 -->
-                <include>CommonBackgroundMusic</include>
+                <include>CommonBackground</include>
 		<control type="grouplist">
                     <left>275</left>
                     <top>5</top>

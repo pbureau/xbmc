@@ -9,7 +9,7 @@
 			<height>720</height>
 			<aspectratio>scale</aspectratio>
 			<texture fallback="special://skin/backgrounds/SKINDEFAULT.jpg">$INFO[Skin.CurrentTheme,special://skin/backgrounds/,.jpg]</texture>
-			<visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]+[IsEmpty(ListItem.Property(Fanart_Image))|[Skin.HasSetting(HideBackGroundFanart)+!Window.IsVisible(movieinformation)]]</visible>
+                        <visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]</visible>
 			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
@@ -21,39 +21,12 @@
 			<height>720</height>
 			<aspectratio>scale</aspectratio>
 			<texture>$INFO[Skin.String(CustomBackgroundPath)]</texture>
-			<visible>[Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))] + [IsEmpty(ListItem.Property(Fanart_Image))|[Skin.HasSetting(HideBackGroundFanart)+!Window.IsVisible(movieinformation)]]</visible>
-			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
-			<include>VisibleFadeEffect</include>
-		</control>
-		<control type="image">
-			<left>0</left>
-			<top>0</top>
-			<width>1280</width>
-			<height>720</height>
-			<aspectratio>scale</aspectratio>
-			<texture background="true">$INFO[ListItem.Art(fanart)]</texture>
-			<visible>[!Skin.HasSetting(HideBackGroundFanart)|Window.IsVisible(movieinformation)|Window.IsVisible(musicinformation)] + !IsEmpty(ListItem.Property(Fanart_Image))</visible>
+                        <visible>[Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]</visible>
 			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
 	</include>
-	<include name="CommonBackgroundMusic">
-                        <!-- Page background 
-                        <control type="image">
-                            <left>0</left>
-                            <top>0</top>
-                            <width>1280</width>
-                            <height>720</height>
-                            <aspectratio>scale</aspectratio>
-                            <texture background="true">$INFO[Container.Art(artist.fanart)]</texture>
-                            <!-
-                            <texture background="true">$INFO[ListItem.Art(fanart)]</texture>
-                            <visible>[!Skin.HasSetting(HideBackGroundFanart)|Window.IsVisible(movieinformation)] + !IsEmpty(ListItem.Property(Fanart_Image))</visible>
-                            <visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
-                            ->
-                            <include>VisibleFadeEffect</include>
-                        </control>
-                         -->
+	<include name="CommonBackgroundVideoInfo">
 		<control type="image">
 			<description>Normal Default Background Image</description>
 			<left>0</left>
@@ -62,7 +35,8 @@
 			<height>720</height>
 			<aspectratio>scale</aspectratio>
 			<texture fallback="special://skin/backgrounds/SKINDEFAULT.jpg">$INFO[Skin.CurrentTheme,special://skin/backgrounds/,.jpg]</texture>
-			<visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]+[IsEmpty(ListItem.Property(Fanart_Image))|[Skin.HasSetting(HideBackGroundFanart)+!Window.IsVisible(movieinformation)]]</visible>
+                        <visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]+[Skin.HasSetting(HideBackGroundFanart)|IsEmpty(ListItem.Property(Fanart_Image))]</visible>
+			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
 		<control type="image">
@@ -73,10 +47,10 @@
 			<height>720</height>
 			<aspectratio>scale</aspectratio>
 			<texture>$INFO[Skin.String(CustomBackgroundPath)]</texture>
-			<visible>[Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))] + [IsEmpty(ListItem.Property(Fanart_Image))|[Skin.HasSetting(HideBackGroundFanart)+!Window.IsVisible(movieinformation)]]</visible>
+                        <visible>[Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]+[Skin.HasSetting(HideBackGroundFanart)|IsEmpty(ListItem.Property(Fanart_Image))]</visible>
+			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
-                <!--
 		<control type="image">
 			<left>0</left>
 			<top>0</top>
@@ -84,11 +58,47 @@
 			<height>720</height>
 			<aspectratio>scale</aspectratio>
 			<texture background="true">$INFO[ListItem.Art(fanart)]</texture>
-			<visible>[!Skin.HasSetting(HideBackGroundFanart)|Window.IsVisible(movieinformation)] + !IsEmpty(ListItem.Property(Fanart_Image))</visible>
+			<visible>[!Skin.HasSetting(HideBackGroundFanart) + !IsEmpty(ListItem.Property(Fanart_Image))]</visible>
 			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
-                -->
+	</include>
+	<include name="CommonBackgroundMusicInfo">
+		<control type="image">
+			<description>Normal Default Background Image</description>
+			<left>0</left>
+			<top>0</top>
+			<width>1280</width>
+			<height>720</height>
+			<aspectratio>scale</aspectratio>
+			<texture fallback="special://skin/backgrounds/SKINDEFAULT.jpg">$INFO[Skin.CurrentTheme,special://skin/backgrounds/,.jpg]</texture>
+                        <visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]+[Skin.HasSetting(HideBackGroundFanart)|!Container.Content(Artists)|IsEmpty(ListItem.Property(Fanart_Image))]</visible>
+			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
+			<include>VisibleFadeEffect</include>
+		</control>
+		<control type="image">
+			<description>User Set Background Image</description>
+			<left>0</left>
+			<top>0</top>
+			<width>1280</width>
+			<height>720</height>
+			<aspectratio>scale</aspectratio>
+			<texture>$INFO[Skin.String(CustomBackgroundPath)]</texture>
+                        <visible>[Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]+[Skin.HasSetting(HideBackGroundFanart)|!Container.Content(Artists)|IsEmpty(ListItem.Property(Fanart_Image))]</visible>
+			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
+			<include>VisibleFadeEffect</include>
+		</control>
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1280</width>
+			<height>720</height>
+			<aspectratio>scale</aspectratio>
+			<texture background="true">$INFO[ListItem.Art(fanart)]</texture>
+			<visible>[!Skin.HasSetting(HideBackGroundFanart) + !IsEmpty(ListItem.Property(Fanart_Image)) + Container.Content(Artists)]</visible>
+			<visible>![Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)]</visible>
+			<include>VisibleFadeEffect</include>
+		</control>
 	</include>
 	<include name="CommonBackgroundPlayer">
 <!--
