@@ -155,6 +155,11 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
 
               if (pItem->m_lStartOffset == STARTOFFSET_RESUME)
                 pItem->m_lStartOffset = 0;
+
+              Close();
+              // Also switch visualisation OR screensaver to fullscreen
+              // Switch to fullscreen mode if we can
+              g_application.OnAction(CAction(ACTION_SHOW_GUI));
             }
           }
           return bResult;
