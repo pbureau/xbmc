@@ -56,6 +56,7 @@ using namespace XFILE;
 
 #define CONTROL_LIST            50
 #define CONTROL_LIST_DISCO      51
+#define CONTROL_LIST_2          52
 
 CGUIDialogMusicInfo::CGUIDialogMusicInfo(void)
     : CGUIDialog(WINDOW_DIALOG_MUSIC_INFO, "DialogAlbumInfo.xml")
@@ -81,6 +82,8 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
       OnMessage(message);
       CGUIMessage message_disco(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST_DISCO);
       OnMessage(message_disco);
+      CGUIMessage message_list2(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST_2);
+      OnMessage(message_list2);
       m_albumSongs->Clear();
     }
     break;
@@ -124,7 +127,7 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
         m_bViewReview = !m_bViewReview;
         Update();
       }
-      else if (iControl == CONTROL_LIST || iControl == CONTROL_LIST_DISCO)
+      else if (iControl == CONTROL_LIST || iControl == CONTROL_LIST_DISCO || iControl == CONTROL_LIST_2)
       {
         int iAction = message.GetParam1();
         if (ACTION_SELECT_ITEM == iAction || ACTION_MOUSE_LEFT_CLICK == iAction)
@@ -268,8 +271,6 @@ void CGUIDialogMusicInfo::SetSongs(const VECSONGS &infoSongs, const VECSONGS &so
     // Add info from the infoSongs DB
     for (unsigned int j = 0; j < infoSongs.size(); j++)
     {
-      CLog::Log(LOGDEBUG,"%s:::%s Song %s / %d ", __FILE__, __FUNCTION__, infoSongs[j].strTitle.c_str(), infoSongs[j].iTrack);
-
       if(songs[i].iTrack == infoSongs[j].iTrack)
          //StringUtils::EqualsNoCaseAlphaNumOnly(songs[i].strTitle, infoSongs[j].strTitle))
       {
@@ -511,10 +512,20 @@ void CGUIDialogMusicInfo::Update()
     CONTROL_DISABLE(CONTROL_BTN_GET_FANART);
 
     SetLabel(CONTROL_TEXTAREA, m_album.strReview);
-    CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);
-    OnMessage(message);
-    CGUIMessage msg(GUI_MSG_SETFOCUS, GetID(), CONTROL_LIST);
-    OnMessage(msg);
+    if(!m_album.strReview.empty())
+    {
+      CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);
+      OnMessage(message);
+      CGUIMessage msg(GUI_MSG_SETFOCUS, GetID(), CONTROL_LIST);
+      OnMessage(msg);
+    }
+    else
+    {
+      CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST_2, 0, 0, m_albumSongs);
+      OnMessage(message);
+      CGUIMessage msg(GUI_MSG_SETFOCUS, GetID(), CONTROL_LIST_2);
+      OnMessage(msg);
+    }
 
     if (GetControl(CONTROL_BTN_TRACKS)) // if no CONTROL_BTN_TRACKS found - allow skinner full visibility control over CONTROL_TEXTAREA and CONTROL_LIST
     {
