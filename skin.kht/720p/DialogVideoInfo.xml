@@ -333,9 +333,10 @@
                             </control>
                             <control type="scrollbar" id="61">
                                 <left>400</left>
-                                <top>4</top>
+                                <top>20</top>
                                 <width>25</width>
-                                <height>252</height>
+                                <height>230</height>
+                                <visible>IntegerGreaterThan(Container(51).NumItems,4)</visible>
                                 <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
                                 <texturesliderbar border="0,14,0,14">ScrollBarV_bar.png</texturesliderbar>
                                 <texturesliderbarfocus border="0,14,0,14">ScrollBarV_bar_focus.png</texturesliderbarfocus>

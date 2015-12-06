@@ -160,7 +160,7 @@
                 </control>
             </control>
             <!--- Track list back image -->
-            <control type="image">
+            <control type="image" id="100">
                 <left>570</left>
                 <top>290</top>
                 <width>643</width>
@@ -168,7 +168,7 @@
                 <texture background="false" border="10">RecentAddedBack.png</texture>
                 <visible>!IsEmpty(ListItem.Property(Album_Description))</visible>
             </control>
-            <control type="image">
+            <control type="image" id="101">
                 <left>570</left>
                 <top>200</top>
                 <width>643</width>
@@ -178,14 +178,22 @@
             </control>
             <!--- Track list - with album description -->
             <control type="list" id="50">
-                <visible>!IsEmpty(ListItem.Property(Album_Description))</visible>
+                <visible allowhiddenfocus="true">!IsEmpty(ListItem.Property(Album_Description))</visible>
+                <!--
+                <animation effect="slide" start="0,50" end="0,0" time="200" condition="Control.IsVisible(100)">WindowOpen</animation>
+                <animation effect="slide" start="0,50" end="0,-90" time="200" condition="Control.IsVisible(101)">WindowOpen</animation>
+                -->
                 <left>610</left>
                 <top>315</top>
                 <width>600</width>
                 <height>385</height>
-                <onleft>2</onleft>
-                <onright>2203</onright>
-                <onup>2203</onup>
+                <!--
+                <include condition="Control.IsVisible(100)">TrackListLowerPosition</include>
+                <include condition="Control.IsVisible(101)">TrackListUpperPosition</include>
+                -->
+                <onleft>-</onleft>
+                <onright>-</onright>
+                <onup>-</onup>
                 <ondown>-</ondown>
                 <viewtype label="All Songs">list</viewtype>
                 <pagecontrol>60</pagecontrol>
@@ -320,15 +328,15 @@
                 </focusedlayout>
             </control>
             <!-- Track list - without album description -->
-            <control type="list" id="50">
-                <visible>IsEmpty(ListItem.Property(Album_Description))</visible>
+            <control type="list" id="52">
+                <visible allowhiddenfocus="true">IsEmpty(ListItem.Property(Album_Description))</visible>
                 <left>610</left>
                 <top>225</top>
                 <width>600</width>
                 <height>460</height>
-                <onleft>2</onleft>
-                <onright>2203</onright>
-                <onup>2203</onup>
+                <onleft>-</onleft>
+                <onright>-</onright>
+                <onup>-</onup>
                 <ondown>-</ondown>
                 <viewtype label="All Songs">list</viewtype>
                 <pagecontrol>60</pagecontrol>
@@ -605,10 +613,10 @@
                 <top>75</top>
                 <width>300</width>
                 <height>520</height>
-                <onleft>9000</onleft>
-                <onright>61</onright>
-                <onup>61</onup>
-                <ondown>9000</ondown>
+                <onleft>-</onleft>
+                <onright>-</onright>
+                <onup>-</onup>
+                <ondown>-</ondown>
                 <viewtype label="">list</viewtype>
                 <pagecontrol>61</pagecontrol>
                 <scrolltime>200</scrolltime>
@@ -1406,10 +1414,10 @@
                     <itemgap>2</itemgap>
                     <align>center</align>
                     <orientation>horizontal</orientation>
-                    <onleft>9000</onleft>
-                    <onright>9000</onright>
-                    <onup>50</onup>
-                    <ondown>49</ondown>
+                    <onleft>-</onleft>
+                    <onright>-</onright>
+                    <onup>-</onup>
+                    <ondown>-</ondown>
 <!--
                     <control type="button" id="5">
                         <description>Cast/Review</description>
