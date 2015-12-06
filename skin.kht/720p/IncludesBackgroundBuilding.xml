@@ -111,7 +111,6 @@
 			<visible>[Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)] + !Window.IsVisible(TVChannels) + !Window.IsVisible(RadioChannels)</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
--->
 		<control type="visualisation">
 			<left>0</left>
 			<top>0</top>
@@ -120,6 +119,7 @@
 			<visible>Player.HasAudio + !Skin.HasSetting(ShowBackgroundVis)</visible>
 			<include>VisibleFadeEffect</include>
 		</control>
+-->
 		<control type="videowindow">
 			<left>0</left>
 			<top>0</top>

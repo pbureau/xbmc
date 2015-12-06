@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
     <allowoverlay>no</allowoverlay>
-    <zorder>0</zorder>
+    <zorder>1</zorder>
     <controls>
         <include>CommonBackgroundMusicInfo</include>
         <control type="group">
@@ -30,7 +30,7 @@
             <!--- Album Details back image -->
             <control type="image">
                 <left>570</left>
-                <top>50</top>
+                <top>53</top>
                 <width>643</width>
                 <height>260</height>
                 <texture background="false" border="10">RecentAddedBack.png</texture>
@@ -38,7 +38,7 @@
             </control>
             <control type="image">
                 <left>570</left>
-                <top>50</top>
+                <top>53</top>
                 <width>643</width>
                 <height>160</height>
                 <texture background="false" border="10">RecentAddedBack.png</texture>

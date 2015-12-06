@@ -72,14 +72,22 @@
                               <visible>true</visible>
                               <thumb>icon_music.png</thumb>
                               <label>2</label>
-                              <!--<onclick>ActivateWindow(music,albums)</onclick>-->
-                              <onclick>ActivateWindow(music)</onclick>
+                              <onclick>ActivateWindow(music,albums)</onclick>
+                              <!--<onclick>ActivateWindow(music)</onclick>-->
                           </item>
+                          <!--
                           <item id="358">
                               <visible>true</visible>
                               <thumb>icon_music.png</thumb>
                               <label>2</label>
                               <onclick>ActivateWindow(musicfiles)</onclick>
+                          </item>
+                          -->
+                          <item id="359">
+                              <visible>true</visible>
+                              <thumb>icon_pictures.png</thumb>
+                              <label>$LOCALIZE[1]</label>
+                              <onclick>ActivateWindow(Pictures)</onclick>
                           </item>
                       </content>
                   </control>
