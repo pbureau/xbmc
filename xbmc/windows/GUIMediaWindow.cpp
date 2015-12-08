@@ -1487,7 +1487,7 @@ void CGUIMediaWindow::OnInitWindow()
     CFileItemPtr pItem = m_vecItems->Get(i);
     CFileItem * cItem  = pItem.get();
 
-    CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
+    CLog::Log(LOGDEBUG,"CGUIMediaWindow::OnInitWindow : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
             CURL::GetRedacted(cItem->GetPath()).c_str(),
             cItem->HasArt("thumb"),
             cItem->HasArt("poster"),

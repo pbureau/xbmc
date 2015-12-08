@@ -61,6 +61,7 @@ public:
 
 private:
   static void GetScale(unsigned int width, unsigned int height, unsigned int &out_width, unsigned int &out_height);
+  static void GetScaleCrop(unsigned int width, unsigned int height, unsigned int &out_width, unsigned int &out_height);
   static bool ScaleImage(uint8_t *in_pixels, unsigned int in_width, unsigned int in_height, unsigned int in_pitch,
                          uint8_t *out_pixels, unsigned int out_width, unsigned int out_height, unsigned int out_pitch,
                          CPictureScalingAlgorithm::Algorithm scalingAlgorithm = CPictureScalingAlgorithm::NoAlgorithm);

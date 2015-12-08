@@ -293,7 +293,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
     CBaseTexture *texture = CTexture::LoadFromFile(files[i], width, height, true);
     if (texture && texture->GetWidth() && texture->GetHeight())
     {
-      GetScale(texture->GetWidth(), texture->GetHeight(), width, height);
+      GetScaleCrop(texture->GetWidth(), texture->GetHeight(), width, height);
 
       // scale appropriately
       uint32_t *scaled = new uint32_t[width * height];
@@ -302,6 +302,31 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
       {
         if (!texture->GetOrientation() || OrientateImage(scaled, width, height, texture->GetOrientation()))
         {
+          // NOTICE: changed the scalling algorithm to use crop. Looks much better.
+          // normal algorithm is still present (commented) bellow.
+          unsigned int width_out  = tile_width - 2*tile_gap;
+          unsigned int height_out = tile_height - 2*tile_gap;
+
+          success = true; // Flag that we at least had one succesfull image processed
+          // drop into the texture
+          unsigned int posX = x*tile_width;
+          unsigned int posY = y*tile_height;
+          uint32_t *dest = buffer + posX + posY*g_advancedSettings.GetThumbSize();
+          uint32_t *src = scaled;
+
+          if(width > height)
+            src = scaled + (width-width_out)/2;
+          else
+            src = scaled + ((height-height_out)/2) * width;
+
+          for (unsigned int y = 0; y < height; ++y)
+          {
+            memcpy(dest, src, width_out*4);
+            dest += g_advancedSettings.GetThumbSize();
+            src += width;
+          }
+
+#if 0
           success = true; // Flag that we at least had one succesfull image processed
           // drop into the texture
           unsigned int posX = x*tile_width + (tile_width - width)/2;
@@ -314,6 +339,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
             dest += g_advancedSettings.GetThumbSize();
             src += width;
           }
+#endif
         }
       }
       delete[] scaled;
@@ -327,6 +353,15 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
 
   free(buffer);
   return success;
+}
+
+void CPicture::GetScaleCrop(unsigned int width, unsigned int height, unsigned int &out_width, unsigned int &out_height)
+{
+  float aspect = (float)width / height;
+  if ((unsigned int)(out_width / aspect + 0.5f) > out_height)
+    out_height = (unsigned int)(out_width / aspect + 0.5f);
+  else
+    out_width = (unsigned int)(out_height * aspect + 0.5f);
 }
 
 void CPicture::GetScale(unsigned int width, unsigned int height, unsigned int &out_width, unsigned int &out_height)
