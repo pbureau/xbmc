@@ -207,6 +207,48 @@ void CGUIWindowPictures::OnPrepareFileItems(CFileItemList& items)
 {
   CGUIMediaWindow::OnPrepareFileItems(items);
 
+  // Check is path is root
+  if(items.GetPath().empty())
+  {
+    CFileItemList* itemList_local = new CFileItemList;
+    CFileItemList* itemList_final = new CFileItemList;
+    //CLog::Log(LOGDEBUG,"%s:::%s root dir", __FILE__, __FUNCTION__);
+    // Parse all the sources in root directory to build the item list
+    for (int i=0;i<items.Size();++i )
+    {
+      CFileItemPtr pItem = items.Get(i);
+      //CLog::Log(LOGDEBUG,"%s:::%s item: %s", __FILE__, __FUNCTION__, CURL::GetRedacted(pItem->GetPath()).c_str());
+
+      if(!pItem->GetPath().empty() && !pItem->IsPath("addons://sources/image/"))
+      {
+        std::string directory = pItem->GetPath();
+        // check if the path contains a filter and temporarily remove it
+        // so that the retrieved list of items is unfiltered
+        bool canfilter = CanContainFilter(directory);
+        CURL url(directory);
+        if (canfilter && url.HasOption("filter"))
+          directory = RemoveParameterFromPath(directory, "filter");
+        // Get the path content
+        if(GetDirectory(directory, *itemList_local))
+        {
+          itemList_final->Append(*itemList_local);
+        }
+      }
+    }
+#if 0
+    for (int j=0;j<itemList_final->Size();++j )
+    {
+      CFileItemPtr pItem2 = itemList_final->Get(j);
+      CLog::Log(LOGDEBUG,"%s:::%s item in %i: %s", __FILE__, __FUNCTION__, 0, CURL::GetRedacted(pItem2->GetPath()).c_str());
+    }
+#endif
+    items.Assign(*itemList_final);
+    itemList_local->ClearItems();
+    itemList_final->ClearItems();
+    delete itemList_local;
+    delete itemList_final;
+  }
+
   for (int i=0;i<items.Size();++i )
     if (StringUtils::EqualsNoCase(items[i]->GetLabel(), "folder.jpg"))
       items.Remove(i);
