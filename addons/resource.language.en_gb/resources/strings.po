@@ -18075,3 +18075,9 @@ msgstr ""
 msgctxt "#38023"
 msgid "Set my rating"
 msgstr ""
+
+#: xbmc/dialogs/GUIDialogFileBrowser.cpp
+msgctxt "#38024"
+msgid "No USB drive detected, please connect external USB storage"
+msgstr ""
+

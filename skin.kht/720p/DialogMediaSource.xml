@@ -162,7 +162,7 @@
 				<onup>18</onup>
 				<onleft>60</onleft>
 				<onright>10</onright>
-				<ondown>13</ondown>
+				<ondown>21</ondown>
 			</control>
 			<control type="button" id="13">
 				<description>Add Path Button</description>
@@ -197,6 +197,23 @@
 				<onleft>60</onleft>
 				<onright>10</onright>
 				<ondown>12</ondown>
+			</control>
+			<control type="button" id="21">
+				<description>Browse Button Network</description>
+				<left>0</left>
+				<top>135</top>
+				<width>190</width>
+				<height>40</height>
+				<label>Add Share</label>
+				<font>font12_title</font>
+				<align>center</align>
+				<aligny>center</aligny>
+				<texturenofocus border="5">button-nofocus.png</texturenofocus>
+				<texturefocus border="5">button-focus.png</texturefocus>
+				<onup>11</onup>
+				<onleft>60</onleft>
+				<onright>10</onright>
+				<ondown>13</ondown>
 			</control>
 		</control>
 		<control type="label">

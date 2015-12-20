@@ -52,6 +52,15 @@
                         <label>Songs</label>
                         <align>center</align>
                     </control>
+                    <control type="button" id="60">
+                        <width>100</width>
+                        <description>Add Source</description>
+                        <textwidth>100</textwidth>
+                        <texturefocus>HomeSubFO.png</texturefocus>
+                        <texturenofocus>HomeSubNF.png</texturenofocus>
+                        <label>Add Source</label>
+                        <align>center</align>
+                    </control>
                 </control>
 		<control type="group" id="35000">
 <!--

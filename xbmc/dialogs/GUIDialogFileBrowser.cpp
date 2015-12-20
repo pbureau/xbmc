@@ -532,6 +532,12 @@ void CGUIDialogFileBrowser::OnClick(int iItem)
 
   if (pItem->m_bIsFolder)
   {
+    if (pItem->GetPath() == "special-path-ignore")
+    {
+      // special - do nothing
+      // FIXME: Rescan USB ??
+      return;
+    }
     if (pItem->GetPath() == "net://")
     { // special "Add Network Location" item
       OnAddNetworkLocation();
@@ -849,7 +855,20 @@ bool CGUIDialogFileBrowser::ShowAndGetSource(std::string &path, bool allowNetwor
   {
     browser->SetHeading(g_localizeStrings.Get(1023));
 
-    g_mediaManager.GetLocalDrives(shares);
+    if( path == "special://usbonly/" )
+    {
+      g_mediaManager.GetRemovableDrives(shares);
+      if (!shares.size())
+      {
+        CMediaSource share1;
+        //share1.strPath = "";
+        share1.strPath = "special-path-ignore";
+        share1.strName = g_localizeStrings.Get(38024);
+        shares.push_back(share1);
+      }
+    }
+    else
+      g_mediaManager.GetLocalDrives(shares);
 
     // Now the additional share if appropriate
     if (additionalShare)

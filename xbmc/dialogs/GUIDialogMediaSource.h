@@ -44,6 +44,7 @@ public:
   void SetTypeOfMedia(const std::string &type, bool editNotAdd = false);
 protected:
   void OnPathBrowse(int item);
+  void OnPathBrowseUSB(int item);
   void OnPath(int item);
   void OnPathAdd();
   void OnPathRemove(int item);

@@ -38,6 +38,7 @@
 #include "guilib/LocalizeStrings.h"
 #include "PasswordManager.h"
 #include "URL.h"
+#include "utils/log.h"
 
 #if defined(TARGET_ANDROID)
 #include "android/activity/XBMCApp.h"
@@ -55,6 +56,8 @@ using namespace XFILE;
 #define CONTROL_OK              18
 #define CONTROL_CANCEL          19
 #define CONTROL_CONTENT         20
+#define CONTROL_PATH_BROWSE_USB 21
+#define CONTROL_PATH_BROWSE_NET 22
 
 CGUIDialogMediaSource::CGUIDialogMediaSource(void)
     : CGUIDialog(WINDOW_DIALOG_MEDIA_SOURCE, "DialogMediaSource.xml")
@@ -88,6 +91,8 @@ bool CGUIDialogMediaSource::OnMessage(CGUIMessage& message)
         OnPath(GetSelectedItem());
       else if (iControl == CONTROL_PATH_BROWSE)
         OnPathBrowse(GetSelectedItem());
+      else if (iControl == CONTROL_PATH_BROWSE_USB)
+        OnPathBrowseUSB(GetSelectedItem());
       else if (iControl == CONTROL_PATH_ADD)
         OnPathAdd();
       else if (iControl == CONTROL_PATH_REMOVE)
@@ -214,6 +219,148 @@ bool CGUIDialogMediaSource::ShowAndEditMediaSource(const std::string &type, cons
   }
   dialog->m_paths->Clear();
   return confirmed;
+}
+
+void CGUIDialogMediaSource::OnPathBrowseUSB(int item)
+{
+  if (item < 0 || item > m_paths->Size()) return;
+  // Browse is called.  Open the filebrowser dialog.
+  // Ignore current path is best at this stage??
+  std::string path;
+  //bool allowNetworkShares(m_type != "programs");
+  bool allowNetworkShares(false);
+  VECSOURCES extraShares;
+
+  if (m_name != CUtil::GetTitleFromPath(m_paths->Get(item)->GetPath()))
+    m_bNameChanged=true;
+
+  std::string strStreams = g_localizeStrings.Get(33039); //"% Streams"
+  std::string strDevices = g_localizeStrings.Get(33040); //"% Devices"
+
+  if (m_type == "music")
+  {
+#if 0
+    CMediaSource share1;
+#if defined(TARGET_ANDROID)
+    // add the default android music directory
+    std::string path;
+    if (CXBMCApp::GetExternalStorage(path, "music") && !path.empty() && CDirectory::Exists(path))
+    {
+      share1.strPath = path;
+      share1.strName = g_localizeStrings.Get(20240);
+      share1.m_ignore = true;
+      extraShares.push_back(share1);
+    }
+#endif
+
+    // add the music playlist location
+    share1.strPath = "special://musicplaylists/";
+    share1.strName = g_localizeStrings.Get(20011);
+    share1.m_ignore = true;
+    extraShares.push_back(share1);
+
+    share1.strPath = "sap://";
+    share1.strName = StringUtils::Format(strStreams.c_str(), "SAP"); //"SAP Streams"
+    extraShares.push_back(share1);
+
+    if (CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH) != "")
+    {
+      share1.strPath = "special://recordings/";
+      share1.strName = g_localizeStrings.Get(21883);
+      extraShares.push_back(share1);
+    }
+#endif
+ }
+  else if (m_type == "video")
+  {
+    CMediaSource share1;
+#if defined(TARGET_ANDROID)
+    // add the default android video directory
+    std::string path;
+    if (CXBMCApp::GetExternalStorage(path, "videos") && !path.empty() && CFile::Exists(path))
+    {
+      share1.strPath = path;
+      share1.strName = g_localizeStrings.Get(20241);
+      share1.m_ignore = true;
+      extraShares.push_back(share1);
+    }
+#endif
+
+    // add the video playlist location
+    share1.m_ignore = true;
+    share1.strPath = "special://videoplaylists/";
+    share1.strName = g_localizeStrings.Get(20012);
+    extraShares.push_back(share1);
+
+    share1.strPath = "sap://";
+    share1.strName = StringUtils::Format(strStreams.c_str(), "SAP"); //"SAP Streams"
+    extraShares.push_back(share1);
+
+    // add the recordings dir as needed
+    if (CPVRDirectory::HasRecordings())
+    {
+      share1.strPath = "pvr://recordings/active/";
+      share1.strName = g_localizeStrings.Get(19017); // TV Recordings
+      extraShares.push_back(share1);
+    }
+    if (CPVRDirectory::HasDeletedRecordings())
+    {
+      share1.strPath = "pvr://recordings/deleted/";
+      share1.strName = g_localizeStrings.Get(19108); // Deleted TV Recordings
+      extraShares.push_back(share1);
+    }
+  }
+  else if (m_type == "pictures")
+  {
+    CMediaSource share1;
+#if defined(TARGET_ANDROID)
+    // add the default android music directory
+    std::string path;
+    if (CXBMCApp::GetExternalStorage(path, "pictures") && !path.empty() &&  CFile::Exists(path))
+    {
+      share1.strPath = path;
+      share1.strName = g_localizeStrings.Get(20242);
+      share1.m_ignore = true;
+      extraShares.push_back(share1);
+    }
+
+    path.clear();
+    if (CXBMCApp::GetExternalStorage(path, "photos") && !path.empty() &&  CFile::Exists(path))
+    {
+      share1.strPath = path;
+      share1.strName = g_localizeStrings.Get(20243);
+      share1.m_ignore = true;
+      extraShares.push_back(share1);
+    }
+#endif
+
+    share1.m_ignore = true;
+    if (CSettings::GetInstance().GetString(CSettings::SETTING_DEBUG_SCREENSHOTPATH) != "")
+    {
+      share1.strPath = "special://screenshots/";
+      share1.strName = g_localizeStrings.Get(20008);
+      extraShares.push_back(share1);
+    }
+  }
+  else if (m_type == "programs")
+  {
+    // nothing to add
+  }
+  path = "special://usbonly/";
+  //if (CGUIDialogFileBrowser::ShowAndGetSource(path, allowNetworkShares, extraShares.size()==0?NULL:&extraShares))
+  if (CGUIDialogFileBrowser::ShowAndGetSource(path, false, NULL))
+  {
+    if (item < m_paths->Size()) // if the skin does funky things, m_paths may have been cleared
+      m_paths->Get(item)->SetPath(path);
+    if (!m_bNameChanged || m_name.empty())
+    {
+      CURL url(path);
+      m_name = url.GetWithoutUserDetails();
+      URIUtils::RemoveSlashAtEnd(m_name);
+      m_name = CUtil::GetTitleFromPath(m_name);
+    }
+    UpdateButtons();
+  }
 }
 
 void CGUIDialogMediaSource::OnPathBrowse(int item)

@@ -78,6 +78,7 @@
 
 #define CONTROL_VIEW_START          50
 #define CONTROL_VIEW_END            59
+#define CONTROL_BTN_ADDSRC          60 
 
 #define PROPERTY_PATH_DB            "path.db"
 #define PROPERTY_SORT_ORDER         "sort.order"
@@ -269,6 +270,11 @@ bool CGUIMediaWindow::OnMessage(CGUIMessage& message)
           m_guiState->SaveViewAsControl(viewMode);
 
         UpdateButtons();
+        return true;
+      }
+      else if (iControl == CONTROL_BTN_ADDSRC) // add source
+      {
+        OnContextButton(0, CONTEXT_BUTTON_ADD_SOURCE);
         return true;
       }
       else if (iControl == CONTROL_BTNSORTASC) // sort asc
