@@ -136,9 +136,11 @@ void CMusicDatabase::CreateTables()
               " strMoods text, strStyles text, strThemes text, "
               " strReview text, strImage text, strLabel text, "
               " strType text, "
-              " iRating integer, "
+              " fRating FLOAT NOT NULL DEFAULT 0, "
+              " iUserrating INTEGER NOT NULL DEFAULT 0, "
               " lastScraped varchar(20) default NULL, "
-              " strReleaseType text)");
+              " strReleaseType text, "
+              " iVotes INTEGER NOT NULL DEFAULT 0)");
   CLog::Log(LOGINFO, "create album_artist table");
   m_pDS->exec("CREATE TABLE album_artist (idArtist integer, idAlbum integer, strJoinPhrase text, boolFeatured integer, iOrder integer, strArtist text)");
   CLog::Log(LOGINFO, "create album_genre table");
@@ -158,7 +160,8 @@ void CMusicDatabase::CreateTables()
               " iTimesPlayed integer, iStartOffset integer, iEndOffset integer, "
               " idThumb integer, "
               " lastplayed varchar(20) default NULL, "
-              " rating char default '0', comment text, mood text, dateAdded text)");
+              " rating FLOAT NOT NULL DEFAULT 0, userrating INTEGER NOT NULL DEFAULT 0, "
+              " comment text, mood text, dateAdded text, votes INTEGER NOT NULL DEFAULT 0)");
   CLog::Log(LOGINFO, "create song_artist table");
   m_pDS->exec("CREATE TABLE song_artist (idArtist integer, idSong integer, strJoinPhrase text, boolFeatured integer, iOrder integer, strArtist text)");
   CLog::Log(LOGINFO, "create song_genre table");
@@ -262,7 +265,11 @@ void CMusicDatabase::CreateViews()
               "        strFileName, "
               "        strMusicBrainzTrackID, "
               "        iTimesPlayed, iStartOffset, iEndOffset, "
-              "        lastplayed, rating, comment, "
+              "        lastplayed, "
+              "        song.rating, "
+              "        song.userrating, "
+              "        song.votes, "
+              "        comment, "
               "        song.idAlbum AS idAlbum, "
               "        strAlbum, "
               "        strPath, "
@@ -292,7 +299,9 @@ void CMusicDatabase::CreateViews()
               "        strLabel, "
               "        strType, "
               "        album.strImage as strImage, "
-              "        iRating, "
+              "        album.fRating, "
+              "        album.iUserrating, "
+              "        album.iVotes, "
               "        bCompilation, "
               "        (SELECT MIN(song.iTimesPlayed) FROM song WHERE song.idAlbum = album.idAlbum) AS iTimesPlayed, "
               "        strReleaseType, "
@@ -495,7 +504,9 @@ bool CMusicDatabase::AddAlbum(CAlbum& album)
                            song->iTimesPlayed, song->iStartOffset,
                            song->iEndOffset,
                            song->lastPlayed,
-                           song->rating);
+                           song->rating,
+                           song->userrating,
+                           song->votes);
 
 
     for (VECARTISTCREDITS::iterator artistCredit = song->artistCredits.begin(); artistCredit != song->artistCredits.end(); ++artistCredit)
@@ -524,7 +535,7 @@ bool CMusicDatabase::AddAlbum(CAlbum& album)
   return true;
 }
 
-bool CMusicDatabase::UpdateAlbum(CAlbum& album)
+bool CMusicDatabase::UpdateAlbum(CAlbum& album, bool OverrideTagData /* = true*/)
 {
   BeginTransaction();
 
@@ -537,56 +548,62 @@ bool CMusicDatabase::UpdateAlbum(CAlbum& album)
               album.strReview,
               album.thumbURL.m_xml.c_str(),
               album.strLabel, album.strType,
-              album.iRating, album.iYear, album.bCompilation, album.releaseType);
+              album.fRating, album.iUserrating, album.iVotes, album.iYear, album.bCompilation, album.releaseType);
 
-  // Add the album artists
-  DeleteAlbumArtistsByAlbum(album.idAlbum);
-  for (VECARTISTCREDITS::iterator artistCredit = album.artistCredits.begin(); artistCredit != album.artistCredits.end(); ++artistCredit)
+  if (OverrideTagData)
   {
-    artistCredit->idArtist = AddArtist(artistCredit->GetArtist(),
-                                       artistCredit->GetMusicBrainzArtistID());
-    AddAlbumArtist(artistCredit->idArtist,
-                   album.idAlbum,
-                   artistCredit->GetArtist(),
-                   artistCredit->GetJoinPhrase(),
-                   artistCredit == album.artistCredits.begin() ? false : true,
-                   std::distance(album.artistCredits.begin(), artistCredit));
-  }
-
-  for (VECSONGS::iterator song = album.songs.begin(); song != album.songs.end(); ++song)
-  {
-    UpdateSong(song->idSong,
-               song->strTitle,
-               song->strMusicBrainzTrackID,
-               song->strFileName,
-               song->strComment,
-               song->strMood,
-               song->strThumb,
-               song->GetArtistString(),
-               song->genre,
-               song->iTrack,
-               song->iDuration,
-               song->iYear,
-               song->iTimesPlayed,
-               song->iStartOffset,
-               song->iEndOffset,
-               song->lastPlayed,
-               song->rating);
-    DeleteSongArtistsBySong(song->idSong);
-    for (VECARTISTCREDITS::iterator artistCredit = song->artistCredits.begin(); artistCredit != song->artistCredits.end(); ++artistCredit)
+    // Add the album artists
+    DeleteAlbumArtistsByAlbum(album.idAlbum);
+    for (VECARTISTCREDITS::iterator artistCredit = album.artistCredits.begin(); artistCredit != album.artistCredits.end(); ++artistCredit)
     {
       artistCredit->idArtist = AddArtist(artistCredit->GetArtist(),
-                                         artistCredit->GetMusicBrainzArtistID());
-      AddSongArtist(artistCredit->idArtist,
-                    song->idSong,
-                    artistCredit->GetArtist(),
-                    artistCredit->GetJoinPhrase(),
-                    artistCredit == song->artistCredits.begin() ? false : true,
-                    std::distance(song->artistCredits.begin(), artistCredit));
+        artistCredit->GetMusicBrainzArtistID());
+      AddAlbumArtist(artistCredit->idArtist,
+        album.idAlbum,
+        artistCredit->GetArtist(),
+        artistCredit->GetJoinPhrase(),
+        artistCredit == album.artistCredits.begin() ? false : true,
+        std::distance(album.artistCredits.begin(), artistCredit));
     }
 
-    SaveCuesheet(song->strFileName, song->strCueSheet);
+    for (VECSONGS::iterator song = album.songs.begin(); song != album.songs.end(); ++song)
+    {
+      UpdateSong(song->idSong,
+        song->strTitle,
+        song->strMusicBrainzTrackID,
+        song->strFileName,
+        song->strComment,
+        song->strMood,
+        song->strThumb,
+        song->GetArtistString(),
+        song->genre,
+        song->iTrack,
+        song->iDuration,
+        song->iYear,
+        song->iTimesPlayed,
+        song->iStartOffset,
+        song->iEndOffset,
+        song->lastPlayed,
+        song->rating,
+        song->userrating,
+        song->votes);
+      DeleteSongArtistsBySong(song->idSong);
+      for (VECARTISTCREDITS::iterator artistCredit = song->artistCredits.begin(); artistCredit != song->artistCredits.end(); ++artistCredit)
+      {
+        artistCredit->idArtist = AddArtist(artistCredit->GetArtist(),
+          artistCredit->GetMusicBrainzArtistID());
+        AddSongArtist(artistCredit->idArtist,
+          song->idSong,
+          artistCredit->GetArtist(),
+          artistCredit->GetJoinPhrase(),
+          artistCredit == song->artistCredits.begin() ? false : true,
+          std::distance(song->artistCredits.begin(), artistCredit));
+      }
+
+      SaveCuesheet(song->strFileName, song->strCueSheet);
+    }
   }
+
   for (VECSONGS::const_iterator infoSong = album.infoSongs.begin(); infoSong != album.infoSongs.end(); ++infoSong)
     AddAlbumInfoSong(album.idAlbum, *infoSong);
 
@@ -604,7 +621,7 @@ int CMusicDatabase::AddSong(const int idAlbum,
                             const std::string &artistString, const std::vector<std::string>& genres,
                             int iTrack, int iDuration, int iYear,
                             const int iTimesPlayed, int iStartOffset, int iEndOffset,
-                            const CDateTime& dtLastPlayed, char rating)
+                            const CDateTime& dtLastPlayed, float rating, int userrating, int votes)
 {
   int idSong = -1;
   std::string strSQL;
@@ -638,7 +655,12 @@ int CMusicDatabase::AddSong(const int idAlbum,
     if (m_pDS->num_rows() == 0)
     {
       m_pDS->close();
-      strSQL=PrepareSQL("INSERT INTO song (idSong,idAlbum,idPath,strArtists,strGenres,strTitle,iTrack,iDuration,iYear,strFileName,strMusicBrainzTrackID,iTimesPlayed,iStartOffset,iEndOffset,lastplayed,rating,comment,mood) values (NULL, %i, %i, '%s', '%s', '%s', %i, %i, %i, '%s'",
+      strSQL=PrepareSQL("INSERT INTO song ("
+                                          "idSong,idAlbum,idPath,strArtists,strGenres,"
+                                          "strTitle,iTrack,iDuration,iYear,strFileName,"
+                                          "strMusicBrainzTrackID,iTimesPlayed,iStartOffset,"
+                                          "iEndOffset,lastplayed,rating,userrating,votes,comment,mood"
+                        ") values (NULL, %i, %i, '%s', '%s', '%s', %i, %i, %i, '%s'",
                     idAlbum,
                     idPath,
                     artistString.c_str(),
@@ -653,11 +675,11 @@ int CMusicDatabase::AddSong(const int idAlbum,
         strSQL += PrepareSQL(",'%s'", strMusicBrainzTrackID.c_str());
 
       if (dtLastPlayed.IsValid())
-        strSQL += PrepareSQL(",%i,%i,%i,'%s','%c','%s','%s')",
-                      iTimesPlayed, iStartOffset, iEndOffset, dtLastPlayed.GetAsDBDateTime().c_str(), rating, strComment.c_str(), strMood.c_str());
+        strSQL += PrepareSQL(",%i,%i,%i,'%s', %.1f, %i, %i, '%s','%s')",
+                      iTimesPlayed, iStartOffset, iEndOffset, dtLastPlayed.GetAsDBDateTime().c_str(), rating, userrating, votes, strComment.c_str(), strMood.c_str());
       else
-        strSQL += PrepareSQL(",%i,%i,%i,NULL,'%c','%s', '%s')",
-                      iTimesPlayed, iStartOffset, iEndOffset, rating, strComment.c_str(), strMood.c_str());
+        strSQL += PrepareSQL(",%i,%i,%i,NULL, %.1f, %i, %i,'%s', '%s')",
+                      iTimesPlayed, iStartOffset, iEndOffset, rating, userrating, votes, strComment.c_str(), strMood.c_str());
       m_pDS->exec(strSQL);
       idSong = (int)m_pDS->lastinsertid();
     }
@@ -665,7 +687,9 @@ int CMusicDatabase::AddSong(const int idAlbum,
     {
       idSong = m_pDS->fv("idSong").get_asInt();
       m_pDS->close();
-      UpdateSong(idSong, strTitle, strMusicBrainzTrackID, strPathAndFileName, strComment, strMood, strThumb, artistString, genres, iTrack, iDuration, iYear, iTimesPlayed, iStartOffset, iEndOffset, dtLastPlayed, rating);
+      UpdateSong( idSong, strTitle, strMusicBrainzTrackID, strPathAndFileName, strComment, strMood, strThumb, 
+                  artistString, genres, iTrack, iDuration, iYear, iTimesPlayed, iStartOffset, iEndOffset, 
+                  dtLastPlayed, rating, userrating, votes);
     }
 
     if (!strThumb.empty())
@@ -759,7 +783,9 @@ int CMusicDatabase::UpdateSong(int idSong, const CSong &song)
                     song.iStartOffset,
                     song.iEndOffset,
                     song.lastPlayed,
-                    song.rating);
+                    song.rating,
+                    song.userrating,
+                    song.votes);
 }
 
 int CMusicDatabase::UpdateSong(int idSong,
@@ -769,7 +795,7 @@ int CMusicDatabase::UpdateSong(int idSong,
                                const std::string& artistString, const std::vector<std::string>& genres,
                                int iTrack, int iDuration, int iYear,
                                int iTimesPlayed, int iStartOffset, int iEndOffset,
-                               const CDateTime& dtLastPlayed, char rating)
+                               const CDateTime& dtLastPlayed, float rating, int userrating, int votes)
 {
   if (idSong < 0)
     return -1;
@@ -792,11 +818,11 @@ int CMusicDatabase::UpdateSong(int idSong,
     strSQL += PrepareSQL(", strMusicBrainzTrackID = '%s'", strMusicBrainzTrackID.c_str());
 
   if (dtLastPlayed.IsValid())
-    strSQL += PrepareSQL(", iTimesPlayed = %i, iStartOffset = %i, iEndOffset = %i, lastplayed = '%s', rating = '%c', comment = '%s', mood = '%s'",
-                         iTimesPlayed, iStartOffset, iEndOffset, dtLastPlayed.GetAsDBDateTime().c_str(), rating, strComment.c_str(), strMood.c_str());
+    strSQL += PrepareSQL(", iTimesPlayed = %i, iStartOffset = %i, iEndOffset = %i, lastplayed = '%s', rating = %.1f, userrating = %i, votes = %i, comment = '%s', mood = '%s'",
+                         iTimesPlayed, iStartOffset, iEndOffset, dtLastPlayed.GetAsDBDateTime().c_str(), rating, userrating, votes, strComment.c_str(), strMood.c_str());
   else
-    strSQL += PrepareSQL(", iTimesPlayed = %i, iStartOffset = %i, iEndOffset = %i, lastplayed = NULL, rating = '%c', comment = '%s', mood = '%s'",
-                         iTimesPlayed, iStartOffset, iEndOffset, rating, strComment.c_str(), strMood.c_str());
+    strSQL += PrepareSQL(", iTimesPlayed = %i, iStartOffset = %i, iEndOffset = %i, lastplayed = NULL, rating = %.1f, userrating = %i, votes = %i, comment = '%s', mood = '%s'",
+                         iTimesPlayed, iStartOffset, iEndOffset, rating, userrating, votes, strComment.c_str(), strMood.c_str());
   strSQL += PrepareSQL(" WHERE idSong = %i", idSong);
 
   bool status = ExecuteQuery(strSQL);
@@ -902,7 +928,7 @@ int  CMusicDatabase::UpdateAlbum(int idAlbum,
                                  const std::string& strThemes, const std::string& strReview,
                                  const std::string& strImage, const std::string& strLabel,
                                  const std::string& strType,
-                                 int iRating, int iYear, bool bCompilation,
+                                 float fRating, int iUserrating, int iVotes, int iYear, bool bCompilation,
                                  CAlbum::ReleaseType releaseType)
 {
   if (idAlbum < 0)
@@ -913,13 +939,13 @@ int  CMusicDatabase::UpdateAlbum(int idAlbum,
                       " strAlbum = '%s', strArtists = '%s', strGenres = '%s', "
                       " strMoods = '%s', strStyles = '%s', strThemes = '%s', "
                       " strReview = '%s', strImage = '%s', strLabel = '%s', "
-                      " strType = '%s', iRating = %i,"
+                      " strType = '%s', fRating = %f, iUserrating = %i, iVotes = %i,"
                       " iYear = %i, bCompilation = %i, strReleaseType = '%s', "
                       " lastScraped = '%s'",
                       strAlbum.c_str(), strArtist.c_str(), strGenre.c_str(),
                       strMoods.c_str(), strStyles.c_str(), strThemes.c_str(),
                       strReview.c_str(), strImage.c_str(), strLabel.c_str(),
-                      strType.c_str(), iRating,
+                      strType.c_str(), fRating, iUserrating, iVotes,
                       iYear, bCompilation,
                       CAlbum::ReleaseTypeToString(releaseType).c_str(),
                       CDateTime::GetCurrentDateTime().GetAsDBDateTime().c_str());
@@ -1671,7 +1697,9 @@ CSong CMusicDatabase::GetSongFromDataset(const dbiplus::sql_record* const record
   song.iStartOffset = record->at(offset + song_iStartOffset).get_asInt();
   song.iEndOffset = record->at(offset + song_iEndOffset).get_asInt();
   song.strMusicBrainzTrackID = record->at(offset + song_strMusicBrainzTrackID).get_asString();
-  song.rating = record->at(offset + song_userrating).get_asChar();
+  song.rating = record->at(offset + song_rating).get_asFloat();
+  song.userrating = record->at(offset + song_userrating).get_asInt();
+  song.votes = record->at(offset + song_votes).get_asInt();
   song.strComment = record->at(offset + song_comment).get_asString();
   song.strMood = record->at(offset + song_mood).get_asString();
   song.bCompilation = record->at(offset + song_bCompilation).get_asInt() == 1;
@@ -1707,7 +1735,9 @@ void CMusicDatabase::GetFileItemFromDataset(const dbiplus::sql_record* const rec
   item->SetProperty("item_start", item->m_lStartOffset);
   item->m_lEndOffset = record->at(song_iEndOffset).get_asInt();
   item->GetMusicInfoTag()->SetMusicBrainzTrackID(record->at(song_strMusicBrainzTrackID).get_asString());
-  item->GetMusicInfoTag()->SetUserrating(record->at(song_userrating).get_asChar());
+  item->GetMusicInfoTag()->SetRating(record->at(song_rating).get_asFloat());
+  item->GetMusicInfoTag()->SetUserrating(record->at(song_userrating).get_asInt());
+  item->GetMusicInfoTag()->SetVotes(record->at(song_votes).get_asInt());
   item->GetMusicInfoTag()->SetComment(record->at(song_comment).get_asString());
   item->GetMusicInfoTag()->SetMood(record->at(song_mood).get_asString());
   item->GetMusicInfoTag()->SetPlayCount(record->at(song_iTimesPlayed).get_asInt());
@@ -1771,7 +1801,9 @@ CAlbum CMusicDatabase::GetAlbumFromDataset(const dbiplus::sql_record* const reco
   album.iYear = record->at(offset + album_iYear).get_asInt();
   if (imageURL)
     album.thumbURL.ParseString(record->at(offset + album_strThumbURL).get_asString());
-  album.iRating = record->at(offset + album_iRating).get_asInt();
+  album.fRating = record->at(offset + album_fRating).get_asFloat();
+  album.iUserrating = record->at(offset + album_iUserrating).get_asInt();
+  album.iVotes = record->at(offset + album_iVotes).get_asInt();
   album.iYear = record->at(offset + album_iYear).get_asInt();
   album.strReview = record->at(offset + album_strReview).get_asString();
   album.styles = StringUtils::Split(record->at(offset + album_strStyles).get_asString(), g_advancedSettings.m_musicItemSeparator);
@@ -2960,7 +2992,7 @@ bool CMusicDatabase::LookupCDDBInfo(bool bRequery/*=false*/)
         pDlgSelect->Open();
 
         // Has the user selected a match...
-        int iSelectedCD = pDlgSelect->GetSelectedLabel();
+        int iSelectedCD = pDlgSelect->GetSelectedItem();
         if (iSelectedCD >= 0)
         {
           // ...query cddb for the inexact match
@@ -3043,14 +3075,14 @@ void CMusicDatabase::DeleteCDDBInfo()
     pDlg->Open();
 
     // and wait till user selects one
-    int iSelectedAlbum = pDlg->GetSelectedLabel();
+    int iSelectedAlbum = pDlg->GetSelectedItem();
     if (iSelectedAlbum < 0)
     {
       mapCDDBIds.erase(mapCDDBIds.begin(), mapCDDBIds.end());
       return ;
     }
 
-    std::string strSelectedAlbum = pDlg->GetSelectedLabelText();
+    std::string strSelectedAlbum = pDlg->GetSelectedFileItem()->GetLabel();
     std::map<ULONG, std::string>::iterator it;
     for (it = mapCDDBIds.begin();it != mapCDDBIds.end();++it)
     {
@@ -3374,7 +3406,10 @@ bool CMusicDatabase::GetArtistsNav(const std::string& strBaseDir, CFileItemList&
     else if (idSong > 0)
       musicUrl.AddOption("songid", idSong);
 
-    musicUrl.AddOption("albumartistsonly", albumArtistsOnly);
+    // Override albumArtistsOnly parameter (usually externally set to SETTING_MUSICLIBRARY_SHOWCOMPILATIONARTISTS)
+    // when local option already present in muscic URL thus allowing it to be an option in custom nodes
+    if (!musicUrl.HasOption("albumartistsonly"))
+      musicUrl.AddOption("albumartistsonly", albumArtistsOnly);
 
     bool result = GetArtistsByWhere(musicUrl.ToString(), filter, items, sortDescription, countOnly);
     CLog::Log(LOGDEBUG,"Time to retrieve artists from dataset = %i", XbmcThreads::SystemClockMillis() - time);
@@ -4285,11 +4320,109 @@ void CMusicDatabase::UpdateTables(int version)
    {
      m_pDS->exec("DROP TABLE karaokedata");
    }
+   if (version < 57)
+   {
+     m_pDS->exec("ALTER TABLE song ADD userrating INTEGER NOT NULL DEFAULT 0");
+     m_pDS->exec("UPDATE song SET rating = 0 WHERE rating < 0 or rating IS NULL");
+     m_pDS->exec("UPDATE song SET userrating = rating * 2");
+     m_pDS->exec("UPDATE song SET rating = 0");
+     m_pDS->exec("CREATE TABLE song_new (idSong INTEGER PRIMARY KEY, "
+       " idAlbum INTEGER, idPath INTEGER, "
+       " strArtists TEXT, strGenres TEXT, strTitle VARCHAR(512), "
+       " iTrack INTEGER, iDuration INTEGER, iYear INTEGER, "
+       " dwFileNameCRC TEXT, "
+       " strFileName TEXT, strMusicBrainzTrackID TEXT, "
+       " iTimesPlayed INTEGER, iStartOffset INTEGER, iEndOffset INTEGER, "
+       " idThumb INTEGER, "
+       " lastplayed VARCHAR(20) DEFAULT NULL, "
+       " rating FLOAT DEFAULT 0, "
+       " userrating INTEGER DEFAULT 0, "
+       " comment TEXT, mood TEXT, dateAdded TEXT)");
+     m_pDS->exec("INSERT INTO song_new "
+       "(idSong, "
+       " idAlbum, idPath, "
+       " strArtists, strGenres, strTitle, "
+       " iTrack, iDuration, iYear, "
+       " dwFileNameCRC, "
+       " strFileName, strMusicBrainzTrackID, "
+       " iTimesPlayed, iStartOffset, iEndOffset, "
+       " idThumb, "
+       " lastplayed,"
+       " rating, userrating, "
+       " comment, mood, dateAdded)"
+       " SELECT "
+       " idSong, "
+       " idAlbum, idPath, "
+       " strArtists, strGenres, strTitle, "
+       " iTrack, iDuration, iYear, "
+       " dwFileNameCRC, "
+       " strFileName, strMusicBrainzTrackID, "
+       " iTimesPlayed, iStartOffset, iEndOffset, "
+       " idThumb, "
+       " lastplayed,"
+       " rating, "
+       " userrating, "
+       " comment, mood, dateAdded"
+       " FROM song");
+     m_pDS->exec("DROP TABLE song");
+     m_pDS->exec("ALTER TABLE song_new RENAME TO song");
+
+     m_pDS->exec("ALTER TABLE album ADD iUserrating INTEGER NOT NULL DEFAULT 0");
+     m_pDS->exec("UPDATE album SET iRating = 0 WHERE iRating < 0 or iRating IS NULL");
+     m_pDS->exec("CREATE TABLE album_new (idAlbum INTEGER PRIMARY KEY, "
+       " strAlbum VARCHAR(256), strMusicBrainzAlbumID TEXT, "
+       " strArtists TEXT, strGenres TEXT, "
+       " iYear INTEGER, idThumb INTEGER, "
+       " bCompilation INTEGER NOT NULL DEFAULT '0', "
+       " strMoods TEXT, strStyles TEXT, strThemes TEXT, "
+       " strReview TEXT, strImage TEXT, strLabel TEXT, "
+       " strType TEXT, "
+       " fRating FLOAT NOT NULL DEFAULT 0, "
+       " iUserrating INTEGER NOT NULL DEFAULT 0, "
+       " lastScraped VARCHAR(20) DEFAULT NULL, "
+       " strReleaseType TEXT)");
+     m_pDS->exec("INSERT INTO album_new "
+       "(idAlbum, "
+       " strAlbum, strMusicBrainzAlbumID, "
+       " strArtists, strGenres, "
+       " iYear, idThumb, "
+       " bCompilation, "
+       " strMoods, strStyles, strThemes, "
+       " strReview, strImage, strLabel, "
+       " strType, "
+       " fRating, "
+       " iUserrating, "
+       " lastScraped, "
+       " strReleaseType)"
+       " SELECT "
+       " idAlbum, "
+       " strAlbum, strMusicBrainzAlbumID, "
+       " strArtists, strGenres, "
+       " iYear, idThumb, "
+       " bCompilation, "
+       " strMoods, strStyles, strThemes, "
+       " strReview, strImage, strLabel, "
+       " strType, "
+       " iRating, "
+       " iUserrating, "
+       " lastScraped, "
+       " strReleaseType"
+       " FROM album");
+     m_pDS->exec("DROP TABLE album");
+     m_pDS->exec("ALTER TABLE album_new RENAME TO album");
+
+     m_pDS->exec("ALTER TABLE album ADD iVotes INTEGER NOT NULL DEFAULT 0");
+     m_pDS->exec("ALTER TABLE song ADD votes INTEGER NOT NULL DEFAULT 0");
+   }
+   if (version < 58)
+   {
+     m_pDS->exec("UPDATE album SET fRating = fRating * 2");
+   }
 }
 
 int CMusicDatabase::GetSchemaVersion() const
 {
-  return 56;
+  return 58;
 }
 
 unsigned int CMusicDatabase::GetSongIDs(const Filter &filter, std::vector<std::pair<int,int> > &songIDs)
@@ -4801,7 +4934,7 @@ bool CMusicDatabase::GetPaths(std::set<std::string> &paths)
   return false;
 }
 
-bool CMusicDatabase::SetSongUserrating(const std::string &filePath, char rating)
+bool CMusicDatabase::SetSongUserrating(const std::string &filePath, int userrating)
 {
   try
   {
@@ -4812,13 +4945,79 @@ bool CMusicDatabase::SetSongUserrating(const std::string &filePath, char rating)
     int songID = GetSongIDFromPath(filePath);
     if (-1 == songID) return false;
 
-    std::string sql = PrepareSQL("update song set rating='%c' where idSong = %i", rating, songID);
+    std::string sql = PrepareSQL("UPDATE song SET userrating='%i' WHERE idSong = %i", userrating, songID);
     m_pDS->exec(sql);
     return true;
   }
   catch (...)
   {
-    CLog::Log(LOGERROR, "%s (%s,%c) failed", __FUNCTION__, filePath.c_str(), rating);
+    CLog::Log(LOGERROR, "%s (%s,%i) failed", __FUNCTION__, filePath.c_str(), userrating);
+  }
+  return false;
+}
+
+bool CMusicDatabase::SetAlbumUserrating(const std::string &filePath, int userrating)
+{
+  try
+  {
+    if (filePath.empty()) return false;
+    if (NULL == m_pDB.get()) return false;
+    if (NULL == m_pDS.get()) return false;
+
+    int albumID = GetAlbumIdByPath(filePath);
+    if (-1 == albumID) return false;
+
+    std::string sql = PrepareSQL("UPDATE album SET iUserrating='%i' WHERE idAlbum = %i", userrating, albumID);
+    m_pDS->exec(sql);
+    return true;
+  }
+  catch (...)
+  {
+    CLog::Log(LOGERROR, "%s (%s,%i) failed", __FUNCTION__, filePath.c_str(), userrating);
+  }
+  return false;
+}
+
+bool CMusicDatabase::SetSongVotes(const std::string &filePath, int votes)
+{
+  try
+  {
+    if (filePath.empty()) return false;
+    if (NULL == m_pDB.get()) return false;
+    if (NULL == m_pDS.get()) return false;
+
+    int songID = GetSongIDFromPath(filePath);
+    if (-1 == songID) return false;
+
+    std::string sql = PrepareSQL("UPDATE song SET votes='%i' WHERE idSong = %i", votes, songID);
+    m_pDS->exec(sql);
+    return true;
+  }
+  catch (...)
+  {
+    CLog::Log(LOGERROR, "%s (%s,%i) failed", __FUNCTION__, filePath.c_str(), votes);
+  }
+  return false;
+}
+
+bool CMusicDatabase::SetAlbumVotes(const std::string &filePath, int votes)
+{
+  try
+  {
+    if (filePath.empty()) return false;
+    if (NULL == m_pDB.get()) return false;
+    if (NULL == m_pDS.get()) return false;
+
+    int albumID = GetAlbumIdByPath(filePath);
+    if (-1 == albumID) return false;
+
+    std::string sql = PrepareSQL("UPDATE album SET iVotes='%i' WHERE idAlbum = %i", votes, albumID);
+    m_pDS->exec(sql);
+    return true;
+  }
+  catch (...)
+  {
+    CLog::Log(LOGERROR, "%s (%s,%i) failed", __FUNCTION__, filePath.c_str(), votes);
   }
   return false;
 }
@@ -5314,7 +5513,7 @@ void CMusicDatabase::ImportFromXML(const std::string &xmlFile)
         CAlbum importedAlbum;
         importedAlbum.Load(entry);
         strTitle = importedAlbum.strAlbum;
-        int idAlbum = GetAlbumByName(importedAlbum.strAlbum, importedAlbum.GetAlbumArtist());
+        int idAlbum = GetAlbumByName(importedAlbum.strAlbum, importedAlbum.GetAlbumArtistString());
         if (idAlbum > -1)
         {
           CAlbum album;
@@ -5387,8 +5586,12 @@ void CMusicDatabase::SetPropertiesFromAlbum(CFileItem& item, const CAlbum& album
   item.SetProperty("album_genre", StringUtils::Join(album.genre, g_advancedSettings.m_musicItemSeparator));
   item.SetProperty("album_genre_array", album.genre);
   item.SetProperty("album_title", album.strAlbum);
-  if (album.iRating > 0)
-    item.SetProperty("album_rating", album.iRating);
+  if (album.fRating > 0)
+    item.SetProperty("album_rating", album.fRating);
+  if (album.iUserrating > 0)
+    item.SetProperty("album_userrating", album.iUserrating);
+  if (album.iVotes > 0)
+    item.SetProperty("album_votes", album.iVotes);
   item.SetProperty("album_releasetype", CAlbum::ReleaseTypeToString(album.releaseType));
 }
 
@@ -5406,7 +5609,7 @@ void CMusicDatabase::SetPropertiesForFileItem(CFileItem& item)
   int idAlbum = item.GetMusicInfoTag()->GetAlbumId();
   if (idAlbum <= 0)
     idAlbum = GetAlbumByName(item.GetMusicInfoTag()->GetAlbum(),
-                             item.GetMusicInfoTag()->GetArtist());
+                             item.GetMusicInfoTag()->GetArtistString());
   if (idAlbum > -1)
   {
     CAlbum album;

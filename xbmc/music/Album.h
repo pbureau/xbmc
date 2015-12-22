@@ -37,7 +37,13 @@ class CAlbum
 {
 public:
   CAlbum(const CFileItem& item);
-  CAlbum() { idAlbum = 0; iRating = 0; iYear = 0; iTimesPlayed = 0; dateAdded.Reset(); lastPlayed.Reset(); releaseType = Album; };
+  CAlbum() : idAlbum{0}
+    , fRating{0}
+    , iYear{0}
+    , bCompilation{false}
+    , iTimesPlayed{0}
+    , releaseType{Album}
+  {};
   bool operator<(const CAlbum &a) const;
   void MergeScrapedAlbum(const CAlbum& album, bool override = true);
 
@@ -59,7 +65,9 @@ public:
     strType.clear();
     strPath.clear();
     m_strDateOfRelease.clear();
-    iRating=-1;
+    fRating = -1;
+    iUserrating = -1;
+    iVotes = -1;
     iYear=-1;
     bCompilation = false;
     iTimesPlayed = 0;
@@ -131,7 +139,9 @@ public:
   std::string strType;
   std::string strPath;
   std::string m_strDateOfRelease;
-  int iRating;
+  float fRating;
+  int iUserrating;
+  int iVotes;
   int iYear;
   bool bCompilation;
   int iTimesPlayed;

@@ -98,6 +98,7 @@ typedef unsigned long kernel_ulong_t;
 #include "utils/log.h"
 #include "input/touch/generic/GenericTouchActionHandler.h"
 #include "input/touch/generic/GenericTouchInputHandler.h"
+#include "settings/AdvancedSettings.h"
 
 #ifndef BITS_PER_LONG
 #define BITS_PER_LONG        (sizeof(long) * 8)
@@ -255,13 +256,24 @@ KeyMap keyMap[] = {
   { KEY_PRINT         , XBMCK_PRINT       },
   { KEY_QUESTION      , XBMCK_HELP        },
   { KEY_BACK          , XBMCK_BACKSPACE   },
+  { KEY_ZOOM          , XBMCK_ZOOM        },
+  { KEY_TEXT          , XBMCK_TEXT        },
+  { KEY_FAVORITES     , XBMCK_FAVORITES   },
+  { KEY_RED           , XBMCK_RED         },
+  { KEY_GREEN         , XBMCK_GREEN       },
+  { KEY_YELLOW        , XBMCK_YELLOW      },
+  { KEY_BLUE          , XBMCK_BLUE        },
+  { KEY_HOMEPAGE      , XBMCK_HOMEPAGE    },
+  { KEY_MAIL          , XBMCK_LAUNCH_MAIL },
+  { KEY_SEARCH        , XBMCK_BROWSER_SEARCH},
+  { KEY_FILE          , XBMCK_LAUNCH_FILE_BROWSER},
+  { KEY_SELECT        , XBMCK_RETURN      },
+  { KEY_CONFIG        , XBMCK_CONFIG      },
   // The Little Black Box Remote Additions
   { 384               , XBMCK_LEFT        }, // Red
   { 378               , XBMCK_RIGHT       }, // Green
   { 381               , XBMCK_UP          }, // Yellow
   { 366               , XBMCK_DOWN        }, // Blue
-  // Rii i7 Home button / wetek openelec remote (code 172)
-  { KEY_HOMEPAGE      , XBMCK_HOME        },
 };
 
 typedef enum
@@ -642,13 +654,13 @@ bool CLinuxInputDevice::AbsEvent(const struct input_event& levt, XBMC_Event& dev
   switch (levt.code)
   {
   case ABS_X:
-    m_mouseX = levt.value;
+    m_mouseX = (int)((float)levt.value * g_advancedSettings.m_screenAlign_xStretchFactor) + g_advancedSettings.m_screenAlign_xOffset; // stretch and shift touch x coordinates
     break;
 
   case ABS_Y:
-    m_mouseY = levt.value;
+    m_mouseY = (int)((float)levt.value * g_advancedSettings.m_screenAlign_yStretchFactor) + g_advancedSettings.m_screenAlign_yOffset; // stretch and shift touch y coordinates
     break;
-  
+
   case ABS_MISC:
     remoteStatus = levt.value & 0xFF;
     break;
@@ -885,26 +897,6 @@ XBMC_Event CLinuxInputDevice::ReadEvent()
 void CLinuxInputDevice::SetupKeyboardAutoRepeat(int fd)
 {
   bool enable = true;
-
-#if defined(HAS_LIBAMCODEC)
-  if (aml_get_device_type() == AML_DEVICE_TYPE_M1 || aml_get_device_type() == AML_DEVICE_TYPE_M3)
-  {
-    // ignore the native aml driver named 'key_input',
-    //  it is the dedicated power key handler (am_key_input)
-    if (strncmp(m_deviceName, "key_input", strlen("key_input")) == 0)
-      return;
-    // ignore the native aml driver named 'aml_keypad',
-    //  it is the dedicated IR remote handler (amremote)
-    else if (strncmp(m_deviceName, "aml_keypad", strlen("aml_keypad")) == 0)
-      return;
-
-    // turn off any keyboard autorepeat, there is a kernel bug
-    // where if the cpu is max'ed then key up is missed and
-    // we get a flood of EV_REP that never stop until next
-    // key down/up. Very nasty when seeking during video playback.
-    enable = false;
-  }
-#endif
 
   if (enable)
   {

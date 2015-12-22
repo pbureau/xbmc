@@ -51,6 +51,11 @@ public:
   CArtist * m_last_artist;
 
   void DoScan(const std::string &strPath);
+
+  /*! \brief Prompt the user if he wants to start a scan for this folder
+  \param path the path to assign content for
+  */
+  static void OnAssignContent(const std::string &path);
 protected:
   virtual void OnInitWindow();
   /*!

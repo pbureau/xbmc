@@ -22,7 +22,9 @@
 
 #include <memory>
 #include "threads/SystemClock.h"
+#include "guilib/Resolution.h"
 #include "cores/playercorefactory/PlayerCoreFactory.h"
+#include "cores/IPlayer.h"
 
 typedef enum
 {
@@ -77,6 +79,29 @@ public:
   PlayBackRet OpenFile(const CFileItem& item, const CPlayerOptions& options);
   void ResetPlayer() { m_eCurrentPlayer = EPC_NONE; }
   void SetPlaySpeed(int iSpeed, bool bApplicationMuted);
+
+  void FrameMove();
+  void FrameWait(int ms);
+  bool HasFrame();
+  void Render(bool clear, uint32_t alpha = 255, bool gui = true);
+  void AfterRender();
+  void FlushRenderer();
+  void SetRenderViewMode(int mode);
+  float GetRenderAspectRatio();
+  RESOLUTION GetRenderResolution();
+  void TriggerUpdateResolution();
+  bool IsRenderingVideo();
+  bool IsRenderingGuiLayer();
+  bool IsRenderingVideoLayer();
+  bool Supports(EDEINTERLACEMODE mode);
+  bool Supports(EINTERLACEMETHOD method);
+  bool Supports(ESCALINGMETHOD method);
+  bool Supports(ERENDERFEATURE feature);
+  unsigned int RenderCaptureAlloc();
+  void RenderCapture(unsigned int captureId, unsigned int width, unsigned int height, int flags = 0);
+  void RenderCaptureRelease(unsigned int captureId);
+  bool RenderCaptureGetPixels(unsigned int captureId, unsigned int millis, uint8_t *buffer, unsigned int size);
+  std::string GetRenderVSyncState();
 
   // proxy calls
   int   PreloadFileInfo(const CFileItem& file, const CPlayerOptions &options);

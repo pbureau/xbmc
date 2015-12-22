@@ -393,7 +393,9 @@ static const ActionMapping windows[] =
     { "extendedprogressdialog"   , WINDOW_DIALOG_EXT_PROGRESS },
     { "mediafilter"              , WINDOW_DIALOG_MEDIA_FILTER },
     { "addon"                    , WINDOW_ADDON_START },
-    { "eventlog"                 , WINDOW_EVENT_LOG}
+    { "eventlog"                 , WINDOW_EVENT_LOG},
+    { "tvtimerrules"             , WINDOW_TV_TIMER_RULES},
+    { "radiotimerrules"          , WINDOW_RADIO_TIMER_RULES}
 };
 
 static const ActionMapping mousekeys[] =
@@ -1325,8 +1327,20 @@ void CButtonTranslator::MapWindowActions(TiXmlNode *pWindow, int windowID)
         else if (type == "appcommand")
             buttonCode = TranslateAppCommand(pButton->Value());
 
-        if (buttonCode && pButton->FirstChild())
-          MapAction(buttonCode, pButton->FirstChild()->Value(), map);
+        if (buttonCode)
+        {
+          if (pButton->FirstChild() && pButton->FirstChild()->Value()[0])
+            MapAction(buttonCode, pButton->FirstChild()->Value(), map);
+          else
+          {
+            buttonMap::iterator it = map.find(buttonCode);
+            while (it != map.end())
+            {
+              map.erase(it);
+              it = map.find(buttonCode);
+            }
+          }
+        }
         pButton = pButton->NextSiblingElement();
       }
 

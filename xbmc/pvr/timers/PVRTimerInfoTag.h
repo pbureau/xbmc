@@ -127,6 +127,15 @@ namespace PVR
         || m_state == PVR_TIMER_STATE_ERROR;
     }
 
+    /*!
+     * @return True if this timer won't result in a recording because it is broken for some reason, false otherwise
+     */
+    bool IsBroken(void) const
+    {
+      return m_state == PVR_TIMER_STATE_CONFLICT_NOK
+        || m_state == PVR_TIMER_STATE_ERROR;
+    }
+
     bool IsRecording(void) const { return m_state == PVR_TIMER_STATE_RECORDING; }
 
     /*!
@@ -179,11 +188,6 @@ namespace PVR
 
     unsigned int MarginEnd(void) const { return m_iMarginEnd; }
     void SetMarginEnd(unsigned int iMinutes) { m_iMarginEnd = iMinutes; }
-
-    /*!
-     * @brief Show a notification for this timer in the UI
-     */
-    void QueueNotification(void) const;
 
     /*!
      * @brief Get the text for the notification.

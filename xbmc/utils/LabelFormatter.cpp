@@ -164,17 +164,17 @@ std::string CLabelFormatter::GetMaskContent(const CMaskString &mask, const CFile
   {
   case 'N':
     if (music && music->GetTrackNumber() > 0)
-      value = StringUtils::Format("%02.2i", music->GetTrackNumber());
+      value = StringUtils::Format("%2.2i", music->GetTrackNumber());
     if (movie&& movie->m_iTrack > 0)
-      value = StringUtils::Format("%02.2i", movie->m_iTrack);
+      value = StringUtils::Format("%2.2i", movie->m_iTrack);
     break;
   case 'S':
     if (music && music->GetDiscNumber() > 0)
-      value = StringUtils::Format("%02.2i", music->GetDiscNumber());
+      value = StringUtils::Format("%2.2i", music->GetDiscNumber());
     break;
   case 'A':
     if (music && music->GetArtistString().size())
-      value = music->GetArtistString(); 
+      value = music->GetArtistString();
     if (movie && movie->m_artist.size())
       value = StringUtils::Join(movie->m_artist, g_advancedSettings.m_videoItemSeparator);
     break;
@@ -250,8 +250,8 @@ std::string CLabelFormatter::GetMaskContent(const CMaskString &mask, const CFile
       value = item->m_dateTime.GetAsLocalizedTime("", false);
     break;
   case 'R': // rating
-    if (music && music->GetUserrating() != '0')
-      value.assign(1, music->GetUserrating());
+    if (music && music->GetRating() != 0.f)
+      value = StringUtils::Format("%.1f", music->GetRating());
     else if (movie && movie->m_fRating != 0.f)
       value = StringUtils::Format("%.1f", movie->m_fRating);
     break;
@@ -271,9 +271,9 @@ std::string CLabelFormatter::GetMaskContent(const CMaskString &mask, const CFile
     if (movie && movie->m_iEpisode > 0)
     { // episode number
       if (movie->m_iSeason == 0)
-        value = StringUtils::Format("S%02.2i", movie->m_iEpisode);
+        value = StringUtils::Format("S%2.2i", movie->m_iEpisode);
       else
-        value = StringUtils::Format("%02.2i", movie->m_iEpisode);
+        value = StringUtils::Format("%2.2i", movie->m_iEpisode);
     }
     break;
   case 'P':
@@ -284,9 +284,9 @@ std::string CLabelFormatter::GetMaskContent(const CMaskString &mask, const CFile
     if (movie && movie->m_iEpisode > 0)
     { // season*100+episode number
       if (movie->m_iSeason == 0)
-        value = StringUtils::Format("S%02.2i", movie->m_iEpisode);
+        value = StringUtils::Format("S%2.2i", movie->m_iEpisode);
       else
-        value = StringUtils::Format("%ix%02.2i", movie->m_iSeason,movie->m_iEpisode);
+        value = StringUtils::Format("%ix%2.2i", movie->m_iSeason,movie->m_iEpisode);
     }
     break;
   case 'O':
@@ -336,6 +336,8 @@ std::string CLabelFormatter::GetMaskContent(const CMaskString &mask, const CFile
   case 'r': // userrating
     if (movie && movie->m_iUserRating != 0)
       value = StringUtils::Format("%i", movie->m_iUserRating);
+    if (music && music->GetUserrating() != 0)
+      value = StringUtils::Format("%i", music->GetUserrating());
     break;
   case 't': // Date Taken
     if (pic && pic->GetDateTimeTaken().IsValid())
@@ -439,6 +441,9 @@ void CLabelFormatter::FillMusicMaskContent(const char mask, const std::string &v
     tag->SetDuration(StringUtils::TimeStringToSeconds(value));
     break;
   case 'R': // rating
+    tag->SetRating(value[0]);
+    break;
+  case 'r': // userrating
     tag->SetUserrating(value[0]);
     break;
   }

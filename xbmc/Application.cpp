@@ -33,7 +33,7 @@
 #include "URL.h"
 #include "guilib/TextureManager.h"
 #include "cores/IPlayer.h"
-#include "cores/dvdplayer/DVDFileInfo.h"
+#include "cores/VideoPlayer/DVDFileInfo.h"
 #include "cores/AudioEngine/AEFactory.h"
 #include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
@@ -117,9 +117,6 @@
 #include "filesystem/SFTPFile.h"
 #endif
 #include "PartyModeManager.h"
-#ifdef HAS_VIDEO_PLAYBACK
-#include "cores/VideoRenderers/RenderManager.h"
-#endif
 #include "network/ZeroconfBrowser.h"
 #ifndef TARGET_POSIX
 #include "threads/platform/win/Win32Exception.h"
@@ -183,11 +180,11 @@
 #endif
 
 #ifdef TARGET_DARWIN_OSX
-#include "osx/CocoaInterface.h"
-#include "osx/XBMCHelper.h"
+#include "platform/darwin/osx/CocoaInterface.h"
+#include "platform/darwin/osx/XBMCHelper.h"
 #endif
 #ifdef TARGET_DARWIN
-#include "osx/DarwinUtils.h"
+#include "platform/darwin/DarwinUtils.h"
 #endif
 
 #ifdef HAS_DVD_DRIVE
@@ -207,9 +204,9 @@
 #endif
 
 #if defined(TARGET_ANDROID)
-#include "android/activity/XBMCApp.h"
-#include "android/activity/AndroidFeatures.h"
-#include "android/jni/Build.h"
+#include "platform/android/activity/XBMCApp.h"
+#include "platform/android/activity/AndroidFeatures.h"
+#include "platform/android/jni/Build.h"
 #endif
 
 #ifdef TARGET_WINDOWS
@@ -259,6 +256,8 @@ using KODI::MESSAGING::HELPERS::DialogResponse;
 //extern IDirectSoundRenderer* m_pAudioDecoder;
 CApplication::CApplication(void)
   : m_pPlayer(new CApplicationPlayer)
+  , m_saveSkinOnUnloading(true)
+  , m_autoExecScriptExecuted(false)
   , m_itemCurrentFile(new CFileItem)
   , m_stackFileItemToUpdate(new CFileItem)
   , m_progressTrackingVideoResumeBookmark(*new CBookmark)
@@ -281,7 +280,6 @@ CApplication::CApplication(void)
   m_bPlaybackStarting = false;
   m_ePlayState = PLAY_STATE_NONE;
   m_skinReverting = false;
-  m_loggingIn = false;
 
 #ifdef HAS_GLX
   XInitThreads();
@@ -443,7 +441,6 @@ bool CApplication::Create()
   CApplicationMessenger::GetInstance().RegisterReceiver(this);
   CApplicationMessenger::GetInstance().RegisterReceiver(&g_playlistPlayer);
   CApplicationMessenger::GetInstance().RegisterReceiver(&g_infoManager);
-  CApplicationMessenger::GetInstance().RegisterReceiver(&g_AEDSPManager);
 
   for (int i = RES_HDTV_1080i; i <= RES_PAL60_16x9; i++)
   {
@@ -976,7 +973,7 @@ bool CApplication::InitDirectoriesOSX()
 
 #if defined(TARGET_DARWIN_IOS)
   std::string fontconfigPath;
-  fontconfigPath = appPath + "/system/players/dvdplayer/etc/fonts/fonts.conf";
+  fontconfigPath = appPath + "/system/players/VideoPlayer/etc/fonts/fonts.conf";
   setenv("FONTCONFIG_FILE", fontconfigPath.c_str(), 0);
 #endif
 
@@ -1111,7 +1108,7 @@ bool CApplication::Initialize()
   CEventLog::GetInstance().Add(EventPtr(new CNotificationEvent(
     StringUtils::Format(g_localizeStrings.Get(177).c_str(), g_sysinfo.GetAppName().c_str()),
     StringUtils::Format(g_localizeStrings.Get(178).c_str(), g_sysinfo.GetAppName().c_str()),
-    "special://xbmc/media/icon256x256.png", EventLevelBasic)));
+    "special://xbmc/media/icon256x256.png", EventLevel::Basic)));
 
   g_peripherals.Initialise();
 
@@ -1209,7 +1206,7 @@ bool CApplication::Initialize()
   if (!CProfilesManager::GetInstance().UsingLoginScreen())
   {
     UpdateLibraries();
-    SetLoggingIn(true);
+    SetLoggingIn(false);
   }
 
   m_slowTimer.StartZero();
@@ -1364,14 +1361,14 @@ void CApplication::OnSettingChanged(const CSetting *setting)
       {
         m_skinReloadSettingIgnore = skinRelatedSetting->GetId();
         skinRelatedSetting->Reset();
-    }
+      }
 
       skinRelatedSetting = CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKINTHEME);
       if (!skinRelatedSetting->IsDefault())
-    {
+      {
         m_skinReloadSettingIgnore = skinRelatedSetting->GetId();
         skinRelatedSetting->Reset();
-    }
+      }
 
       setting = CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_FONT);
       if (!setting->IsDefault())
@@ -1379,18 +1376,18 @@ void CApplication::OnSettingChanged(const CSetting *setting)
         m_skinReloadSettingIgnore = skinRelatedSetting->GetId();
         skinRelatedSetting->Reset();
       }
-  }
-  else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINTHEME)
-  {
+    }
+    else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINTHEME)
+    {
       CSettingString* skinColorsSetting = static_cast<CSettingString*>(CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKINCOLORS));
       m_skinReloadSettingIgnore = skinColorsSetting->GetId();
 
       // we also need to adjust the skin color setting
-    std::string colorTheme = ((CSettingString*)setting)->GetValue();
-    URIUtils::RemoveExtension(colorTheme);
+      std::string colorTheme = ((CSettingString*)setting)->GetValue();
+      URIUtils::RemoveExtension(colorTheme);
       if (setting->IsDefault() || StringUtils::EqualsNoCase(colorTheme, "Textures"))
         skinColorsSetting->Reset();
-    else
+      else
         skinColorsSetting->SetValue(colorTheme);
     }
 
@@ -1494,13 +1491,6 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
       CSettingBool *useamcodec = (CSettingBool*)setting;
       return useamcodec->SetValue(false);
     }
-  }
-#endif
-#if defined(TARGET_ANDROID)
-  if (setting->GetId() == CSettings::SETTING_VIDEOPLAYER_USESTAGEFRIGHT)
-  {
-    CSettingBool *usestagefright = (CSettingBool*)setting;
-    return usestagefright->SetValue(false);
   }
 #endif
 #if defined(TARGET_DARWIN_OSX)
@@ -1633,18 +1623,17 @@ bool CApplication::LoadSkin(const SkinPtr& skin)
 
   bool bPreviousPlayingState=false;
   bool bPreviousRenderingState=false;
-  if (g_application.m_pPlayer->IsPlayingVideo())
+  if (m_pPlayer->IsPlayingVideo())
   {
-    bPreviousPlayingState = !g_application.m_pPlayer->IsPausedPlayback();
+    bPreviousPlayingState = !m_pPlayer->IsPausedPlayback();
     if (bPreviousPlayingState)
-      g_application.m_pPlayer->Pause();
-#ifdef HAS_VIDEO_PLAYBACK
+      m_pPlayer->Pause();
+    m_pPlayer->FlushRenderer();
     if (g_windowManager.GetActiveWindow() == WINDOW_FULLSCREEN_VIDEO)
     {
       g_windowManager.ActivateWindow(WINDOW_HOME);
       bPreviousRenderingState = true;
     }
-#endif
   }
   // close the music and video overlays (they're re-opened automatically later)
   CSingleLock lock(g_graphicsContext);
@@ -1734,10 +1723,10 @@ bool CApplication::LoadSkin(const SkinPtr& skin)
     }
   }
 
-  if (g_application.m_pPlayer->IsPlayingVideo())
+  if (m_pPlayer->IsPlayingVideo())
   {
     if (bPreviousPlayingState)
-      g_application.m_pPlayer->Pause();
+      m_pPlayer->Pause();
     if (bPreviousRenderingState)
       g_windowManager.ActivateWindow(WINDOW_FULLSCREEN_VIDEO);
   }
@@ -1748,8 +1737,10 @@ void CApplication::UnloadSkin(bool forReload /* = false */)
 {
   CLog::Log(LOGINFO, "Unloading old skin %s...", forReload ? "for reload " : "");
 
-  if (g_SkinInfo != nullptr)
+  if (g_SkinInfo != nullptr && m_saveSkinOnUnloading)
     g_SkinInfo->SaveSettings();
+  else if (!m_saveSkinOnUnloading)
+    m_saveSkinOnUnloading = true;
 
   g_audioManager.Enable(false);
 
@@ -1913,7 +1904,7 @@ void CApplication::Render()
     m_bPresentFrame = false;
     if (!extPlayerActive && g_graphicsContext.IsFullScreenVideo() && !m_pPlayer->IsPausedPlayback())
     {
-      m_bPresentFrame = g_renderManager.HasFrame();
+      m_bPresentFrame = m_pPlayer->HasFrame();
       if (vsync_mode == VSYNC_DISABLED)
         vsync = false;
     }
@@ -2012,6 +2003,12 @@ void CApplication::Render()
 
   lock.Leave();
 
+  if (g_graphicsContext.IsFullScreenVideo())
+  {
+    g_Windowing.FinishPipeline();
+  }
+  m_pPlayer->AfterRender();
+
   //when nothing has been rendered for m_guiDirtyRegionNoFlipTimeout milliseconds,
   //we don't call g_graphicsContext.Flip() anymore, this saves gpu and cpu usage
   bool flip;
@@ -2036,14 +2033,11 @@ void CApplication::Render()
 
   if (!extPlayerActive && g_graphicsContext.IsFullScreenVideo() && !m_pPlayer->IsPausedPlayback())
   {
-    g_renderManager.FrameWait(100);
+    m_pPlayer->FrameWait(100);
   }
 
   m_lastFrameTime = XbmcThreads::SystemClockMillis();
   CTimeUtils::UpdateFrameTime(flip, vsync);
-
-  g_renderManager.UpdateResolution();
-  g_renderManager.ManageCaptures();
 }
 
 void CApplication::SetStandAlone(bool value)
@@ -2192,16 +2186,16 @@ bool CApplication::OnAction(const CAction &action)
     if (tag)
     {
       *m_itemCurrentFile->GetMusicInfoTag() = *tag;
-      char rating = tag->GetUserrating();
+      int userrating = tag->GetUserrating();
       bool needsUpdate(false);
-      if (rating > '0' && action.GetID() == ACTION_DECREASE_RATING)
+      if (userrating > 0 && action.GetID() == ACTION_DECREASE_RATING)
       {
-        m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(rating - 1);
+        m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(userrating - 1);
         needsUpdate = true;
       }
-      else if (rating < '5' && action.GetID() == ACTION_INCREASE_RATING)
+      else if (userrating < 10 && action.GetID() == ACTION_INCREASE_RATING)
       {
-        m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(rating + 1);
+        m_itemCurrentFile->GetMusicInfoTag()->SetUserrating(userrating + 1);
         needsUpdate = true;
       }
       if (needsUpdate)
@@ -2508,11 +2502,11 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   
   case TMSG_SHUTDOWN:
     HandleShutdownMessage();
-      break;
+    break;
 
-    case TMSG_RENDERER_FLUSH:
-      g_renderManager.Flush();
-      break;
+  case TMSG_RENDERER_FLUSH:
+    m_pPlayer->FlushRenderer();
+    break;
 
   case TMSG_HIBERNATE:
     g_powerManager.Hibernate();
@@ -2567,6 +2561,13 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
       StartPVRManager();
     else
       StopPVRManager();
+    break;
+
+  case TMSG_SETAUDIODSPSTATE:
+    if(pMsg->param1 == ACTIVE_AE_DSP_STATE_ON)
+      ActiveAE::CActiveAEDSP::GetInstance().Activate(pMsg->param2 == ACTIVE_AE_DSP_ASYNC_ACTIVATE);
+    else if(pMsg->param1 == ACTIVE_AE_DSP_STATE_OFF)
+      ActiveAE::CActiveAEDSP::GetInstance().Deactivate();
     break;
 
   case TMSG_START_ANDROID_ACTIVITY:
@@ -2747,7 +2748,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     CLog::Log(LOGERROR, "%s: Unhandled threadmessage sent, %u", __FUNCTION__, pMsg->dwMessage);
     break;
   }
-  }
+}
 
 void CApplication::HandleShutdownMessage()
 {
@@ -2823,7 +2824,7 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
 #if defined(TARGET_RASPBERRY_PI) || defined(HAS_IMXVPU)
     // This code reduces rendering fps of the GUI layer when playing videos in fullscreen mode
     // it makes only sense on architectures with multiple layers
-    if (g_graphicsContext.IsFullScreenVideo() && !m_pPlayer->IsPausedPlayback() && g_renderManager.IsVideoLayer())
+    if (g_graphicsContext.IsFullScreenVideo() && !m_pPlayer->IsPausedPlayback() && m_pPlayer->IsRenderingVideoLayer())
       fps = CSettings::GetInstance().GetInt(CSettings::SETTING_VIDEOPLAYER_LIMITGUIUPDATE);
 #endif
 
@@ -2839,6 +2840,8 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
     }
     g_windowManager.FrameMove();
   }
+
+  m_pPlayer->FrameMove();
 }
 
 
@@ -3489,7 +3492,7 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   }
 
   // We should restart the player, unless the previous and next tracks are using
-  // one of the players that allows gapless playback (paplayer, dvdplayer)
+  // one of the players that allows gapless playback (paplayer, VideoPlayer)
   m_pPlayer->ClosePlayerGapless(eNewCore);
 
   // now reset play state to starting, since we already stopped the previous playing item if there is.
@@ -3547,8 +3550,8 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
 #ifdef HAS_VIDEO_PLAYBACK
     else if(m_pPlayer->IsPlayingVideo())
     {
-      // if player didn't manange to switch to fullscreen by itself do it here
-      if (options.fullscreen && g_renderManager.IsStarted() &&
+      // if player didn't manage to switch to fullscreen by itself do it here
+      if (options.fullscreen && m_pPlayer->IsRenderingVideo() &&
           g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_VIDEO )
        SwitchToFullScreen(true);
     }
@@ -4434,7 +4437,7 @@ bool CApplication::ExecuteXBMCAction(std::string actionStr, const CGUIListItemPt
   if (item)
     actionStr = CGUIInfoLabel::GetItemLabel(actionStr, item.get());
   else
-  actionStr = CGUIInfoLabel::GetLabel(actionStr);
+    actionStr = CGUIInfoLabel::GetLabel(actionStr);
 
   // user has asked for something to be executed
   if (CBuiltins::GetInstance().HasCommand(actionStr))
@@ -4506,9 +4509,9 @@ void CApplication::Process()
   // (this can only be done after g_windowManager.Render())
   CApplicationMessenger::GetInstance().ProcessWindowMessages();
 
-  if (m_loggingIn)
+  if (m_autoExecScriptExecuted)
   {
-    m_loggingIn = false;
+    m_autoExecScriptExecuted = false;
 
     // autoexec.py - profile
     std::string strAutoExecPy = CSpecialProtocol::TranslatePath("special://profile/autoexec.py");
@@ -5238,6 +5241,18 @@ bool CApplication::LoadLanguage(bool reload)
   g_langInfo.SetSubtitleLanguage(CSettings::GetInstance().GetString(CSettings::SETTING_LOCALE_SUBTITLELANGUAGE));
 
   return true;
+}
+
+void CApplication::SetLoggingIn(bool switchingProfiles)
+{
+  // don't save skin settings on unloading when logging into another profile
+  // because in that case we have already loaded the new profile and
+  // would therefore write the previous skin's settings into the new profile
+  // instead of into the previous one
+  m_saveSkinOnUnloading = !switchingProfiles;
+
+  // make sure that the autoexec.py script is executed after logging in
+  m_autoExecScriptExecuted = true;
 }
 
 void CApplication::CloseNetworkShares()

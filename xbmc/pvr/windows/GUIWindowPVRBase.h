@@ -28,7 +28,7 @@
 #define CONTROL_BTNGROUPITEMS             5
 #define CONTROL_BTNSHOWHIDDEN             6
 #define CONTROL_BTNSHOWDELETED            7
-#define CONTROL_BTNTIMERTYPEFILTER        8
+#define CONTROL_BTNHIDEDISABLEDTIMERS     8
 #define CONTROL_BTNCHANNELGROUPS          28
 #define CONTROL_BTNFILTERCHANNELS         31
 
@@ -76,6 +76,40 @@ namespace PVR
     static std::string GetSelectedItemPath(bool bRadio);
     static void SetSelectedItemPath(bool bRadio, const std::string &path);
 
+    static bool ShowTimerSettings(CFileItem *item);
+    static bool AddTimer(CFileItem *item, bool bAdvanced);
+    static bool DeleteTimer(CFileItem *item);
+    static bool StopRecordFile(CFileItem *item);
+
+  protected:
+    CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile);
+
+    virtual std::string GetDirectoryPath(void) = 0;
+    virtual CPVRChannelGroupPtr GetGroup(void);
+    virtual void SetGroup(CPVRChannelGroupPtr group);
+
+    virtual bool ActionToggleTimer(CFileItem *item);
+    virtual bool ActionPlayChannel(CFileItem *item);
+    virtual bool ActionPlayEpg(CFileItem *item, bool bPlayRecording);
+    virtual bool ActionDeleteChannel(CFileItem *item);
+    virtual bool ActionInputChannelNumber(int input);
+
+    virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
+    virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
+    virtual void ShowEPGInfo(CFileItem *item);
+    virtual void ShowRecordingInfo(CFileItem *item);
+    virtual bool UpdateEpgForChannel(CFileItem *item);
+    virtual void UpdateSelectedItemPath();
+    virtual bool IsValidMessage(CGUIMessage& message);
+    void CheckResumeRecording(CFileItem *item);
+
+    static CCriticalSection m_selectedItemPathsLock;
+    static std::string m_selectedItemPaths[2];
+
+    CCriticalSection m_critSection;
+    bool m_bRadio;
+
+  private:
     /*!
      * @brief Open a dialog to confirm timer delete.
      * @param item the timer to delete.
@@ -87,37 +121,15 @@ namespace PVR
      */
     static bool ConfirmDeleteTimer(CFileItem *item, bool &bDeleteSchedule);
 
-  protected:
-    CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile);
+    /*!
+     * @brief Open a dialog to confirm stop recording.
+     * @param item the recording to stop (actually the timer to delete).
+     * @return true, to proceed with delete, false otherwise.
+     */
+    static bool ConfirmStopRecording(CFileItem *item);
 
-    virtual std::string GetDirectoryPath(void) { return ""; };
-    virtual CPVRChannelGroupPtr GetGroup(void);
-    virtual void SetGroup(CPVRChannelGroupPtr group);
+    static bool DeleteTimer(CFileItem *item, bool bIsRecording);
 
-    virtual bool ActionRecord(CFileItem *item);
-    virtual bool ActionPlayChannel(CFileItem *item);
-    virtual bool ActionPlayEpg(CFileItem *item, bool bPlayRecording);
-    virtual bool ActionDeleteChannel(CFileItem *item);
-    virtual bool ActionInputChannelNumber(int input);
-
-    virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
-    virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
-    virtual bool ShowTimerSettings(CFileItem *item);
-    virtual bool AddTimer(CFileItem *item, bool bAdvanced = false);
-    virtual bool StopRecordFile(CFileItem *item);
-    virtual void ShowEPGInfo(CFileItem *item);
-    virtual void ShowRecordingInfo(CFileItem *item);
-    virtual bool UpdateEpgForChannel(CFileItem *item);
-    virtual void UpdateSelectedItemPath();
-    virtual bool IsValidMessage(CGUIMessage& message);
-    void CheckResumeRecording(CFileItem *item);
-
-    static std::map<bool, std::string> m_selectedItemPaths;
-
-    CCriticalSection m_critSection;
-    bool m_bRadio;
-
-  private:
     CPVRChannelGroupPtr m_group;
     XbmcThreads::EndTime m_refreshTimeout;
   };

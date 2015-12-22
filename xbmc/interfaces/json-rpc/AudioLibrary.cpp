@@ -173,7 +173,7 @@ JSONRPC_STATUS CAudioLibrary::GetAlbums(const std::string &method, ITransportLay
   for (unsigned int index = 0; index < albums.size(); index++)
   {
     CMusicDbUrl itemUrl = musicUrl;
-    std::string path = StringUtils::Format("%i/", albums[index].idAlbum);
+    std::string path = StringUtils::Format("%li/", albums[index].idAlbum);
     itemUrl.AppendPath(path);
 
     CFileItemPtr pItem;
@@ -498,7 +498,9 @@ JSONRPC_STATUS CAudioLibrary::SetAlbumDetails(const std::string &method, ITransp
   if (ParameterNotNull(parameterObject, "albumlabel"))
     album.strLabel = parameterObject["albumlabel"].asString();
   if (ParameterNotNull(parameterObject, "rating"))
-    album.iRating = (int)parameterObject["rating"].asInteger();
+    album.fRating = parameterObject["rating"].asFloat();
+  if (ParameterNotNull(parameterObject, "userrating"))
+    album.iUserrating = parameterObject["userrating"].asInteger();
   if (ParameterNotNull(parameterObject, "year"))
     album.iYear = (int)parameterObject["year"].asInteger();
 
@@ -540,7 +542,9 @@ JSONRPC_STATUS CAudioLibrary::SetSongDetails(const std::string &method, ITranspo
   if (ParameterNotNull(parameterObject, "year"))
     song.iYear = (int)parameterObject["year"].asInteger();
   if (ParameterNotNull(parameterObject, "rating"))
-    song.rating = '0' + (char)parameterObject["rating"].asInteger();
+    song.rating = parameterObject["rating"].asFloat();
+  if (ParameterNotNull(parameterObject, "userrating"))
+    song.userrating = parameterObject["userrating"].asInteger();
   //Album title is not part of song, it belongs to album so not changed as a song detail??
   if (ParameterNotNull(parameterObject, "album"))
     song.strAlbum = parameterObject["album"].asString();

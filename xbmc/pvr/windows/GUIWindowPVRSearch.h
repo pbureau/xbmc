@@ -38,6 +38,7 @@ namespace PVR
 
   protected:
     void OnPrepareFileItems(CFileItemList &items);
+    virtual std::string GetDirectoryPath(void) override { return ""; }
 
   private:
     bool OnContextButtonClear(CFileItem *item, CONTEXT_BUTTON button);
@@ -45,6 +46,7 @@ namespace PVR
     bool OnContextButtonPlay(CFileItem *item, CONTEXT_BUTTON button);
     bool OnContextButtonStartRecord(CFileItem *item, CONTEXT_BUTTON button);
     bool OnContextButtonStopRecord(CFileItem *item, CONTEXT_BUTTON button);
+    bool OnContextButtonDeleteTimer(CFileItem *item, CONTEXT_BUTTON button);
 
     void OpenDialogSearch();
 

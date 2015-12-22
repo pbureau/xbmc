@@ -268,6 +268,7 @@ void CAddonMgr::UnregisterAddonMgrCallback(TYPE type)
 
 bool CAddonMgr::Init()
 {
+  CSingleLock lock(m_critSection);
   m_cpluff = new DllLibCPluff;
   m_cpluff->Load();
 
@@ -460,10 +461,7 @@ VECADDONS CAddonMgr::GetOutdated()
   CSingleLock lock(m_critSection);
   auto isUpdated = [&](const AddonPtr& addon)
   {
-    AddonPtr repoVersion;
-    if (!m_database.GetAddon(addon->ID(), repoVersion))
-      return true;
-    return addon->Version() >= repoVersion->Version();
+    return addon->Version() >= m_database.GetAddonVersion(addon->ID()).first;
   };
 
   VECADDONS addons;
@@ -646,7 +644,6 @@ void CAddonMgr::FindAddons()
 void CAddonMgr::UnregisterAddon(const std::string& ID)
 {
   CSingleLock lock(m_critSection);
-  m_disabled.erase(ID);
   if (m_cpluff && m_cp_context)
   {
     m_cpluff->uninstall_plugin(m_cp_context, ID.c_str());
@@ -654,6 +651,13 @@ void CAddonMgr::UnregisterAddon(const std::string& ID)
     lock.Leave();
     NotifyObservers(ObservableMessageAddons);
   }
+}
+
+void CAddonMgr::OnPostUnInstall(const std::string& id)
+{
+  CSingleLock lock(m_critSection);
+  m_disabled.erase(id);
+  m_updateBlacklist.erase(id);
 }
 
 bool CAddonMgr::RemoveFromUpdateBlacklist(const std::string& id)

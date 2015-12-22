@@ -420,7 +420,7 @@ std::string CPVRTimerInfoTag::GetStatus() const
   else if (m_state == PVR_TIMER_STATE_ERROR)
     strReturn = g_localizeStrings.Get(257);
   else if (m_state == PVR_TIMER_STATE_DISABLED)
-    strReturn = g_localizeStrings.Get(825);
+    strReturn = g_localizeStrings.Get(13106);
 
   return strReturn;
 }
@@ -702,7 +702,7 @@ CPVRTimerInfoTagPtr CPVRTimerInfoTag::CreateFromEpg(const CEpgInfoTagPtr &tag, b
   }
 
   /* check if the epg end date is in the future */
-  if (tag->EndAsLocalTime() < CDateTime::GetCurrentDateTime())
+  if (tag->EndAsLocalTime() < CDateTime::GetCurrentDateTime() && !bRepeating)
   {
     CLog::Log(LOGERROR, "%s - end time is in the past", __FUNCTION__);
     return CPVRTimerInfoTagPtr();
@@ -808,7 +808,7 @@ void CPVRTimerInfoTag::GetNotificationText(std::string &strText) const
     break;
   case PVR_TIMER_STATE_SCHEDULED:
     if (IsRepeating())
-      stringID = 826; // Timer activated
+      stringID = 19058; // Timer enabled
     else
       stringID = 19225; // Recording scheduled
     break;
@@ -826,7 +826,7 @@ void CPVRTimerInfoTag::GetNotificationText(std::string &strText) const
     stringID = 19278; // Recording error
     break;
   case PVR_TIMER_STATE_DISABLED:
-    stringID = 827; // Timer deactivated
+    stringID = 19057; // Timer disabled
     break;
   default:
     break;
@@ -855,18 +855,6 @@ std::string CPVRTimerInfoTag::GetDeletedNotificationText() const
   }
 
   return StringUtils::Format("%s: '%s'", g_localizeStrings.Get(stringID).c_str(), m_strTitle.c_str());
-}
-
-void CPVRTimerInfoTag::QueueNotification(void) const
-{
-  if (CSettings::GetInstance().GetBool(CSettings::SETTING_PVRRECORD_TIMERNOTIFICATIONS))
-  {
-    std::string strMessage;
-    GetNotificationText(strMessage);
-
-    if (!strMessage.empty())
-      CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, g_localizeStrings.Get(19166), strMessage);
-  }
 }
 
 CEpgInfoTagPtr CPVRTimerInfoTag::GetEpgInfoTag(void) const

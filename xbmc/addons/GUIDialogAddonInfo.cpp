@@ -246,6 +246,12 @@ void CGUIDialogAddonInfo::OnUpdate()
     }
   }
 
+  if (versions.empty())
+  {
+    CGUIDialogOK::ShowAndGetInput(CVariant{21341}, CVariant{21342});
+    return;
+  }
+
   auto* dialog = static_cast<CGUIDialogSelect*>(g_windowManager.GetWindow(WINDOW_DIALOG_SELECT));
   dialog->Reset();
   dialog->SetHeading(CVariant{21338});
@@ -279,7 +285,7 @@ void CGUIDialogAddonInfo::OnUpdate()
   {
     Close();
 
-    auto selected = versions.at(dialog->GetSelectedLabel());
+    auto selected = versions.at(dialog->GetSelectedItem());
 
     //turn auto updating off if downgrading
     if (selected.first < m_localAddon->Version())
@@ -309,6 +315,9 @@ void CGUIDialogAddonInfo::OnToggleAutoUpdates()
 void CGUIDialogAddonInfo::OnInstall()
 {
   if (!g_passwordManager.CheckMenuLock(WINDOW_ADDON_BROWSER))
+    return;
+
+  if (!m_addon)
     return;
 
   CAddonInstaller::GetInstance().InstallOrUpdate(m_addon->ID());

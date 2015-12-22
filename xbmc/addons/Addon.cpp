@@ -44,7 +44,7 @@
 #include "interfaces/python/XBPython.h"
 #endif
 #if defined(TARGET_DARWIN)
-#include "../osx/OSXGNUReplacements.h"
+#include "../platform/darwin/OSXGNUReplacements.h"
 #endif
 #ifdef TARGET_FREEBSD
 #include "freebsd/FreeBSDGNUReplacements.h"
@@ -725,13 +725,6 @@ void OnPreUnInstall(const AddonPtr& addon)
 
   if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_CONTEXT_ITEM))
     CContextMenuManager::GetInstance().Unregister(std::static_pointer_cast<CContextMenuAddon>(localAddon));
-
-  if (CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon, ADDON_REPOSITORY))
-  {
-    CAddonDatabase database;
-    database.Open();
-    database.DeleteRepository(addon->ID());
-  }
 
   addon->OnPreUnInstall();
 }

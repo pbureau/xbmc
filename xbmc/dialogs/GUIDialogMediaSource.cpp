@@ -23,6 +23,7 @@
 #include "guilib/GUIKeyboardFactory.h"
 #include "GUIDialogFileBrowser.h"
 #include "video/windows/GUIWindowVideoBase.h"
+#include "music/windows/GUIWindowMusicBase.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
 #include "Util.h"
@@ -38,10 +39,9 @@
 #include "guilib/LocalizeStrings.h"
 #include "PasswordManager.h"
 #include "URL.h"
-#include "utils/log.h"
 
 #if defined(TARGET_ANDROID)
-#include "android/activity/XBMCApp.h"
+#include "platform/android/activity/XBMCApp.h"
 #include "filesystem/File.h"
 #endif
 
@@ -536,11 +536,13 @@ void CGUIDialogMediaSource::OnOK()
   {
     m_confirmed = true;
     Close();
-    if (m_type == "video" && !URIUtils::IsLiveTV(share.strPath) && 
-        !StringUtils::StartsWithNoCase(share.strPath, "rss://") &&
+    if (!StringUtils::StartsWithNoCase(share.strPath, "rss://") &&
         !StringUtils::StartsWithNoCase(share.strPath, "upnp://"))
     {
+      if (m_type == "video" && !URIUtils::IsLiveTV(share.strPath))
       CGUIWindowVideoBase::OnAssignContent(share.strPath);
+      else if (m_type == "music")
+        CGUIWindowMusicBase::OnAssignContent(share.strPath);
     }
   }
 

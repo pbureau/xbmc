@@ -125,6 +125,8 @@ public:
    \param iEndOffset [in] the end offset of the song (when using a single audio file with .cue)
    \param dtLastPlayed [in] the time the song was last played
    \param rating [in] a rating for the song
+   \param userrating [in] a userrating (my rating) for the song
+   \param votes [in] a vote counter for the song rating
    \return the id of the song
    */
   int AddSong(const int idAlbum,
@@ -137,7 +139,7 @@ public:
               const std::string &artistString, const std::vector<std::string>& genres,
               int iTrack, int iDuration, int iYear,
               const int iTimesPlayed, int iStartOffset, int iEndOffset,
-              const CDateTime& dtLastPlayed, char rating);
+              const CDateTime& dtLastPlayed, float rating, int userrating, int votes);
   bool GetSong(int idSong, CSong& song);
 
   /*! \brief Update a song in the database.
@@ -171,6 +173,8 @@ public:
    \param iEndOffset [in] the end offset of the song (when using a single audio file with .cue)
    \param dtLastPlayed [in] the time the song was last played
    \param rating [in] a rating for the song
+   \param userrating [in] a userrating (my rating) for the song
+   \param votes [in] a vote counter for the song rating
    \return the id of the song
    */
   int UpdateSong(int idSong,
@@ -180,14 +184,17 @@ public:
                  const std::string& artistString, const std::vector<std::string>& genres,
                  int iTrack, int iDuration, int iYear,
                  int iTimesPlayed, int iStartOffset, int iEndOffset,
-                 const CDateTime& dtLastPlayed, char rating);
+                 const CDateTime& dtLastPlayed, float rating, int userrating, int votes);
 
   //// Misc Song
   bool GetSongByFileName(const std::string& strFileName, CSong& song, int startOffset = 0);
   bool GetSongsByPath(const std::string& strPath, MAPSONGS& songs, bool bAppendToMap = false);
   bool Search(const std::string& search, CFileItemList &items);
   bool RemoveSongsFromPath(const std::string &path, MAPSONGS& songs, bool exact=true);
-  bool SetSongUserrating(const std::string &filePath, char rating);
+  bool SetSongUserrating(const std::string &filePath, int userrating);
+  bool SetAlbumUserrating(const std::string &filePath, int userrating);
+  bool SetSongVotes(const std::string &filePath, int votes);
+  bool SetAlbumVotes(const std::string &filePath, int votes);
   int  GetSongByArtistAndAlbumAndTitle(const std::string& strArtist, const std::string& strAlbum, const std::string& strTitle);
 
   /////////////////////////////////////////////////
@@ -196,9 +203,10 @@ public:
   bool AddAlbum(CAlbum& album);
   /*! \brief Update an album and all its nested entities (artists, songs, infoSongs, etc)
    \param album the album to update
+   \param OverrideTagData whether or not to replace the artist and song data, defaults to true.
    \return true or false
    */
-  bool UpdateAlbum(CAlbum& album);
+  bool UpdateAlbum(CAlbum& album, bool OverrideTagData = true);
 
   /*! \brief Add an album and all its songs to the database
    \param album the album to add
@@ -223,7 +231,7 @@ public:
                    const std::string& strThemes, const std::string& strReview,
                    const std::string& strImage, const std::string& strLabel,
                    const std::string& strType,
-                   int iRating, int iYear, bool bCompilation,
+                   float fRating, int iUserrating, int iVotes, int iYear, bool bCompilation,
                    CAlbum::ReleaseType releaseType);
   bool ClearAlbumLastScrapedTime(int idAlbum);
   bool HasAlbumBeenScraped(int idAlbum);
@@ -511,7 +519,7 @@ private:
 
   // Fields should be ordered as they
   // appear in the songview
-  enum _SongFields
+  static enum _SongFields
   {
     song_idSong=0,
     song_strArtists,
@@ -526,7 +534,9 @@ private:
     song_iStartOffset,
     song_iEndOffset,
     song_lastplayed,
+    song_rating,
     song_userrating,
+    song_votes,
     song_comment,
     song_idAlbum,
     song_strAlbum,
@@ -541,7 +551,7 @@ private:
 
   // Fields should be ordered as they
   // appear in the albumview
-  enum _AlbumFields
+  static enum _AlbumFields
   {
     album_idAlbum=0,
     album_strAlbum,
@@ -556,7 +566,9 @@ private:
     album_strLabel,
     album_strType,
     album_strThumbURL,
-    album_iRating,
+    album_fRating,
+    album_iUserrating,
+    album_iVotes,
     album_bCompilation,
     album_iTimesPlayed,
     album_strReleaseType,
@@ -565,7 +577,7 @@ private:
     album_enumCount // end of the enum, do not add past here
   } AlbumFields;
 
-  enum _ArtistCreditFields
+  static enum _ArtistCreditFields
   {
     // used for GetAlbum to get the cascaded album/song artist credits
     artistCredit_idEntity = 0,  // can be idSong or idAlbum depending on context
@@ -578,7 +590,7 @@ private:
     artistCredit_enumCount
   } ArtistCreditFields;
 
-  enum _ArtistFields
+  static enum _ArtistFields
   {
     artist_idArtist=0,
     artist_strArtist,
@@ -599,7 +611,7 @@ private:
     artist_enumCount // end of the enum, do not add past here
   } ArtistFields;
 
-  enum _AlbumInfoSongFields
+  static enum _AlbumInfoSongFields
   {
     albumInfoSong_idAlbumInfoSong=0,
     albumInfoSong_idAlbumInfo,

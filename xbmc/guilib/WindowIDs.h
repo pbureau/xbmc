@@ -137,6 +137,8 @@
 #define WINDOW_RADIO_SEARCH               10624
 #define WINDOW_FULLSCREEN_RADIO           10625 // virtual window for PVR radio specific keymaps with fallback to WINDOW_VISUALISATION
 #define WINDOW_DIALOG_PVR_RADIO_RDS_INFO  10626
+#define WINDOW_TV_TIMER_RULES             10627
+#define WINDOW_RADIO_TIMER_RULES          10628
 
 //#define WINDOW_VIRTUAL_KEYBOARD           11000
 // WINDOW_ID's from 11100 to 11199 reserved for Skins
@@ -153,8 +155,6 @@
 #define WINDOW_DIALOG_VIDEO_OSD           12901
 
 #define WINDOW_VIDEO_MENU                 12902
-#define WINDOW_DIALOG_MUSIC_OVERLAY       12903
-#define WINDOW_DIALOG_VIDEO_OVERLAY       12904
 #define WINDOW_VIDEO_TIME_SEEK            12905 // virtual window for time seeking during fullscreen video
 
 #define WINDOW_SPLASH                     12997 // splash window

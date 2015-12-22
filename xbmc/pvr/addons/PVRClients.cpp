@@ -72,7 +72,7 @@ bool CPVRClients::IsInUse(const std::string& strAddonId) const
   CSingleLock lock(m_critSection);
 
   for (PVR_CLIENTMAP_CITR itr = m_clientMap.begin(); itr != m_clientMap.end(); itr++)
-    if (itr->second->Enabled() && itr->second->ID() == strAddonId)
+    if (!CAddonMgr::GetInstance().IsAddonDisabled(itr->second->ID()) && itr->second->ID() == strAddonId)
       return true;
   return false;
 }
@@ -252,12 +252,32 @@ bool CPVRClients::HasConnectedClients(void) const
   return false;
 }
 
-bool CPVRClients::GetClientName(int iClientId, std::string &strName) const
+bool CPVRClients::GetClientFriendlyName(int iClientId, std::string &strName) const
 {
   bool bReturn(false);
   PVR_CLIENT client;
   if ((bReturn = GetConnectedClient(iClientId, client)) == true)
     strName = client->GetFriendlyName();
+
+  return bReturn;
+}
+
+bool CPVRClients::GetClientAddonName(int iClientId, std::string &strName) const
+{
+  bool bReturn(false);
+  PVR_CLIENT client;
+  if ((bReturn = GetConnectedClient(iClientId, client)) == true)
+    strName = client->Name();
+
+  return bReturn;
+}
+
+bool CPVRClients::GetClientAddonIcon(int iClientId, std::string &strIcon) const
+{
+  bool bReturn(false);
+  PVR_CLIENT client;
+  if ((bReturn = GetConnectedClient(iClientId, client)) == true)
+    strIcon = client->Icon();
 
   return bReturn;
 }
@@ -649,7 +669,7 @@ PVR_ERROR CPVRClients::DeleteAllRecordingsFromTrash()
         pDialog->Add(itrClients->second->GetBackendName());
     }
     pDialog->Open();
-    selection = pDialog->GetSelectedLabel();
+    selection = pDialog->GetSelectedItem();
   }
 
   if (selection == 0)
@@ -891,7 +911,7 @@ void CPVRClients::ProcessMenuHooks(int iClientID, PVR_MENUHOOK_CAT cat, const CF
       }
       pDialog->Open();
 
-      int selection = pDialog->GetSelectedLabel();
+      int selection = pDialog->GetSelectedItem();
       if (selection >= 0)
       {
         itrClients = clients.begin();
@@ -924,7 +944,7 @@ void CPVRClients::ProcessMenuHooks(int iClientID, PVR_MENUHOOK_CAT cat, const CF
     if (hookIDs.size() > 1)
     {
       pDialog->Open();
-      selection = pDialog->GetSelectedLabel();
+      selection = pDialog->GetSelectedItem();
     }
     if (selection >= 0)
       client->CallMenuHook(hooks->at(hookIDs.at(selection)), item);
@@ -972,7 +992,7 @@ void CPVRClients::StartChannelScan(void)
 
     pDialog->Open();
 
-    int selection = pDialog->GetSelectedLabel();
+    int selection = pDialog->GetSelectedItem();
     if (selection >= 0)
       scanClient = possibleScanClients[selection];
   }
@@ -1108,7 +1128,7 @@ int CPVRClients::RegisterClient(AddonPtr client)
   CAddonDatabase database;
   PVR_CLIENT addon;
 
-  if (!client->Enabled() || !database.Open())
+  if (CAddonMgr::GetInstance().IsAddonDisabled(client->ID()) || !database.Open())
     return -1;
 
   CLog::Log(LOGDEBUG, "%s - registering add-on '%s'", __FUNCTION__, client->Name().c_str());
@@ -1160,8 +1180,7 @@ bool CPVRClients::UpdateAndInitialiseClients(bool bInitialiseAllClients /* = fal
 
   for (VECADDONS::iterator it = map.begin(); it != map.end(); ++it)
   {
-    bool bEnabled = (*it)->Enabled() &&
-        !CAddonMgr::GetInstance().IsAddonDisabled((*it)->ID());
+    bool bEnabled = !CAddonMgr::GetInstance().IsAddonDisabled((*it)->ID());
 
     if (!bEnabled && IsKnownClient(*it))
     {
@@ -1199,7 +1218,7 @@ bool CPVRClients::UpdateAndInitialiseClients(bool bInitialiseAllClients /* = fal
         }
 
         // throttle connection attempts, no more than 1 attempt per 5 seconds
-        if (!bDisabled && addon->Enabled())
+        if (!bDisabled && !CAddonMgr::GetInstance().IsAddonDisabled(addon->ID()))
         {
           time_t now;
           CDateTime::GetCurrentDateTime().GetAsTime(now);
@@ -1210,7 +1229,7 @@ bool CPVRClients::UpdateAndInitialiseClients(bool bInitialiseAllClients /* = fal
         }
 
         // re-check the enabled status. newly installed clients get disabled when they're added to the db
-        if (!bDisabled && addon->Enabled() && (status = addon->Create(iClientId)) != ADDON_STATUS_OK)
+        if (!bDisabled && !CAddonMgr::GetInstance().IsAddonDisabled(addon->ID()) && (status = addon->Create(iClientId)) != ADDON_STATUS_OK)
         {
           CLog::Log(LOGWARNING, "%s - failed to create add-on %s, status = %d", __FUNCTION__, (*it)->Name().c_str(), status);
           if (!addon.get() || !addon->DllLoaded() || status == ADDON_STATUS_PERMANENT_FAILURE)
