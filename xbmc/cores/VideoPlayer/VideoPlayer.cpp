@@ -1142,8 +1142,8 @@ int CVideoPlayer::PreloadFileInfo(const CFileItem& file, const CPlayerOptions &o
 
   m_PlayerOptions = options;
   m_item          = file;
-  m_mimetype      = file.GetMimeType();
-  m_filename      = file.GetPath();
+  //m_mimetype      = file.GetMimeType();
+  //m_filename      = file.GetPath();
 
   m_ready.Reset();
 
