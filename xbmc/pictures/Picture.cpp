@@ -284,6 +284,10 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
 
   // create a buffer for the resulting thumb
   uint32_t *buffer = (uint32_t *)calloc(g_advancedSettings.GetThumbSize() * g_advancedSettings.GetThumbSize(), 4);
+  // buffer not allocated
+  //if( !buffer )
+    //return success;
+
   for (unsigned int i = 0; i < files.size(); ++i)
   {
     int x = i % num_across;
@@ -319,7 +323,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
           else
             src = scaled + ((height-height_out)/2) * width;
 
-          for (unsigned int y = 0; y < height; ++y)
+          for (unsigned int y = 0; y < height_out; ++y)
           {
             memcpy(dest, src, width_out*4);
             dest += g_advancedSettings.GetThumbSize();
@@ -347,6 +351,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
     delete texture;
   }
   // now save to a file
+  //CLog::Log(LOGERROR, "XXX Create Thumb %lu - 0x%lx",g_advancedSettings.GetThumbSize(), buffer);
   if (success)
     success = CreateThumbnailFromSurface((uint8_t *)buffer, g_advancedSettings.GetThumbSize(), g_advancedSettings.GetThumbSize(),
                                       g_advancedSettings.GetThumbSize() * 4, thumb);

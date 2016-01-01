@@ -418,10 +418,9 @@ bool CGUIBaseContainer::OnMessage(CGUIMessage& message)
       { // bind our items
         Reset();
         CFileItemList *items = (CFileItemList *)message.GetPointer();
-        CLog::Log(LOGDEBUG, "------ bind %d items start (current size %d) ------", items->Size(), m_items.size());
+        CLog::Log(LOGDEBUG, "------ bind %d items start ------", items->Size());
         for (int i = 0; i < items->Size(); i++)
           m_items.push_back(items->Get(i));
-        CLog::Log(LOGDEBUG, "------ bind items end (current size %d) ------", m_items.size());
         UpdateLayout(true); // true to refresh all items
         UpdateScrollByLetter();
         SelectItem(message.GetParam1());
@@ -903,10 +902,7 @@ void CGUIBaseContainer::UpdateLayout(bool updateAllItems)
   if (updateAllItems)
   { // free memory of items
     for (iItems it = m_items.begin(); it != m_items.end(); ++it)
-    {
-        CLog::Log(LOGDEBUG, "------ free item -----");
         (*it)->FreeMemory();
-    }
   }
   // and recalculate the layout
   CalculateLayout();
