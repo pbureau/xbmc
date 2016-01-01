@@ -70,9 +70,6 @@
 #include "filesystem/SpecialProtocol.h"
 #include "filesystem/DllLibCurl.h"
 #include "filesystem/PluginDirectory.h"
-#ifdef HAS_FILESYSTEM_SAP
-#include "filesystem/SAPDirectory.h"
-#endif
 #include "utils/SystemInfo.h"
 #include "utils/TimeUtils.h"
 #include "GUILargeTextureManager.h"
@@ -274,7 +271,6 @@ CApplication::CApplication(void)
   m_dpmsIsManual = false;
   m_iScreenSaveLock = 0;
   m_bInitializing = true;
-  m_eForcedNextPlayer = EPC_NONE;
   m_strPlayListFile = "";
   m_nextPlaylistItem = -1;
   m_bPlaybackStarting = false;
@@ -1850,22 +1846,6 @@ bool CApplication::LoadUserWindows()
   return true;
 }
 
-bool CApplication::RenderNoPresent()
-{
-  MEASURE_FUNCTION;
-
-// DXMERGE: This may have been important?
-//  g_graphicsContext.AcquireCurrentContext();
-
-  g_graphicsContext.Lock();
-  
-  bool hasRendered = g_windowManager.Render();
-
-  g_graphicsContext.Unlock();
-
-  return hasRendered;
-}
-
 float CApplication::GetDimScreenSaverLevel() const
 {
   if (!m_bScreenSave || !m_screenSaver ||
@@ -1895,7 +1875,7 @@ void CApplication::Render()
   bool vsync = true;
 
   // Whether externalplayer is playing and we're unfocused
-  bool extPlayerActive = m_pPlayer->GetCurrentPlayer() == EPC_EXTPLAYER && m_pPlayer->IsPlaying() && !m_AppFocused;
+  bool extPlayerActive = m_pPlayer->IsExternalPlaying() && !m_AppFocused;
 
   {
     // Less fps in DPMS
@@ -1939,8 +1919,6 @@ void CApplication::Render()
     }
   }
 
-  CSingleLock lock(g_graphicsContext);
-
   if (g_graphicsContext.IsFullScreenVideo() && m_pPlayer->IsPlaying() && vsync_mode == VSYNC_VIDEO)
     g_Windowing.SetVSync(true);
   else if (vsync_mode == VSYNC_ALWAYS)
@@ -1963,21 +1941,18 @@ void CApplication::Render()
     if (g_graphicsContext.GetStereoMode())
     {
       g_graphicsContext.SetStereoView(RENDER_STEREO_VIEW_LEFT);
-      if (RenderNoPresent())
-        hasRendered = true;
+      hasRendered |= g_windowManager.Render();
 
       if (g_graphicsContext.GetStereoMode() != RENDER_STEREO_MODE_MONO)
       {
         g_graphicsContext.SetStereoView(RENDER_STEREO_VIEW_RIGHT);
-        if (RenderNoPresent())
-          hasRendered = true;
+        hasRendered |= g_windowManager.Render();
       }
       g_graphicsContext.SetStereoView(RENDER_STEREO_VIEW_OFF);
     }
     else
     {
-      if (RenderNoPresent())
-        hasRendered = true;
+      hasRendered |= g_windowManager.Render();
     }
     // execute post rendering actions (finalize window closing)
     g_windowManager.AfterRender();
@@ -2000,8 +1975,6 @@ void CApplication::Render()
     g_infoManager.UpdateFPS();
     m_lastRenderTime = now;
   }
-
-  lock.Leave();
 
   if (g_graphicsContext.IsFullScreenVideo())
   {
@@ -2387,27 +2360,25 @@ bool CApplication::OnAction(const CAction &action)
   {
     if(m_pPlayer->IsPlaying())
     {
-      VECPLAYERCORES cores;
+      std::vector<std::string> players;
       CFileItem item(*m_itemCurrentFile.get());
-      CPlayerCoreFactory::GetInstance().GetPlayers(item, cores);
-      PLAYERCOREID core = CPlayerCoreFactory::GetInstance().SelectPlayerDialog(cores);
-      if(core != EPC_NONE)
+      CPlayerCoreFactory::GetInstance().GetPlayers(item, players);
+      std::string player = CPlayerCoreFactory::GetInstance().SelectPlayerDialog(players);
+      if (!player.empty())
       {
-        g_application.m_eForcedNextPlayer = core;
         item.m_lStartOffset = (int)(GetTime() * 75);
-        PlayFile(item, true);
+        PlayFile(item, player, true);
       }
     }
     else
     {
-      VECPLAYERCORES cores;
-      CPlayerCoreFactory::GetInstance().GetRemotePlayers(cores);
-      PLAYERCOREID core = CPlayerCoreFactory::GetInstance().SelectPlayerDialog(cores);
-      if(core != EPC_NONE)
+      std::vector<std::string> players;
+      CPlayerCoreFactory::GetInstance().GetRemotePlayers(players);
+      std::string player = CPlayerCoreFactory::GetInstance().SelectPlayerDialog(players);
+      if (!player.empty())
       {
         CFileItem item;
-        g_application.m_eForcedNextPlayer = core;
-        PlayFile(item, false);
+        PlayFile(item, player, false);
       }
     }
   }
@@ -2969,10 +2940,6 @@ void CApplication::Stop(int exitCode)
     StopServices();
     //Sleep(5000);
 
-#ifdef HAS_FILESYSTEM_SAP
-    CLog::Log(LOGNOTICE, "stop sap announcement listener");
-    g_sapsessions.StopThread();
-#endif
 #ifdef HAS_ZEROCONF
     if(CZeroconfBrowser::IsInstantiated())
     {
@@ -3044,14 +3011,14 @@ void CApplication::Stop(int exitCode)
   Sleep(200);
 }
 
-bool CApplication::PlayMedia(const CFileItem& item, int iPlaylist)
+bool CApplication::PlayMedia(const CFileItem& item, const std::string &player, int iPlaylist)
 {
   //If item is a plugin, expand out now and run ourselves again
   if (item.IsPlugin())
   {
     CFileItem item_new(item);
     if (XFILE::CPluginDirectory::GetPluginResult(item.GetPath(), item_new))
-      return PlayMedia(item_new, iPlaylist);
+      return PlayMedia(item_new, player, iPlaylist);
     return false;
   }
   if (item.IsSmartPlayList())
@@ -3097,7 +3064,7 @@ bool CApplication::PlayMedia(const CFileItem& item, int iPlaylist)
       {
         CLog::Log(LOGWARNING, "CApplication::PlayMedia called to play a playlist %s but no idea which playlist to use, playing first item", item.GetPath().c_str());
         if(pPlayList->size())
-          return PlayFile(*(*pPlayList)[0], false) == PLAYBACK_OK;
+          return PlayFile(*(*pPlayList)[0], "", false) == PLAYBACK_OK;
       }
     }
   }
@@ -3107,7 +3074,7 @@ bool CApplication::PlayMedia(const CFileItem& item, int iPlaylist)
   }
 
   //nothing special just play
-  return PlayFile(item, false) == PLAYBACK_OK;
+  return PlayFile(item, player, false) == PLAYBACK_OK;
 }
 
 // PlayStack()
@@ -3172,7 +3139,7 @@ PlayBackRet CApplication::PlayStack(const CFileItem& item, bool bRestart)
     movieList[selectedFile - 1]->m_lStartOffset = startoffset > 0 ? STARTOFFSET_RESUME : 0;
     movieList[selectedFile - 1]->SetProperty("stackFileItemToUpdate", true);
     *m_stackFileItemToUpdate = item;
-    return PlayFile(*(movieList[selectedFile - 1]));
+    return PlayFile(*(movieList[selectedFile - 1]), "");
   }
   // case 2: all other stacks
   else
@@ -3245,7 +3212,6 @@ PlayBackRet CApplication::PlayStack(const CFileItem& item, bool bRestart)
 
     *m_itemCurrentFile = item;
     m_currentStackPosition = 0;
-    m_pPlayer->ResetPlayer(); // must be reset on initial play otherwise last player will be used
 
     if (seconds > 0)
     {
@@ -3258,17 +3224,17 @@ PlayBackRet CApplication::PlayStack(const CFileItem& item, bool bRestart)
           long start = (i > 0) ? (*m_currentStack)[i-1]->m_lEndOffset : 0;
           item.m_lStartOffset = (long)(seconds - start) * 75;
           m_currentStackPosition = i;
-          return PlayFile(item, true);
+          return PlayFile(item, "", true);
         }
       }
     }
 
-    return PlayFile(*(*m_currentStack)[0], true);
+    return PlayFile(*(*m_currentStack)[0], "", true);
   }
   return PLAYBACK_FAIL;
 }
 
-PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
+PlayBackRet CApplication::PlayFile(const CFileItem& item, std::string player, bool bRestart)
 {
   // Ensure the MIME type has been retrieved for http:// and shout:// streams
   if (item.GetMimeType().empty())
@@ -3320,7 +3286,7 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   { // we modify the item so that it becomes a real URL
     CFileItem item_new(item);
     if (XFILE::CPluginDirectory::GetPluginResult(item.GetPath(), item_new))
-      return PlayFile(item_new, false);
+      return PlayFile(item_new, player, false);
     return PLAYBACK_FAIL;
   }
 
@@ -3337,7 +3303,7 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   {
     CFileItem item_new(item);
     if (XFILE::CUPnPDirectory::GetResource(item.GetURL(), item_new))
-      return PlayFile(item_new, false);
+      return PlayFile(item_new, player, false);
     return PLAYBACK_FAIL;
   }
 #endif
@@ -3358,20 +3324,18 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
     options.startpercent = item.GetProperty("StartPercent").asDouble(fallback);
   }
 
-  PLAYERCOREID eNewCore = EPC_NONE;
-  if( bRestart )
+  std::string newPlayer;
+  if (bRestart)
   {
     // have to be set here due to playstack using this for starting the file
     options.starttime = item.m_lStartOffset / 75.0;
     if (m_itemCurrentFile->IsStack() && m_currentStack->Size() > 0 && m_itemCurrentFile->m_lStartOffset != 0)
       m_itemCurrentFile->m_lStartOffset = STARTOFFSET_RESUME; // to force fullscreen switching
 
-    if( m_eForcedNextPlayer != EPC_NONE )
-      eNewCore = m_eForcedNextPlayer;
-    else if( m_pPlayer->GetCurrentPlayer() == EPC_NONE )
-      eNewCore = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
+    if (!player.empty() && player != "default")
+      newPlayer = player;
     else
-      eNewCore = m_pPlayer->GetCurrentPlayer();
+      newPlayer = m_pPlayer->GetCurrentPlayer();
   }
   else
   {
@@ -3436,10 +3400,10 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
       dbs.Close();
     }
 
-    if (m_eForcedNextPlayer != EPC_NONE)
-      eNewCore = m_eForcedNextPlayer;
+    if (player.empty())
+      newPlayer = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
     else
-      eNewCore = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
+      newPlayer = player;
   }
 
   // this really aught to be inside !bRestart, but since PlayStack
@@ -3493,13 +3457,13 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
 
   // We should restart the player, unless the previous and next tracks are using
   // one of the players that allows gapless playback (paplayer, VideoPlayer)
-  m_pPlayer->ClosePlayerGapless(eNewCore);
+  m_pPlayer->ClosePlayerGapless(newPlayer);
 
   // now reset play state to starting, since we already stopped the previous playing item if there is.
   // and from now there should be no playback callback from previous playing item be called.
   m_ePlayState = PLAY_STATE_STARTING;
 
-  m_pPlayer->CreatePlayer(eNewCore, *this);
+  m_pPlayer->CreatePlayer(newPlayer, *this);
 
   PlayBackRet iResult;
   if (m_pPlayer->HasPlayer())
@@ -3856,7 +3820,7 @@ void CApplication::UpdateFileState()
         }
 
         // Update bookmark for save
-        m_progressTrackingVideoResumeBookmark.player = CPlayerCoreFactory::GetInstance().GetPlayerName(m_pPlayer->GetCurrentPlayer());
+        m_progressTrackingVideoResumeBookmark.player = m_pPlayer->GetCurrentPlayer();
         m_progressTrackingVideoResumeBookmark.playerState = m_pPlayer->GetPlayerState();
         m_progressTrackingVideoResumeBookmark.thumbNailImage.clear();
 
@@ -4333,7 +4297,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
       {
         if (m_itemCurrentFile->IsStack() && m_currentStack->Size() > 0 && m_currentStackPosition < m_currentStack->Size() - 1)
         { // just play the next item in the stack
-          PlayFile(*(*m_currentStack)[++m_currentStackPosition], true);
+          PlayFile(*(*m_currentStack)[++m_currentStackPosition], "", true);
           return true;
         }
       }
@@ -4357,9 +4321,6 @@ bool CApplication::OnMessage(CGUIMessage& message)
       }
       else
       {
-        // reset any forced player
-        m_eForcedNextPlayer = EPC_NONE;
-
         m_pPlayer->ClosePlayer();
 
         // Reset playspeed
@@ -4465,7 +4426,7 @@ bool CApplication::ExecuteXBMCAction(std::string actionStr, const CGUIListItemPt
 #endif
     if (item.IsAudio() || item.IsVideo())
     { // an audio or video file
-      PlayFile(item);
+      PlayFile(item, "");
     }
     else
     {
@@ -4688,7 +4649,7 @@ void CApplication::Restart(bool bSamePosition)
   if (false == bSamePosition)
   {
     // no, then just reopen the file and start at the beginning
-    PlayFile(*m_itemCurrentFile, true);
+    PlayFile(*m_itemCurrentFile, "", true);
     return ;
   }
 
@@ -4702,7 +4663,7 @@ void CApplication::Restart(bool bSamePosition)
   m_itemCurrentFile->m_lStartOffset = (long)(time * 75.0);
 
   // reopen the file
-  if ( PlayFile(*m_itemCurrentFile, true) == PLAYBACK_OK )
+  if ( PlayFile(*m_itemCurrentFile, "", true) == PLAYBACK_OK )
     m_pPlayer->SetPlayerState(state);
 }
 
@@ -5026,7 +4987,7 @@ void CApplication::Minimize()
   g_Windowing.Minimize();
 }
 
-PLAYERCOREID CApplication::GetCurrentPlayer()
+std::string CApplication::GetCurrentPlayer()
 {
   return m_pPlayer->GetCurrentPlayer();
 }
@@ -5192,7 +5153,7 @@ bool CApplication::ProcessAndStartPlaylist(const std::string& strPlayList, CPlay
     // start playing it
     g_playlistPlayer.SetCurrentPlaylist(iPlaylist);
     g_playlistPlayer.Reset();
-    g_playlistPlayer.Play(track);
+    g_playlistPlayer.Play(track, "");
     return true;
   }
   return false;

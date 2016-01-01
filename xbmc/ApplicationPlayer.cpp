@@ -27,7 +27,6 @@
 CApplicationPlayer::CApplicationPlayer()
 {
   m_iPlayerOPSeq = 0;
-  m_eCurrentPlayer = EPC_NONE;
 }
 
 std::shared_ptr<IPlayer> CApplicationPlayer::GetInternal() const
@@ -58,14 +57,14 @@ void CApplicationPlayer::CloseFile(bool reopen)
   }
 }
 
-void CApplicationPlayer::ClosePlayerGapless(PLAYERCOREID newCore)
+void CApplicationPlayer::ClosePlayerGapless(std::string &playername)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (!player)
     return;
 
-  bool gaplessSupported = (m_eCurrentPlayer == EPC_VideoPlayer || m_eCurrentPlayer == EPC_PAPLAYER);
-  gaplessSupported = gaplessSupported && (m_eCurrentPlayer == newCore);
+  bool gaplessSupported = player->m_type == "music" || player->m_type == "video";
+  gaplessSupported = gaplessSupported && (playername == player->m_name);
   if (!gaplessSupported)
   {
     ClosePlayer();
@@ -81,14 +80,23 @@ void CApplicationPlayer::ClosePlayerGapless(PLAYERCOREID newCore)
   }
 }
 
-void CApplicationPlayer::CreatePlayer(PLAYERCOREID newCore, IPlayerCallback& callback)
+void CApplicationPlayer::CreatePlayer(const std::string &player, IPlayerCallback& callback)
 {
   CSingleLock lock(m_player_lock);
   if (!m_pPlayer)
   {
-    m_eCurrentPlayer = newCore;
-    m_pPlayer.reset(CPlayerCoreFactory::GetInstance().CreatePlayer(newCore, callback));
+    m_pPlayer.reset(CPlayerCoreFactory::GetInstance().CreatePlayer(player, callback));
   }
+}
+
+std::string CApplicationPlayer::GetCurrentPlayer()
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+  {
+    return player->m_name;
+  }
+  return "";
 }
 
 PlayBackRet CApplicationPlayer::OpenFile(const CFileItem& item, const CPlayerOptions& options)
@@ -926,4 +934,15 @@ std::string CApplicationPlayer::GetRenderVSyncState()
     return player->GetRenderVSyncState();
   else
     return "";
+}
+
+bool CApplicationPlayer::IsExternalPlaying()
+{
+  std::shared_ptr<IPlayer> player = GetInternal();
+  if (player)
+  {
+    if (player->IsPlaying() && player->m_type == "external")
+      return true;
+  }
+  return false;
 }

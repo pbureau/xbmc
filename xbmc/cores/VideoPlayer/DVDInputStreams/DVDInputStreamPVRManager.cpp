@@ -114,18 +114,18 @@ bool CDVDInputStreamPVRManager::Open()
   if(transFile.substr(0, 6) != "pvr://")
   {
     m_isOtherStreamHack = true;
-    
+
     m_item.SetPath(transFile);
     m_pOtherStream = CDVDFactoryInputStream::CreateInputStream(m_pPlayer, m_item);
     if (!m_pOtherStream)
     {
-      CLog::Log(LOGERROR, "CDVDInputStreamPVRManager::Open - unable to create input stream for [%s]", transFile.c_str());
+      CLog::Log(LOGERROR, "CDVDInputStreamPVRManager::Open - unable to create input stream for [%s]", CURL::GetRedacted(transFile).c_str());
       return false;
     }
 
     if (!m_pOtherStream->Open())
     {
-      CLog::Log(LOGERROR, "CDVDInputStreamPVRManager::Open - error opening [%s]", transFile.c_str());
+      CLog::Log(LOGERROR, "CDVDInputStreamPVRManager::Open - error opening [%s]", CURL::GetRedacted(transFile).c_str());
       delete m_pFile;
       m_pFile = NULL;
       m_pLiveTV = NULL;
@@ -137,7 +137,7 @@ bool CDVDInputStreamPVRManager::Open()
   }
 
   ResetScanTimeout((unsigned int) CSettings::GetInstance().GetInt(CSettings::SETTING_PVRPLAYBACK_SCANTIME) * 1000);
-  CLog::Log(LOGDEBUG, "CDVDInputStreamPVRManager::Open - stream opened: %s", transFile.c_str());
+  CLog::Log(LOGDEBUG, "CDVDInputStreamPVRManager::Open - stream opened: %s", CURL::GetRedacted(transFile).c_str());
 
   return true;
 }
@@ -268,15 +268,20 @@ bool CDVDInputStreamPVRManager::PrevChannel(bool preview/* = false*/)
 bool CDVDInputStreamPVRManager::SelectChannelByNumber(unsigned int iChannelNumber)
 {
   PVR_CLIENT client;
+  CPVRChannelPtr currentChannel(g_PVRManager.GetCurrentChannel());
+  CFileItemPtr item(g_PVRChannelGroups->Get(currentChannel->IsRadio())->GetSelectedGroup()->GetByChannelNumber(iChannelNumber));
+  if (!item)
+    return false;
+
   if (IsOtherStreamHack())
   {
-    CPVRChannelPtr channel(g_PVRManager.GetCurrentChannel());
-    CFileItemPtr item(g_PVRChannelGroups->Get(channel->IsRadio())->GetSelectedGroup()->GetByChannelNumber(iChannelNumber));
-    if (item)
-      return CloseAndOpen(item->GetPath().c_str());
+    return CloseAndOpen(item->GetPath().c_str());
   }
   else if (m_pLiveTV)
-    return m_pLiveTV->SelectChannel(iChannelNumber);
+  {
+    if (item->HasPVRChannelInfoTag())
+      return m_pLiveTV->SelectChannelById(item->GetPVRChannelInfoTag()->ChannelID());
+  }
 
   return false;
 }
@@ -293,7 +298,7 @@ bool CDVDInputStreamPVRManager::SelectChannel(const CPVRChannelPtr &channel)
   }
   else if (m_pLiveTV)
   {
-    return m_pLiveTV->SelectChannel(channel->ChannelNumber());
+    return m_pLiveTV->SelectChannelById(channel->ChannelID());
   }
 
   return false;

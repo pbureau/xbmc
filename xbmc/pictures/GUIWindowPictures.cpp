@@ -316,7 +316,7 @@ bool CGUIWindowPictures::Update(const std::string &strDirectory, bool updateFilt
   return true;
 }
 
-bool CGUIWindowPictures::OnClick(int iItem)
+bool CGUIWindowPictures::OnClick(int iItem, const std::string &player)
 {
   if ( iItem < 0 || iItem >= (int)m_vecItems->Size() ) return true;
   CFileItemPtr pItem = m_vecItems->Get(iItem);
@@ -344,13 +344,15 @@ bool CGUIWindowPictures::GetDirectory(const std::string &strDirectory, CFileItem
     return false;
 
   std::string label;
-  if (items.GetLabel().empty() && m_rootDir.IsSource(items.GetPath(), CMediaSourceSettings::GetInstance().GetSources("pictures"), &label)) 
+  if (items.GetLabel().empty() && m_rootDir.IsSource(items.GetPath(), CMediaSourceSettings::GetInstance().GetSources("pictures"), &label))
     items.SetLabel(label);
 
+  if (items.GetContent().empty() && !items.IsVirtualDirectoryRoot())
+    items.SetContent("images");
   return true;
 }
 
-bool CGUIWindowPictures::OnPlayMedia(int iItem)
+bool CGUIWindowPictures::OnPlayMedia(int iItem, const std::string &player)
 {
   if (m_vecItems->Get(iItem)->IsVideo())
     return CGUIMediaWindow::OnPlayMedia(iItem);

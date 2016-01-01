@@ -1,3 +1,23 @@
+/*
+ *      Copyright (C) 2012-2015 Team Kodi
+ *      http://kodi.tv
+ *
+ *  This Program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *
+ *  This Program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Kodi; see the file COPYING.  If not, see
+ *  <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string>
@@ -10,14 +30,13 @@
 #include "AndroidDyload.h"
 #include "utils/StringUtils.h"
 #include "CompileInfo.h"
-using namespace std;
 
 //#define DEBUG_SPEW
 
 std::list<recursivelib> CAndroidDyload::m_recursivelibs;
 solib CAndroidDyload::m_libs;
 
-bool CAndroidDyload::IsSystemLib(const string &filename)
+bool CAndroidDyload::IsSystemLib(const std::string &filename)
 {
   {
     CSingleLock lock(m_libLock);
@@ -28,28 +47,28 @@ bool CAndroidDyload::IsSystemLib(const string &filename)
     }
   }
 
-  string result = FindLib(filename, false);
-  if (result.size() > 0)
+  std::string result = FindLib(filename, false);
+  if (!result.empty())
     return false;
   result = FindLib(filename, true);
   return result.size() > 0;
 }
 
-string CAndroidDyload::FindLib(const string &filename, bool checkSystem)
+std::string CAndroidDyload::FindLib(const std::string &filename, bool checkSystem)
 {
   struct stat st;
-  string path;
+  std::string path;
   strings searchpaths;
-  string systemLibs = (getenv("XBMC_ANDROID_SYSTEM_LIBS"));
-  string localLibs = getenv("XBMC_ANDROID_LIBS");
-  string dirname = filename.substr(0,filename.find_last_of('/'));
+  std::string systemLibs = (getenv("XBMC_ANDROID_SYSTEM_LIBS"));
+  std::string localLibs = getenv("XBMC_ANDROID_LIBS");
+  std::string dirname = filename.substr(0,filename.find_last_of('/'));
 
   while (true)
   {
     size_t pos = systemLibs.find(":");
     searchpaths.push_back(systemLibs.substr(0, pos));
 
-    if (pos != string::npos)
+    if (pos != std::string::npos)
       systemLibs.erase(0, pos + 1);
     else
       break;
@@ -85,14 +104,14 @@ string CAndroidDyload::FindLib(const string &filename, bool checkSystem)
   return "";
 }
 
-void* CAndroidDyload::Find(const string &filename)
+void* CAndroidDyload::Find(const std::string &filename)
 {
   CSingleLock lock(m_libLock);
   solibit i = m_libs.find(filename);
   return i == m_libs.end() ? NULL : i->second.handle;
 }
 
-string CAndroidDyload::Find(void *handle)
+std::string CAndroidDyload::Find(void *handle)
 {
   CSingleLock lock(m_libLock);
   for ( solibit i = m_libs.begin() ; i != m_libs.end(); ++i )
@@ -103,7 +122,7 @@ string CAndroidDyload::Find(void *handle)
   return "";
 }
 
-void *CAndroidDyload::FindInDeps(const string &filename)
+void *CAndroidDyload::FindInDeps(const std::string &filename)
 {
   CSingleLock lock(m_depsLock);
   for (std::list<recursivelibdep>::iterator k = m_lib.deps.begin(); k != m_lib.deps.end(); ++k)
@@ -114,7 +133,7 @@ void *CAndroidDyload::FindInDeps(const string &filename)
   return NULL;
 }
 
-int CAndroidDyload::AddRef(const string &filename)
+int CAndroidDyload::AddRef(const std::string &filename)
 {
   CSingleLock lock(m_libLock);
   if (m_libs.find(filename) == m_libs.end())
@@ -122,7 +141,7 @@ int CAndroidDyload::AddRef(const string &filename)
   return (++(m_libs[filename].refcount));
 }
 
-int CAndroidDyload::DecRef(const string &filename)
+int CAndroidDyload::DecRef(const std::string &filename)
 {
   CSingleLock lock(m_libLock);
   if (m_libs.find(filename) == m_libs.end())
@@ -130,7 +149,7 @@ int CAndroidDyload::DecRef(const string &filename)
   return (--(m_libs[filename].refcount));
 }
 
-void CAndroidDyload::GetDeps(string filename, strings *results)
+void CAndroidDyload::GetDeps(std::string filename, strings *results)
 {
   Elf32_Ehdr header;
   char *data = NULL;
@@ -207,7 +226,7 @@ void CAndroidDyload::GetDeps(string filename, strings *results)
 
 void* CAndroidDyload::Open(const char * path)
 {
-  string filename = path;
+  std::string filename = path;
   filename = filename.substr(filename.find_last_of('/') +1);
   void *handle = NULL;
   m_lib.deps.clear();
@@ -233,14 +252,14 @@ void* CAndroidDyload::Open(const char * path)
   return handle;
 }
 
-void* CAndroidDyload::Open_Internal(string filename, bool checkSystem)
+void* CAndroidDyload::Open_Internal(std::string filename, bool checkSystem)
 {
   strings deps;
-  string deppath;
+  std::string deppath;
   libdata lib;
   void *handle = NULL;
 
-  string path = FindLib(filename, checkSystem);
+  std::string path = FindLib(filename, checkSystem);
   if (!path.size())
     return NULL;
 

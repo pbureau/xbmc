@@ -375,7 +375,6 @@ void CGUIDialogMediaSource::OnPathBrowse(int item)
   if (m_name != CUtil::GetTitleFromPath(m_paths->Get(item)->GetPath()))
     m_bNameChanged=true;
 
-  std::string strStreams = g_localizeStrings.Get(33039); //"% Streams"
   std::string strDevices = g_localizeStrings.Get(33040); //"% Devices"
 
   if (m_type == "music")
@@ -397,10 +396,6 @@ void CGUIDialogMediaSource::OnPathBrowse(int item)
     share1.strPath = "special://musicplaylists/";
     share1.strName = g_localizeStrings.Get(20011);
     share1.m_ignore = true;
-    extraShares.push_back(share1);
-
-    share1.strPath = "sap://";
-    share1.strName = StringUtils::Format(strStreams.c_str(), "SAP"); //"SAP Streams"
     extraShares.push_back(share1);
 
     if (CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH) != "")
@@ -429,10 +424,6 @@ void CGUIDialogMediaSource::OnPathBrowse(int item)
     share1.m_ignore = true;
     share1.strPath = "special://videoplaylists/";
     share1.strName = g_localizeStrings.Get(20012);
-    extraShares.push_back(share1);
-
-    share1.strPath = "sap://";
-    share1.strName = StringUtils::Format(strStreams.c_str(), "SAP"); //"SAP Streams"
     extraShares.push_back(share1);
 
     // add the recordings dir as needed

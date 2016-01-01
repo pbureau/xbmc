@@ -138,7 +138,6 @@ public:
   virtual bool Initialize() override;
   virtual void FrameMove(bool processEvents, bool processGUI = true) override;
   virtual void Render() override;
-  virtual bool RenderNoPresent();
   virtual void Preflight();
   virtual bool Create() override;
   virtual bool Cleanup() override;
@@ -163,7 +162,7 @@ public:
   CFileItem& CurrentFileItem();
   CFileItem& CurrentUnstackedItem();
   virtual bool OnMessage(CGUIMessage& message) override;
-  PLAYERCOREID GetCurrentPlayer();
+  std::string GetCurrentPlayer();
   virtual void OnPlayBackEnded() override;
   virtual void OnPlayBackStarted() override;
   virtual void OnPlayBackPaused() override;
@@ -177,10 +176,10 @@ public:
   virtual int  GetMessageMask() override;
   virtual void OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg) override;
 
-  bool PlayMedia(const CFileItem& item, int iPlaylist = PLAYLIST_MUSIC);
+  bool PlayMedia(const CFileItem& item, const std::string &player, int iPlaylist = PLAYLIST_MUSIC);
   bool PlayMediaSync(const CFileItem& item, int iPlaylist = PLAYLIST_MUSIC);
   bool ProcessAndStartPlaylist(const std::string& strPlayList, PLAYLIST::CPlayList& playlist, int iPlaylist, int track=0);
-  PlayBackRet PlayFile(const CFileItem& item, bool bRestart = false);
+  PlayBackRet PlayFile(const CFileItem& item, std::string player, bool bRestart = false);
   void SaveFileState(bool bForeground = false);
   void UpdateFileState();
   void LoadVideoSettings(const CFileItem& item);
@@ -319,7 +318,6 @@ public:
   PlayState m_ePlayState;
   CCriticalSection m_playStateMutex;
 
-  PLAYERCOREID m_eForcedNextPlayer;
   std::string m_strPlayListFile;
 
   int GlobalIdleTime();

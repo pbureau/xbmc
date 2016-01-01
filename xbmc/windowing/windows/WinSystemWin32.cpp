@@ -815,6 +815,17 @@ void CWinSystemWin32::OnDisplayLost()
   }
 }
 
+void CWinSystemWin32::OnDisplayReset()
+{
+  CLog::Log(LOGDEBUG, "%s - notify display change event", __FUNCTION__);
+  if (!m_delayDispReset)
+  {
+    CSingleLock lock(m_resourceSection);
+    for (std::vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
+      (*i)->OnResetDisplay();
+  }
+}
+
 void CWinSystemWin32::ResolutionChanged()
 {
   OnDisplayLost();
@@ -824,6 +835,8 @@ void CWinSystemWin32::ResolutionChanged()
     m_delayDispReset = true;
     m_dispResetTimer.Set(delay * 100);
   }
+  else
+    OnDisplayReset();
 }
 
 #endif

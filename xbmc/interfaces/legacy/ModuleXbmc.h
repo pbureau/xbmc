@@ -404,6 +404,17 @@ namespace XBMCAddon
     void audioResume();
 
     /**
+     * getUserAgent() -- Returns Kodi's HTTP UserAgent string
+     *
+     * example:
+     *   xbmc.getUserAgent()
+     *
+     * example output:
+     *   Kodi/17.0-ALPHA1 (X11; Linux x86_64) Ubuntu/15.10 App_Bitness/64 Version/17.0-ALPHA1-Git:2015-12-23-5770d28
+     */
+    String getUserAgent();
+
+    /**
     * convertLanguage(language, format) -- Returns the given language converted to the given format as a string.
     *
     * language: string either as name in English, two letter code (ISO 639-1), or three letter code (ISO 639-2/T(B)
@@ -428,10 +439,6 @@ namespace XBMCAddon
 
     SWIG_CONSTANT_FROM_GETTER(int,PLAYLIST_MUSIC);
     SWIG_CONSTANT_FROM_GETTER(int,PLAYLIST_VIDEO);
-    SWIG_CONSTANT_FROM_GETTER(int,PLAYER_CORE_AUTO);
-    SWIG_CONSTANT_FROM_GETTER(int,PLAYER_CORE_VideoPlayer);
-    SWIG_CONSTANT_FROM_GETTER(int,PLAYER_CORE_MPLAYER);
-    SWIG_CONSTANT_FROM_GETTER(int,PLAYER_CORE_PAPLAYER);
     SWIG_CONSTANT_FROM_GETTER(int,TRAY_OPEN);
     SWIG_CONSTANT_FROM_GETTER(int,DRIVE_NOT_READY);
     SWIG_CONSTANT_FROM_GETTER(int,TRAY_CLOSED_NO_MEDIA);
