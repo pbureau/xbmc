@@ -10,16 +10,16 @@
             <control type="image">
                 <left>25</left>
                 <top>50</top>
-                <width>830</width>
-                <height>640</height>
+                <width>1262</width>
+                <height>590</height>
                 <texture background="false" border="10">RecentAddedBack.png</texture>
             </control>
             <!-- Main Panel - Pictures library -->
             <control type="panel" id="552">
                 <left>65</left>
                 <top>80</top>
-                <width>780</width>
-                <height>550</height>
+                <width>1200</width>
+                <height>500</height>
                 <onleft>2</onleft>
                 <onright>2202</onright>
                 <onup>2202</onup>
@@ -29,12 +29,12 @@
                 <scrolltime>200</scrolltime>
                 <preloaditems>2</preloaditems>
                 <itemlayout condition="!Container.Content(Movies) + !Container.Content(Seasons) + !Container.Content(TVShows) + !Container.Content(Sets)" 
-                    height="144" width="144">
+                    height="142" width="142">
                     <control type="image">
                         <left>0</left>
                         <top>0</top>
-                        <width>144</width>
-                        <height>144</height>
+                        <width>142</width>
+                        <height>142</height>
                         <bordertexture border="5">button-nofocus.png</bordertexture>
                         <bordersize>0.5</bordersize>
                         <texture background="true">$INFO[Listitem.Icon]</texture>
@@ -43,16 +43,18 @@
                     <control type="image">
                         <left>0</left>
                         <top>0</top>
-                        <width>144</width>
-                        <height>144</height>
+                        <width>142</width>
+                        <height>142</height>
+                        <visible>ListItem.IsFolder</visible>
                         <texture background="true">ContentPanelShade.png</texture>
                         <aspectratio>scale</aspectratio>
                     </control>
                     <control type="label">
                         <left>0</left>
                         <top>118</top>
-                        <width>144</width>
+                        <width>142</width>
                         <height>25</height>
+                        <visible>ListItem.IsFolder</visible>
                         <font>font12</font>
                         <textcolor>grey2</textcolor>
                         <selectedcolor>selected</selectedcolor>
@@ -97,9 +99,44 @@
                     </control>
                 </focusedlayout>
             </control>
+            <!-- File info background image -->
+            <control type="image">
+                <left>33</left>
+                <top>605</top>
+                <width>600</width>
+                <height>110</height>
+                <texture background="false" border="10">RecentAddedBack.png</texture>
+            </control>
+            <!-- File info details -->
+            <control type="grouplist">
+                <orientation>vertical</orientation>
+                <itemgap>3</itemgap>
+                <usecontrolcoords>true</usecontrolcoords>
+                <width>517</width>
+                <height>100</height>
+                <top>623</top>
+                <left>63</left>
+                <control type="label">
+                    <width>auto</width>
+                    <height>25</height>
+                    <font>font11</font>
+                    <textcolor>white</textcolor>
+                    <scroll>true</scroll>
+                    <label>$INFO[ListItem.Label] • $INFO[ListItem.Date]</label>
+                </control>
+                <control type="label">
+                    <width>auto</width>
+                    <height>25</height>
+                    <font>font11</font>
+                    <textcolor>grey2</textcolor>
+                    <scroll>true</scroll>
+                    <label>$INFO[ListItem.PictureResolution] ($INFO[ListItem.Size])</label>
+                    <visible>!IsEmpty(ListItem.PictureResolution)</visible>
+                </control>
+            </control>
         </control>
     </include>
-    <include name="PictureWrapView">
+    <include name="PictureWrapViewOld">
         <control type="group">
             <visible>Control.IsVisible(510)</visible>
             <include>VisibleFadeEffect</include>
