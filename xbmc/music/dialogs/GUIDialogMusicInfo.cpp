@@ -171,7 +171,7 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
             if( pItem->GetMusicInfoTag()->GetDatabaseId() > 0 )
             {
               // when in album view, play the current song
-              bResult = g_application.PlayFile(*pItem) == PLAYBACK_OK;
+              bResult = g_application.PlayFile(*pItem, "") == PLAYBACK_OK;
 
               if (pItem->m_lStartOffset == STARTOFFSET_RESUME)
                 pItem->m_lStartOffset = 0;
