@@ -712,7 +712,7 @@
 	</include>
         <include name="AllArtistsView">
             <control type="group">
-                <visible>Control.IsVisible(512)</visible>
+                <visible>Control.IsVisible(512) + Library.HasContent(Music)</visible>
                 <include>VisibleFadeEffect</include>
                 <left>0</left>
                 <top>0</top>

@@ -65,8 +65,11 @@
                               <visible>true</visible>
                               <thumb>icon_video.png</thumb>
                               <label>342</label>
+                              <onclick>ActivateWindow(Videos,MovieTitles,toto)</onclick>
+                              <!--
                               <onclick condition="Library.HasContent(Movies)">ActivateWindow(Videos,MovieTitles,toto)</onclick>
                               <onclick condition="!Library.HasContent(Movies)">ActivateWindow(Videos,root)</onclick>
+                              -->
                           </item>
                           <item id="357">
                               <visible>true</visible>

@@ -249,7 +249,7 @@
 	</include>
         <include name="AllAlbumsView">
             <control type="group">
-                <visible>Control.IsVisible(500)</visible>
+                <visible>Control.IsVisible(500) + Library.HasContent(Music)</visible>
                 <include>VisibleFadeEffect</include>
                 <left>0</left>
                 <top>0</top>
@@ -403,6 +403,73 @@
                         <height>90</height>
                         <label>$INFO[ListItem.Artist,,[CR]]$INFO[ListItem.Year]$INFO[ListItem.Property(Album_Label), • ]$INFO[ListItem.Genre,[CR]]</label>
                         <visible>Container.Content(albums)</visible>
+                    </control>
+                </control>
+            </control>
+        </include>
+        <include name="LibraryEmptyView">
+            <control type="group">
+                <visible>!Library.HasContent(Music)</visible>
+                <include>VisibleFadeEffect</include>
+                <left>0</left>
+                <top>0</top>
+                <!-- Panel background image -->
+                <control type="image">
+                    <left>25</left>
+                    <top>50</top>
+                    <width>830</width>
+                    <height>640</height>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                </control>
+                <!-- Tooltip text when the panel is empty -->
+                <control type="textbox">
+                    <width>650</width>
+                    <height>90</height>
+                    <top>90</top>
+                    <left>80</left>
+                    <font>font16</font>
+                    <textcolor>grey</textcolor>
+                    <label>$LOCALIZE[31969]</label>
+                </control>
+                <!-- Right Panel background image -->
+                <control type="image">
+                    <left>810</left>
+                    <top>51</top>
+                    <width>465</width>
+                    <height>470</height>
+                    <texture background="false" border="10">RecentAddedBack.png</texture>
+                </control>
+                <!-- Right Info Panel - Album details -->
+                <control type="group">
+                    <left>845</left>
+                    <top>60</top>
+                    <control type="image">
+                        <width>250</width>
+                        <height>250</height>
+                        <top>20</top>
+                        <left>0</left>
+                        <bordertexture border="5">button-nofocus.png</bordertexture>
+                        <bordersize>5</bordersize>
+                        <texture background="true">DefaultAlbumCover.png</texture>
+                        <aspectratio>keep</aspectratio>
+                        <fadetime>400</fadetime>
+                    </control>
+                    <control type="label">
+                        <width>380</width>
+                        <height>30</height>
+                        <top>276</top>
+                        <left>0</left>
+                        <font>font16</font>
+                        <textcolor>grey</textcolor>
+                        <scroll>true</scroll>
+                        <label>$LOCALIZE[31968]</label>
+                        <textoffsetx>6</textoffsetx>
+                    </control>
+                    <control type="button">
+                        <top>315</top>
+                        <left>0</left>
+                        <width>380</width>
+                        <height>90</height>
                     </control>
                 </control>
             </control>
@@ -950,7 +1017,7 @@
 	</include>
 	<include name="AllSongsView">
             <control type="group">
-                <visible>Control.IsVisible(51)</visible>
+                <visible>Control.IsVisible(51) + Library.HasContent(Music)</visible>
                 <include>VisibleFadeEffect</include>
                 <left>0</left>
                 <top>0</top>
@@ -1119,7 +1186,7 @@
                         <left>0</left>
                         <bordertexture border="5">button-nofocus.png</bordertexture>
                         <bordersize>5</bordersize>
-                        <texture background="true">$INFO[Listitem.Icon]</texture>
+                        <texture fallback="DefaultAlbumCover.png" background="true">$INFO[Listitem.Icon]</texture>
                         <aspectratio>keep</aspectratio>
                         <fadetime>400</fadetime>
                     </control>

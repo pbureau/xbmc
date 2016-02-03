@@ -705,3 +705,43 @@ msgstr ""
 msgctxt "#31960"
 msgid "RADIO"
 msgstr ""
+
+msgctxt "#31961"
+msgid "Select USB Drive"
+msgstr ""
+
+msgctxt "#31962"
+msgid "Select Network Source"
+msgstr ""
+
+msgctxt "#31963"
+msgid "Select Web Source"
+msgstr ""
+
+msgctxt "#31964"
+msgid "Select a locally connected USB storage (external disk, USB key, ...)"
+msgstr ""
+
+msgctxt "#31965"
+msgid "Browse for a shared directory on your local network, such as a NAS disk or a shared directory on another computer."
+msgstr ""
+
+msgctxt "#31966"
+msgid "Select a source located on the cloud, using a service such as Dropbox, Google Drive, Microsoft OneDrive, ..."
+msgstr ""
+
+msgctxt "#31967"
+msgid "Select Source Directory"
+msgstr ""
+
+msgctxt "#31968"
+msgid "Empty Music Library"
+msgstr ""
+
+msgctxt "#31969"
+msgid "This library is empty, please select file storage locations using the add source button to start importing items into your library."
+msgstr ""
+
+msgctxt "#31970"
+msgid "Empty Movie Library"
+msgstr ""

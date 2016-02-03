@@ -2,7 +2,7 @@
 <window>
 	<allowoverlay>no</allowoverlay>
 	<onload condition="!Skin.HasSetting(FirstTimeRun)">ActivateWindow(1112)</onload>
-	<defaultcontrol always="true">35000</defaultcontrol>
+	<defaultcontrol always="true">2200</defaultcontrol>
 <!--
 	<views>50,51,500,550,551,509,506,511,512,513</views>
 -->
@@ -13,10 +13,10 @@
 		<include>ContentPanelBackgrounds</include>
 -->
                 <include>CommonBackground</include>
-		<control type="grouplist">
+		<control type="grouplist" id="2200">
                     <left>275</left>
                     <top>5</top>
-                    <ondown>35000</ondown>
+                    <ondown condition="Library.HasContent(Music)">35000</ondown>
                     <itemgap>0</itemgap>
                     <orientation>horizontal</orientation>
                     <control type="button" id="2201">
@@ -52,7 +52,7 @@
                         <label>Songs</label>
                         <align>center</align>
                     </control>
-                    <control type="button" id="60">
+                    <control type="button" id="2210">
                         <width>100</width>
                         <description>Add Source</description>
                         <textwidth>100</textwidth>
@@ -61,11 +61,21 @@
                         <label>Add Source</label>
                         <align>center</align>
                     </control>
+                    <control type="button" id="2211">
+                        <width>100</width>
+                        <description>Test</description>
+                        <textwidth>100</textwidth>
+                        <texturefocus>HomeSubFO.png</texturefocus>
+                        <texturenofocus>HomeSubNF.png</texturenofocus>
+                        <label>Test</label>
+                        <align>center</align>
+                    </control>
                 </control>
 		<control type="group" id="35000">
 <!--
 			<include>Window_OpenClose_Animation</include>		
 -->
+			<include>LibraryEmptyView</include>
 			<include>AllAlbumsView</include> view id = 500
 			<include>AllSongsView</include>  view id = 51 
 			<include>AllArtistsView</include>  view id = 512

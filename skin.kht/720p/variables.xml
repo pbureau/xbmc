@@ -37,4 +37,10 @@
 		<value condition="SubString(ListItem.Filename,dvd) | StringCompare(ListItem.FileExtension,iso) | StringCompare(ListItem.FileExtension,ifo)">dvd</value>
 		<value>$INFO[ListItem.VideoCodec]</value>
 	</variable>
+	<variable name="SourceDescription">
+            <value condition="Control.HasFocus(21)">$LOCALIZE[31964]</value>
+            <value condition="Control.HasFocus(22)">$LOCALIZE[31965]</value>
+            <value condition="Control.HasFocus(23)">$LOCALIZE[31966]</value>
+            <value>default</value>
+	</variable>
 </includes>
