@@ -39,6 +39,11 @@
 #include "PasswordManager.h"
 #include "URL.h"
 #include "utils/log.h"
+#include "Application.h"
+#include "video/VideoInfoScanner.h"
+#include "addons/AddonManager.h"
+#include "addons/Addon.h"
+#include "addons/Scraper.h"
 
 #if defined(TARGET_ANDROID)
 #include "android/activity/XBMCApp.h"
@@ -360,6 +365,8 @@ void CGUIDialogMediaSource::OnPathBrowseUSB(int item)
       m_name = CUtil::GetTitleFromPath(m_name);
     }
     UpdateButtons();
+    // When source selection is confirmed, auto close this dialog and start library scan
+    OnOK();
   }
 }
 
@@ -540,7 +547,40 @@ void CGUIDialogMediaSource::OnOK()
         !StringUtils::StartsWithNoCase(share.strPath, "rss://") &&
         !StringUtils::StartsWithNoCase(share.strPath, "upnp://"))
     {
-      CGUIWindowVideoBase::OnAssignContent(share.strPath);
+      CLog::Log(LOGDEBUG,"%s::%s Assign content video", __FILE__, __FUNCTION__);
+      //CGUIWindowVideoBase::OnAssignContent(share.strPath);
+
+      // Get scrapper from settings
+      ADDON::ScraperPtr scraper = NULL;
+      ADDON::AddonPtr scraperAddon;
+      ADDON::CAddonMgr::GetInstance().GetDefault(ADDON::ScraperTypeFromContent(CONTENT_MOVIES), scraperAddon);
+      scraper = std::dynamic_pointer_cast<ADDON::CScraper>(scraperAddon);
+      // Create a scan settings
+      VIDEO::SScanSettings settings;
+      settings.exclude          = false;
+      settings.parent_name      = false;
+      settings.parent_name_root = false;
+      settings.recurse          = INT_MAX;
+      settings.noupdate         = false;
+      // Save path settings to db
+      CVideoDatabase db;
+      db.Open();
+      db.SetScraperForPath(share.strPath, scraper, settings);
+      // Start video scan
+      g_application.StartVideoScan(share.strPath, true, true);
+    }
+    if (m_type == "music")
+    {
+      CLog::Log(LOGDEBUG,"%s::%s Assign content music", __FILE__, __FUNCTION__);
+/*
+      if (g_application.IsMusicScanning())
+      {
+        g_application.StopMusicScan();
+        return;
+      }
+*/
+      // Start background loader
+      g_application.StartMusicScan(share.strPath);
     }
   }
 

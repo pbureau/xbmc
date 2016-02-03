@@ -18081,3 +18081,7 @@ msgctxt "#38024"
 msgid "No USB drive detected, please connect external USB storage"
 msgstr ""
 
+#: xbmc/music/windows/GUIWindowMusicBase.cpp
+msgctxt "#39000"
+msgid "Some album information was not found, do you want to start an interactive scan?"
+msgstr ""

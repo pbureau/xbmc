@@ -78,7 +78,7 @@
 
 #define CONTROL_VIEW_START          50
 #define CONTROL_VIEW_END            59
-#define CONTROL_BTN_ADDSRC          60 
+#define CONTROL_BTN_ADDSRC          2210 
 
 #define PROPERTY_PATH_DB            "path.db"
 #define PROPERTY_SORT_ORDER         "sort.order"
@@ -842,8 +842,8 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   for (int i = 0; i < m_vecItems->Size(); ++i)
   {
     CFileItemPtr pItem = m_vecItems->Get(i);
+#if 0
     CFileItem * cItem  = pItem.get();
-
     CLog::Log(LOGDEBUG,"CGUIMediaWindow::Update : file listed (%s), has art (%d/%d/%d/%d), label is %s, art is %s", 
             CURL::GetRedacted(cItem->GetPath()).c_str(),
             cItem->HasArt("thumb"),
@@ -853,6 +853,7 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
             cItem->GetLabel().c_str(),
             cItem->GetArt("fanart").c_str());
     //cItem->SetLabel("toto");
+#endif
 
     // Update selected item
     std::string strHistory;
@@ -1488,6 +1489,7 @@ void CGUIMediaWindow::OnInitWindow()
   if (m_iSelectedItem > -1)
     m_viewControl.SetSelectedItem(m_iSelectedItem);
 
+#if 0
   for (int i = 0; i < m_vecItems->Size(); ++i)
   {
     CFileItemPtr pItem = m_vecItems->Get(i);
@@ -1502,6 +1504,7 @@ void CGUIMediaWindow::OnInitWindow()
             cItem->GetLabel().c_str(),
             cItem->GetArt("fanart").c_str());
   }
+#endif
 
   CLog::Log(LOGDEBUG, "------ Window Init end ------");
   CGUIWindow::OnInitWindow();
@@ -1523,6 +1526,11 @@ void CGUIMediaWindow::SetupShares()
   {
     m_rootDir.SetMask(viewState->GetExtensions());
     m_rootDir.SetSources(viewState->GetSources());
+#if 0
+    for (int i = 0; i < m_rootDir.m_vecSources.size(); i++) 
+      CLog::Log(LOGDEBUG,"%s::%s source %d : %s", __FILE__, __FUNCTION__, 
+          i, m_rootDir.m_vecSources[i].strPath.c_str());
+#endif    
     delete viewState;
   }
 }

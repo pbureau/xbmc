@@ -1126,6 +1126,7 @@ int CGUIInfoManager::TranslateSingleString(const std::string &strCondition, bool
         else if (cat == "moviesets") return LIBRARY_HAS_MOVIE_SETS;
         else if (cat == "singles") return LIBRARY_HAS_SINGLES;
         else if (cat == "compilations") return LIBRARY_HAS_COMPILATIONS;
+        else if (cat == "pictures") return LIBRARY_HAS_PICTURES;
       }
     }
     else if (cat.name == "musicplayer")
@@ -6272,6 +6273,9 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
     return (GetLibraryBool(LIBRARY_HAS_MOVIES) ||
             GetLibraryBool(LIBRARY_HAS_TVSHOWS) ||
             GetLibraryBool(LIBRARY_HAS_MUSICVIDEOS));
+  }
+  else if (condition == LIBRARY_HAS_PICTURES)
+  {
   }
   return false;
 }

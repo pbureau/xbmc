@@ -4420,6 +4420,31 @@ bool CApplication::OnMessage(CGUIMessage& message)
     if (message.GetNumStringParams())
       return ExecuteXBMCAction(message.GetStringParam(), message.GetItem());
     break;
+  case GUI_MSG_SCAN_FINISHED:
+    // If the scan was a file scan, start an album info scan automatically when completed
+    if(message.GetParam1() == 0)
+      StartMusicAlbumScan("", true);
+    /*
+       if (dir.HasAlbumInfo(strPath) ||
+       CMusicDatabaseDirectory::GetDirectoryChildType(strPath) == 
+       MUSICDATABASEDIRECTORY::NODE_TYPE_ALBUM)
+       g_application.StartMusicAlbumScan(strPath,refresh);
+       els
+       g_application.StartMusicArtistScan(strPath,refresh);
+     */
+    else if(message.GetParam1() == 1)
+    {
+      CGUIDialogProgress* dlgProgress = (CGUIDialogProgress*)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
+      CLog::Log(LOGDEBUG,"%s::%s Album info scan complete", __FILE__, __FUNCTION__);
+      // Check if all the albums have been scraped
+      if(!m_musicInfoScanner->CheckAlbumAllScraped())
+      {
+        // Ask if we should start an interactive scan
+        if(CGUIDialogYesNo::ShowAndGetInput(CVariant{185}, CVariant{39000}, CVariant{""}, CVariant{""}, CVariant{222}, CVariant{186}))
+          StartMusicAlbumScan("", false, dlgProgress);
+      }
+    }
+    break;
   }
   return false;
 }
@@ -5115,14 +5140,14 @@ void CApplication::StartMusicScan(const std::string &strDirectory, bool userInit
 }
 
 void CApplication::StartMusicAlbumScan(const std::string& strDirectory,
-                                       bool refresh)
+                                       bool refresh, CGUIDialogProgress* pDialog)
 {
   if (m_musicInfoScanner->IsScanning())
     return;
 
   m_musicInfoScanner->ShowDialog(true);
 
-  m_musicInfoScanner->FetchAlbumInfo(strDirectory,refresh);
+  m_musicInfoScanner->FetchAlbumInfo(strDirectory,refresh,pDialog);
 }
 
 void CApplication::StartMusicArtistScan(const std::string& strDirectory,

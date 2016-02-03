@@ -7,10 +7,10 @@ Music Visalisation:
 ESC -> sort du fulls crenn -> revient ou?
 TAB -> toggle visu fullscreen-> ok
 
-Pause -> sort du fullscrenn -> revient ou ??
+Pause -> sort du fullscrenn -> revient ou ?? 
 Resume -> Start visu fullscreen
 
-Stop -> sort du fullscrenn -> revient ou ??
+Stop -> sort du fullscrenn ok -> revient ou ??
 Play -> start fullscreen -> ok
 
 Timeout & music is playing -> start visu fullscreen OR screensaver
@@ -18,16 +18,18 @@ Timeout & music is playing -> start visu fullscreen OR screensaver
 Gerer le cas du screensaver a la place du visualiser
 
 ----
+Photo View:
 
 Agreger toutes les sources - OK
 Démarrer sur la library, pas sur les sources - OK
-Viewstate par défaut (voir si c'est réglé avec fichier de config dans userdata)
+Viewstate par défaut (voir si c'est réglé avec fichier de config dans userdata) - OK trouver une meilleure solution ?? 
 Fonction de recherche et de tri
 Fond a utiliser pour les images avec de la transparence...
 
 ----
 
 Sources: 
+
 USB
 	Auto add qd on le plug?
 Locale?
@@ -54,5 +56,18 @@ Réseau -> Scan de tous les prototoles (bouton ajout à la main pour cancel)
        -> Liste des résultalts tous protocoles combiné
        -> Sélection pour ajout à la main
        -> Selection habituelle
+
+Vue Empty pour les photo -> HasContent(Pictures)
+    Attention: J'ai vire le truc qui agrege les sources pour tester
+Add Src complet + Start scan pour:
+    music - ok
+    video - ok
+    photo 
+custom dialog pour le choix d'un album dans le interactive scan
+custom dialog pour le choix des noms artists/album pendant le interactive scan
+fonction cancel all pendant le interactive scan
+Progress bar to fix pendant le scan des films
+Scan des artist?
+Choix du scrapper dans les settings
 
 
