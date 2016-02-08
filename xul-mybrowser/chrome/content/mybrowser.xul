@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://myapp/locale/mybrowser.dtd">
+<xul:window title     ="&mybrowser.title;"
+            xmlns:xul ="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+            xmlns:html="http://www.w3.org/1999/xhtml"
+            id        ="mybrowser"
+            width     ="800"
+            height    ="600">
+    <xul:script type="application/javascript"
+                src="chrome://myapp/content/mybrowser.js" />
+    <xul:script type="application/javascript"
+                src="chrome://myapp/content/pmrpc.js" />
+    <html:h1>My Browser</html:h1>
+    <html:p>My browser can use XUL or HTML elements in it's UI.</html:p>
+    <xul:hbox>
+        <xul:button id       ="back"
+                    label    ="&mybrowser.back;"
+                    oncommand="back();"
+                    disabled ="true" />
+        <xul:button id       ="forward"
+                    label    ="&mybrowser.forward;"
+                    oncommand="forward();"
+                    disabled ="true" />
+        <xul:button id       ="reload"
+                    label    ="&mybrowser.reload;"
+                    oncommand="reload();" />
+        <xul:button id       ="stop"
+                    label    ="&mybrowser.stop;"
+                    oncommand="stop();"
+                    disabled ="true" />
+        <xul:textbox id      ="urlbar"
+                     value   =""
+                     flex    ="1"
+                     onchange="go();" />
+        <xul:button id       ="go"
+                    label    ="&mybrowser.go;"
+                    oncommand="go();" />
+        <xul:button id       ="showConsole"
+                    label    ="&mybrowser.console;"
+                    oncommand="showConsole();" />
+    </xul:hbox>
+    <xul:hbox>
+        <xul:button id       ="action_log_in"
+                    label    ="&mybrowser.action_log_in;"
+                    oncommand="action_log_in();"
+                    disabled ="false" />
+        <xul:button id       ="action_search"
+                    label    ="&mybrowser.action_search;"
+                    oncommand="action_search('star wars');"
+                    disabled ="false" />
+        <xul:button id       ="action_play"
+                    label    ="&mybrowser.action_play;"
+                    oncommand="action_play();" />
+        <xul:button id       ="Action4"
+                    label    ="&mybrowser.stop;"
+                    oncommand="stop();"
+                    disabled ="true" />
+        <xul:textbox id      ="Action5"
+                     value   =""
+                     flex    ="1"
+                     onchange="go();" />
+        <xul:button id       ="Action6"
+                    label    ="&mybrowser.go;"
+                    oncommand="go();" />
+        <xul:button id       ="Action7"
+                    label    ="&mybrowser.console;"
+                    oncommand="showConsole();" />
+    </xul:hbox>
+    <xul:browser flex="1"
+                 id  ="browser"
+                 src =""
+                 type="content-primary" />
+    <xul:statusbar>
+        <xul:statusbarpanel id   ="status"
+                            label=""
+                            crop ="end"
+                            flex ="1" />
+        <xul:progressmeter id    ="progress"
+                           mode  ="determined"
+                           value ="0%"
+                           style ="display: none" />
+        <xul:statusbarpanel id   ="security"
+                            label=""
+                            style="display: none" />
+    </xul:statusbar>
+</xul:window>

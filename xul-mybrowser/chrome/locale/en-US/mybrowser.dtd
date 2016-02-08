@@ -1,0 +1,12 @@
+<!ENTITY mybrowser.title   "my browser">
+<!ENTITY mybrowser.back    "Back">
+<!ENTITY mybrowser.forward "Forward">
+<!ENTITY mybrowser.reload  "Reload">
+<!ENTITY mybrowser.stop    "Stop">
+<!ENTITY mybrowser.go      "Go">
+<!ENTITY mybrowser.console "Console">
+<!ENTITY mybrowser.action_log_in "Log In">
+<!ENTITY mybrowser.action_search "Search">
+<!ENTITY mybrowser.action_play "Play">
+<!ENTITY mybrowser.action_account_create "Sign Up">
+<!ENTITY mybrowser.action_player_play "Play/Pause">
