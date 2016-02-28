@@ -19,25 +19,30 @@
  *
  */
 #include "threads/Thread.h"
+#include "GUIPassword.h"
 
 class CGUIDialogProgressBarHandle;
 
-class CPictureContentCheck : CThread, public IRunnable
+class CPictureContentCheck : CThread
 {
 public:
   CPictureContentCheck();
   virtual ~CPictureContentCheck();
 
-  void Start(const std::string& strDirectory, int flags);
+  void Start(const VECSOURCES*, bool stopAtFirst, int flags);
   bool IsScanning();
   void Stop();
 
 protected:
+  int CountFilesRecursively(const std::string& strPath);
   virtual void Process();
 
 protected:
   bool m_bRunning;
+  bool m_bStop;
+  bool m_bStopAtFirst;
+
+  const VECSOURCES * m_sources;
 
   int m_flags;
-  CThread m_fileCountReader;
 };

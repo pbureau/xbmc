@@ -170,6 +170,11 @@ bool CGUIDialogMediaSource::ShowAndAddMediaSource(const std::string &type)
       share.m_strThumbnailImage = dialog->m_paths->Get(0)->GetArt("thumb");
     }
     CMediaSourceSettings::GetInstance().AddShare(type, share);
+    if(type == "pictures")
+    {
+      // Start a source content check, must be done after the source is added to the source settings
+      g_application.StartPictureContentCheck(true);
+    }
   }
   dialog->m_paths->Clear();
   return confirmed;

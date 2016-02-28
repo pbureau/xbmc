@@ -29,6 +29,7 @@
 #include "messaging/IMessageTarget.h"
 
 #include "dialogs/GUIDialogProgress.h"
+#include "pictures/PictureContentCheck.h"
 
 #include <map>
 #include <memory>
@@ -282,6 +283,8 @@ public:
   void StartMusicScan(const std::string &path, bool userInitiated = true, int flags = 0);
   void StartMusicAlbumScan(const std::string& strDirectory, bool refresh = false, CGUIDialogProgress* pDialog = NULL);
   void StartMusicArtistScan(const std::string& strDirectory, bool refresh = false);
+  /* Start to search for picture files */
+  void StartPictureContentCheck(bool stopAtFirst = false);
 
   void UpdateLibraries();
   void CheckMusicPlaylist();
@@ -475,6 +478,7 @@ protected:
   bool m_bSystemScreenSaverEnable;
 
   MUSIC_INFO::CMusicInfoScanner *m_musicInfoScanner;
+  CPictureContentCheck * m_pictureContentChecker;
 
   bool m_muted;
   float m_volumeLevel;

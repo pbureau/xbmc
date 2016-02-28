@@ -22,11 +22,21 @@
 #include "interfaces/AnnouncementManager.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+#include "MediaSource.h"
+#include "FileItem.h"
+#include "filesystem/Directory.h"
+#include "filesystem/File.h"
+#include "settings/AdvancedSettings.h"
+#include "GUIInfoManager.h"
+#include "guiinfo/GUIInfoLabels.h"
 
-CPictureContentCheck::CPictureContentCheck() : CThread("PictureContentCheck"), m_fileCountReader(this, "PictureFileCounter")
+using namespace XFILE;
+
+CPictureContentCheck::CPictureContentCheck() : CThread("PictureContentCheck")
 {
   m_bRunning      = false;
   m_flags         = 0;
+  m_bStop         = false;
 /*
   m_showDialog    = false;
   m_handle        = NULL;
@@ -40,29 +50,75 @@ CPictureContentCheck::~CPictureContentCheck()
 {
 }
 
+int CPictureContentCheck::CountFilesRecursively(const std::string& strPath)
+{
+  int count = 0;
+
+  if(m_bStop)
+    return 0;
+
+  /* load sub folder */
+  CFileItemList items;
+  CDirectory::GetDirectory(strPath, items, g_advancedSettings.m_pictureExtensions, DIR_FLAG_NO_FILE_DIRS);
+  /* count items */
+  for (int i=0; i<items.Size(); ++i)
+  {
+    const CFileItemPtr pItem=items[i];
+    
+    if (pItem->m_bIsFolder)
+      count += CountFilesRecursively(pItem->GetPath());
+    else if (pItem->IsPicture())
+    {
+      count++;
+      if(m_bStopAtFirst)
+      {
+        m_bStop = true;
+        return count;
+      }
+    }
+  }
+  return count;
+}
+
 void CPictureContentCheck::Process()
 {
-  ANNOUNCEMENT::CAnnouncementManager::GetInstance().Announce(ANNOUNCEMENT::AudioLibrary, "xbmc", "OnScanStarted");
+  ANNOUNCEMENT::CAnnouncementManager::GetInstance().Announce(ANNOUNCEMENT::AudioLibrary, "xbmc", "OnPictureContentCheckStarted");
   try
   {
-    unsigned int tick = XbmcThreads::SystemClockMillis();
-    tick = XbmcThreads::SystemClockMillis() - tick;
-    CLog::Log(LOGNOTICE, "My Music: Scanning for music info using worker thread, operation took %s", StringUtils::SecondsToTimeString(tick / 1000).c_str());
+    int count = 0;
+
+    for (int i = 0; i < (int)m_sources->size() && !m_bStop; ++i)
+    {
+      CMediaSource share = m_sources->at(i);
+      /* load subfolder & count items */
+      count += CountFilesRecursively(share.strPath);
+      CLog::Log(LOGDEBUG, "%s::%s : sources: %s - %d files",__FILE__,__FUNCTION__,share.strName.c_str(), count);
+    }
+    /* Set the library status */
+    g_infoManager.SetLibraryBool(LIBRARY_HAS_PICTURES, (count>0)?true:false);
   }
   catch (...)
   {
-    CLog::Log(LOGERROR, "MusicInfoScanner: Exception while scanning.");
+    CLog::Log(LOGERROR, "PictureContentCheck: Exception while scanning.");
   }
+
+  unsigned int tick = XbmcThreads::SystemClockMillis();
+  tick = XbmcThreads::SystemClockMillis() - tick;
+  CLog::Log(LOGNOTICE, "PictureContentCheck: Scanning for music info using worker thread, operation took %s", StringUtils::SecondsToTimeString(tick / 1000).c_str());
 }
 
-void CPictureContentCheck::Start(const std::string& strDirectory, int flags)
+void CPictureContentCheck::Start(const VECSOURCES * sources, bool stopAtFirst, int flags)
 {
-  m_fileCountReader.StopThread();
   StopThread();
   m_flags = flags;
 
+  /* keep reference to the source list */
+  m_sources = sources;
+
   Create();
-  m_bRunning = true;
+  m_bRunning     = true;
+  m_bStop        = false;
+  m_bStopAtFirst = stopAtFirst;
 }
 
 bool CPictureContentCheck::IsScanning()
@@ -76,4 +132,6 @@ void CPictureContentCheck::Stop()
     //m_musicDatabase.Interupt();
 
   StopThread(false);
+  m_bStop    = true;
+  m_bRunning = false;
 }

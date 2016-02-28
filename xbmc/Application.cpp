@@ -225,6 +225,8 @@
 #include "pictures/GUIWindowSlideShow.h"
 #include "windows/GUIWindowLoginScreen.h"
 
+#include "settings/MediaSourceSettings.h"
+
 using namespace ADDON;
 using namespace XFILE;
 #ifdef HAS_DVD_DRIVE
@@ -264,6 +266,7 @@ CApplication::CApplication(void)
   , m_progressTrackingVideoResumeBookmark(*new CBookmark)
   , m_progressTrackingItem(new CFileItem)
   , m_musicInfoScanner(new CMusicInfoScanner)
+  , m_pictureContentChecker(new CPictureContentCheck)
   , m_fallbackLanguageLoaded(false)
 {
   m_network = NULL;
@@ -317,6 +320,7 @@ CApplication::CApplication(void)
 CApplication::~CApplication(void)
 {
   delete m_musicInfoScanner;
+  delete m_pictureContentChecker;
   delete &m_progressTrackingVideoResumeBookmark;
 #ifdef HAS_DVD_DRIVE
   delete m_Autorun;
@@ -695,6 +699,10 @@ bool CApplication::Create()
   CUtil::InitRandomSeed();
 
   g_mediaManager.Initialize();
+
+  // Start a picture content check
+  // FIXME: Find a better place to start this?
+  StartPictureContentCheck(true);
 
   m_lastFrameTime = XbmcThreads::SystemClockMillis();
   m_lastRenderTime = m_lastFrameTime;
@@ -5159,6 +5167,12 @@ void CApplication::StartMusicArtistScan(const std::string& strDirectory,
   m_musicInfoScanner->ShowDialog(true);
 
   m_musicInfoScanner->FetchArtistInfo(strDirectory,refresh);
+}
+
+void CApplication::StartPictureContentCheck(bool stopAtFirst)
+{
+  // start a new picture sources content check, will stop any ongoing scan
+  m_pictureContentChecker->Start(CMediaSourceSettings::GetInstance().GetSources("pictures"), stopAtFirst, 0);
 }
 
 void CApplication::CheckPlayingProgress()

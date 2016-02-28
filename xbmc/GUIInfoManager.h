@@ -338,6 +338,7 @@ protected:
   int m_libraryHasMovieSets;
   int m_libraryHasSingles;
   int m_libraryHasCompilations;
+  int m_libraryHasPictures;
 
   SPlayerVideoStreamInfo m_videoInfo;
   SPlayerAudioStreamInfo m_audioInfo;

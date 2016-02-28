@@ -6159,6 +6159,9 @@ void CGUIInfoManager::SetLibraryBool(int condition, bool value)
     case LIBRARY_HAS_COMPILATIONS:
       m_libraryHasCompilations = value ? 1 : 0;
       break;
+    case LIBRARY_HAS_PICTURES:
+      m_libraryHasPictures = value ? 1 : 0;
+      break;
     default:
       break;
   }
@@ -6173,6 +6176,7 @@ void CGUIInfoManager::ResetLibraryBools()
   m_libraryHasMovieSets = -1;
   m_libraryHasSingles = -1;
   m_libraryHasCompilations = -1;
+  m_libraryHasPictures = 0;
 }
 
 bool CGUIInfoManager::GetLibraryBool(int condition)
@@ -6276,6 +6280,7 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
   }
   else if (condition == LIBRARY_HAS_PICTURES)
   {
+    return m_libraryHasPictures > 0;
   }
   return false;
 }
