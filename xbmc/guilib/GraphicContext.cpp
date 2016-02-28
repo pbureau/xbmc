@@ -954,7 +954,7 @@ bool CGraphicContext::IsFullScreenRoot () const
   return m_bFullScreenRoot;
 }
 
-bool CGraphicContext::ToggleFullScreenRoot ()
+void CGraphicContext::ToggleFullScreen()
 {
   RESOLUTION uiRes;
 
@@ -968,13 +968,9 @@ bool CGraphicContext::ToggleFullScreenRoot ()
       uiRes = CDisplaySettings::GetInstance().GetCurrentResolution();
     else
       uiRes = (RESOLUTION) g_Windowing.DesktopResolution(g_Windowing.GetCurrentScreen());
-
-    g_application.m_pPlayer->TriggerUpdateResolution();
   }
 
   CDisplaySettings::GetInstance().SetCurrentResolution(uiRes, true);
-
-  return m_bFullScreenRoot;
 }
 
 void CGraphicContext::SetMediaDir(const std::string &strMediaDir)
@@ -983,9 +979,9 @@ void CGraphicContext::SetMediaDir(const std::string &strMediaDir)
   m_strMediaDir = strMediaDir;
 }
 
-void CGraphicContext::Flip(const CDirtyRegionList& dirty)
+void CGraphicContext::Flip(bool rendered)
 {
-  g_Windowing.PresentRender(dirty);
+  g_Windowing.PresentRender(rendered);
 
   if(m_stereoMode != m_nextStereoMode)
   {

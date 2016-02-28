@@ -50,12 +50,14 @@
 #include "pvr/PVRDatabase.h"
 #include "pvr/PVRGUIInfo.h"
 #include "pvr/recordings/PVRRecordings.h"
+#include "pvr/recordings/PVRRecordingsPath.h"
 #include "pvr/timers/PVRTimers.h"
 #include "pvr/windows/GUIWindowPVRBase.h"
 #include "settings/lib/Setting.h"
 #include "settings/MediaSettings.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
+#include "threads/SystemClock.h"
 #include "Util.h"
 #include "utils/JobManager.h"
 #include "utils/log.h"
@@ -173,6 +175,10 @@ void CPVRManager::OnSettingChanged(const CSetting *setting)
       else
         ((CSettingBool*)setting)->SetValue(false);
     }
+  }
+  else if(settingId == CSettings::SETTING_EPG_DAYSTODISPLAY)
+  {
+    m_addons->SetEPGTimeFrame(static_cast<const CSettingInt*>(setting)->GetValue());
   }
 }
 
@@ -334,12 +340,11 @@ bool CPVRManager::UpgradeOutdatedAddons(void)
   SetState(ManagerStateStarting);
   ResetProperties();
 
-  while (!Load() && IsInitialising())
+  const unsigned int MAX_PROGRESS_DISPLAY_TIME = 30000; // 30 secs
+  XbmcThreads::EndTime progressTimeout(MAX_PROGRESS_DISPLAY_TIME);
+  while (!Load(!progressTimeout.IsTimePast()) && IsInitialising())
   {
     CLog::Log(LOGERROR, "PVRManager - %s - failed to load PVR data, retrying", __FUNCTION__);
-    if (m_guiInfo) m_guiInfo->Stop();
-    if (m_addons) m_addons->Stop();
-    Cleanup();
     Sleep(1000);
   }
 
@@ -361,6 +366,9 @@ bool CPVRManager::UpgradeOutdatedAddons(void)
 
 void CPVRManager::Cleanup(void)
 {
+  if (m_addons)
+    m_addons->Unload();
+
   CSingleLock lock(m_critSection);
 
   SAFE_DELETE(m_addons);
@@ -513,12 +521,10 @@ void CPVRManager::Process(void)
   g_EpgContainer.Stop();
 
   /* load the pvr data from the db and clients if it's not already loaded */
-  while (!Load() && IsInitialising())
+  XbmcThreads::EndTime progressTimeout(30000); // 30 secs
+  while (!Load(!progressTimeout.IsTimePast()) && IsInitialising())
   {
     CLog::Log(LOGERROR, "PVRManager - %s - failed to load PVR data, retrying", __FUNCTION__);
-    if (m_guiInfo) m_guiInfo->Stop();
-    if (m_addons) m_addons->Stop();
-    Cleanup();
     Sleep(1000);
   }
 
@@ -629,8 +635,11 @@ void CPVRManager::StopUpdateThreads(void)
     m_addons->Stop();
 }
 
-bool CPVRManager::Load(void)
+bool CPVRManager::Load(bool bShowProgress)
 {
+  if (!bShowProgress)
+    HideProgressDialog();
+
   /* start the add-on update thread */
   if (m_addons)
     m_addons->Start();
@@ -654,27 +663,32 @@ bool CPVRManager::Load(void)
   }
 
   /* load all channels and groups */
-  ShowProgressDialog(g_localizeStrings.Get(19236), 0); // Loading channels from clients
+  if (bShowProgress)
+    ShowProgressDialog(g_localizeStrings.Get(19236), 0); // Loading channels from clients
   if (!m_channelGroups->Load() || !IsInitialising())
     return false;
 
   /* get timers from the backends */
-  ShowProgressDialog(g_localizeStrings.Get(19237), 50); // Loading timers from clients
+  if (bShowProgress)
+    ShowProgressDialog(g_localizeStrings.Get(19237), 50); // Loading timers from clients
   m_timers->Load();
 
   /* get recordings from the backend */
-  ShowProgressDialog(g_localizeStrings.Get(19238), 75); // Loading recordings from clients
+  if (bShowProgress)
+    ShowProgressDialog(g_localizeStrings.Get(19238), 75); // Loading recordings from clients
   m_recordings->Load();
 
   if (!IsInitialising())
     return false;
 
   /* start the other pvr related update threads */
-  ShowProgressDialog(g_localizeStrings.Get(19239), 85); // Starting background threads
+  if (bShowProgress)
+    ShowProgressDialog(g_localizeStrings.Get(19239), 85); // Starting background threads
   m_guiInfo->Start();
 
   /* close the progess dialog */
-  HideProgressDialog();
+  if (bShowProgress)
+    HideProgressDialog();
 
   return true;
 }
@@ -823,7 +837,7 @@ void CPVRManager::ResetDatabase(bool bResetEPGOnly /* = false */)
       if (videoDatabase.Open())
       {
         videoDatabase.EraseVideoSettings("pvr://channels/");
-        videoDatabase.EraseVideoSettings("pvr://recordings/");
+        videoDatabase.EraseVideoSettings(CPVRRecordingsPath::PATH_RECORDINGS);
         videoDatabase.Close();
       }
 
@@ -1193,8 +1207,9 @@ bool CPVRManager::UpdateItem(CFileItem& item)
   if (!m_currentFile || *m_currentFile->GetPVRChannelInfoTag() == *item.GetPVRChannelInfoTag())
     return false;
 
-  g_application.CurrentFileItem() = *m_currentFile;
-  g_infoManager.SetCurrentItem(*m_currentFile);
+  g_application.SetCurrentFileItem(*m_currentFile);
+  CFileItemPtr itemptr(new CFileItem(*m_currentFile));
+  g_infoManager.SetCurrentItem(itemptr);
 
   CPVRChannelPtr channelTag(item.GetPVRChannelInfoTag());
   CEpgInfoTagPtr epgTagNow(channelTag->GetEPGNow());

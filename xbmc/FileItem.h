@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include "addons/IAddon.h"
 #include "guilib/GUIListItem.h"
 #include "GUIPassword.h"
 #include "threads/CriticalSection.h"
@@ -118,6 +119,7 @@ public:
   CFileItem(const PVR::CPVRRecordingPtr& record);
   CFileItem(const PVR::CPVRTimerInfoTagPtr& timer);
   CFileItem(const CMediaSource& share);
+  CFileItem(std::shared_ptr<const ADDON::IAddon> addonInfo);
   virtual ~CFileItem(void);
   virtual CGUIListItem *Clone() const { return new CFileItem(*this); };
 
@@ -126,7 +128,7 @@ public:
   bool IsURL(const CURL& url) const;
   const std::string &GetPath() const { return m_strPath; };
   void SetPath(const std::string &path) { m_strPath = path; };
-  bool IsPath(const std::string& path) const;
+  bool IsPath(const std::string& path, bool ignoreURLOptions = false) const;
 
   /*! \brief reset class to it's default values as per construction.
    Free's all allocated memory.
@@ -347,6 +349,9 @@ public:
     return m_pictureInfoTag;
   }
 
+  bool HasAddonInfo() const { return m_addonInfo != nullptr; }
+  const std::shared_ptr<const ADDON::IAddon> GetAddonInfo() const { return m_addonInfo; }
+
   CPictureInfoTag* GetPictureInfoTag();
 
   /*!
@@ -530,6 +535,7 @@ private:
   PVR::CPVRTimerInfoTagPtr m_pvrTimerInfoTag;
   PVR::CPVRRadioRDSInfoTagPtr m_pvrRadioRDSInfoTag;
   CPictureInfoTag* m_pictureInfoTag;
+  std::shared_ptr<const ADDON::IAddon> m_addonInfo;
   bool m_bIsAlbum;
 
   CCueDocumentPtr m_cueDocument;
@@ -626,7 +632,7 @@ public:
   void FilterCueItems();
   void RemoveExtensions();
   void SetFastLookup(bool fastLookup);
-  bool Contains(const std::string& fileName) const;
+  bool Contains(const std::string& fileName, bool ignoreURLOptions = false) const;
   bool GetFastLookup() const { return m_fastLookup; };
 
   /*! \brief stack a CFileItemList

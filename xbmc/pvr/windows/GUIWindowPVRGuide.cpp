@@ -92,16 +92,22 @@ void CGUIWindowPVRGuide::GetContextButtons(int itemNumber, CContextButtons &butt
     CPVRTimerInfoTagPtr timer(epg->Timer());
     if (timer)
     {
+      if (timer->GetTimerRuleId() != PVR_TIMER_NO_PARENT)
+        buttons.Add(CONTEXT_BUTTON_EDIT_TIMER_RULE, 19243); /* Edit timer rule */
+
+      const CPVRTimerTypePtr timerType(timer->GetTimerType());
+      if (timerType && !timerType->IsReadOnly())
+        buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 19242);    /* Edit timer */
+
       if (timer->IsRecording())
         buttons.Add(CONTEXT_BUTTON_STOP_RECORD, 19059);   /* Stop recording */
       else
       {
-        CPVRTimerTypePtr timerType(timer->GetTimerType());
         if (timerType && !timerType->IsReadOnly())
           buttons.Add(CONTEXT_BUTTON_DELETE_TIMER, 19060);  /* Delete timer */
       }
     }
-    else
+    else if (g_PVRClients->SupportsTimers())
     {
       if (epg->EndAsLocalTime() > CDateTime::GetCurrentDateTime())
         buttons.Add(CONTEXT_BUTTON_START_RECORD, 264);      /* Record */
@@ -392,6 +398,8 @@ bool CGUIWindowPVRGuide::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
       OnContextButtonInfo(pItem.get(), button) ||
       OnContextButtonStartRecord(pItem.get(), button) ||
       OnContextButtonStopRecord(pItem.get(), button) ||
+      OnContextButtonEditTimer(pItem.get(), button) ||
+      OnContextButtonEditTimerRule(pItem.get(), button) ||
       OnContextButtonDeleteTimer(pItem.get(), button) ||
       OnContextButtonBegin(pItem.get(), button) ||
       OnContextButtonEnd(pItem.get(), button) ||

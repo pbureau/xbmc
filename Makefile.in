@@ -183,7 +183,6 @@ DIRECTORY_ARCHIVES += xbmc/cores/omxplayer/omxplayer.a
 endif
 
 LIB_DIRS=\
-	lib/cximage-6.0 \
 	lib/libexif \
 	lib/cpluff \
 	lib/xbmc-dll-symbols
@@ -251,18 +250,6 @@ CHECK_LIBS = xbmc/addons/test/addonsTest.a \
              xbmc/cores/AudioEngine/Sinks/test/AESinkTest.a \
              xbmc/test/xbmc-test.a
 
-ifeq (@USE_WAYLAND@,1)
-CHECK_LIBS += xbmc/windowing/tests/wayland/test_wayland.a
-
-ifeq (@USE_WAYLAND_TEST_EXTENSION@,1)
-WAYLAND_TEST_MODULE = xbmc/windowing/tests/wayland/xbmc-wayland-test-extension.so
-$(WAYLAND_TEST_MODULE): force
-	$(MAKE) -C $(@D) $(@F)
-CHECK_EXTENSIONS = $(WAYLAND_TEST_MODULE)
-CHECK_LIBADD=@WAYLAND_TEST_LIBS@
-endif
-endif
-
 ifeq (@USE_SSE4@,1)
 LIBSSE4+=sse4
 sse4 : force
@@ -281,7 +268,7 @@ all : $(FINAL_TARGETS)
 include Makefile.include
 
 .PHONY : dllloader exports eventclients \
-	dvdpcodecs dvdpextcodecs imagelib codecs externals force skins libaddon check \
+	dvdpcodecs dvdpextcodecs codecs externals force skins libaddon check \
 	testframework testsuite
 
 # hack targets to keep build system up to date
@@ -349,12 +336,9 @@ endif
 libexif: dllloader
 	$(MAKE) -C lib/libexif
 
-imagelib: dllloader
-	$(MAKE) -C lib/cximage-6.0
-
 codecs: dvdpcodecs dvdpextcodecs
 
-libs: $(LIBSSE4) imagelib libexif system/libcpluff-@ARCH@.so
+libs: $(LIBSSE4) libexif system/libcpluff-@ARCH@.so
 
 externals: codecs libs libaddon
 

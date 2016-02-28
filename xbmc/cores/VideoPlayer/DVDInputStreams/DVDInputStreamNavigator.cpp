@@ -558,13 +558,7 @@ int CDVDInputStreamNavigator::ProcessBlock(uint8_t* dest_buffer, int* read)
         m_iVobUnitStart = pci->pci_gi.vobu_s_ptm;
         m_iVobUnitStop = pci->pci_gi.vobu_e_ptm;
 
-        m_iTime = (int) ( m_dll.dvdnav_convert_time( &(pci->pci_gi.e_eltm) ) + m_iCellStart ) / 90;
-
-        if (m_bCheckButtons)
-        {
-          CheckButtons();
-          m_bCheckButtons = false;
-        }
+        m_iTime = (int) ( m_dll.dvdnav_get_current_time(m_dvdnav)  / 90 );
 
         iNavresult = m_pVideoPlayer->OnDVDNavResult((void*)pci, DVDNAV_NAV_PACKET);
       }
@@ -691,9 +685,9 @@ int CDVDInputStreamNavigator::GetCurrentButton()
 
 void CDVDInputStreamNavigator::CheckButtons()
 {
-  if (m_dvdnav)
+  if (m_dvdnav && m_bCheckButtons)
   {
-
+    m_bCheckButtons = false;
     pci_t* pci = m_dll.dvdnav_get_current_nav_pci(m_dvdnav);
     int iCurrentButton = GetCurrentButton();
 
@@ -870,9 +864,11 @@ int CDVDInputStreamNavigator::GetActiveSubtitleStream()
   return activeStream;
 }
 
-bool CDVDInputStreamNavigator::GetSubtitleStreamInfo(const int iId, DVDNavStreamInfo &info)
+DVDNavSubtitleStreamInfo CDVDInputStreamNavigator::GetSubtitleStreamInfo(const int iId)
 {
-  if (!m_dvdnav) return false;
+  DVDNavSubtitleStreamInfo info;
+  if (!m_dvdnav)
+    return info;
 
   int streamId = ConvertSubtitleStreamId_XBMCToExternal(iId);
   subp_attr_t subp_attributes;
@@ -886,10 +882,10 @@ bool CDVDInputStreamNavigator::GetSubtitleStreamInfo(const int iId, DVDNavStream
     lang[1] = (subp_attributes.lang_code & 255);
     lang[0] = (subp_attributes.lang_code >> 8) & 255;
 
-    g_LangCodeExpander.ConvertToISO6392T(lang, info.language);
-    return true;
+    info.language = g_LangCodeExpander.ConvertToISO6392T(lang);
   }
-  return false;
+
+  return info;
 }
 
 void CDVDInputStreamNavigator::SetSubtitleStreamName(DVDNavStreamInfo &info, const subp_attr_t &subp_attributes)
@@ -1050,12 +1046,13 @@ void CDVDInputStreamNavigator::SetAudioStreamName(DVDNavStreamInfo &info, const 
   }
 
   StringUtils::TrimLeft(info.name);
-
 }
 
-bool CDVDInputStreamNavigator::GetAudioStreamInfo(const int iId, DVDNavStreamInfo &info)
+DVDNavAudioStreamInfo CDVDInputStreamNavigator::GetAudioStreamInfo(const int iId)
 {
-  if (!m_dvdnav) return false;
+  DVDNavAudioStreamInfo info;
+  if (!m_dvdnav)
+    return info;
 
   int streamId = ConvertAudioStreamId_XBMCToExternal(iId);
   audio_attr_t audio_attributes;
@@ -1069,13 +1066,11 @@ bool CDVDInputStreamNavigator::GetAudioStreamInfo(const int iId, DVDNavStreamInf
     lang[1] = (audio_attributes.lang_code & 255);
     lang[0] = (audio_attributes.lang_code >> 8) & 255;
 
-    g_LangCodeExpander.ConvertToISO6392T(lang, info.language);
-
+    info.language = g_LangCodeExpander.ConvertToISO6392T(lang);
     info.channels = audio_attributes.channels + 1;
-
-    return true;
   }
-  return false;
+
+  return info;
 }
 
 int CDVDInputStreamNavigator::GetAudioStreamCount()
@@ -1102,6 +1097,47 @@ int CDVDInputStreamNavigator::GetAudioStreamCount()
     /* just for good measure say that non vts domain always has one */
     return 1;
   }
+}
+
+
+int CDVDInputStreamNavigator::GetAngleCount()
+{
+  if (!m_dvdnav)
+    return -1;
+
+  int number_of_angles;
+  int current_angle;
+  dvdnav_status_t status = m_dll.dvdnav_get_angle_info(m_dvdnav, &current_angle, &number_of_angles);
+
+  if (status == DVDNAV_STATUS_OK)
+    return number_of_angles;
+  else
+    return -1;
+}
+
+int CDVDInputStreamNavigator::GetActiveAngle()
+{
+  if (!m_dvdnav)
+    return -1;
+
+  int number_of_angles;
+  int current_angle;
+  dvdnav_status_t status = m_dll.dvdnav_get_angle_info(m_dvdnav, &current_angle, &number_of_angles);
+
+  if (status == DVDNAV_STATUS_OK)
+    return current_angle;
+  else
+    return -1;
+}
+
+bool CDVDInputStreamNavigator::SetAngle(int angle)
+{
+  if (!m_dvdnav)
+    return false;
+
+  dvdnav_status_t status = m_dll.dvdnav_angle_change(m_dvdnav, angle);
+
+  return (status == DVDNAV_STATUS_OK);
 }
 
 bool CDVDInputStreamNavigator::GetCurrentButtonInfo(CDVDOverlaySpu* pOverlayPicture, CDVDDemuxSPU* pSPU, int iButtonType)
@@ -1153,7 +1189,7 @@ int CDVDInputStreamNavigator::GetTime()
   return m_iTime;
 }
 
-bool CDVDInputStreamNavigator::SeekTime(int iTimeInMsec)
+bool CDVDInputStreamNavigator::PosTime(int iTimeInMsec)
 {
   if( m_dll.dvdnav_jump_to_sector_by_time(m_dvdnav, iTimeInMsec * 90, 0) == DVDNAV_STATUS_ERR )
   {
@@ -1221,12 +1257,10 @@ float CDVDInputStreamNavigator::GetVideoAspectRatio()
   CLog::Log(LOGINFO, "%s - Aspect wanted: %d, Scale permissions: %d", __FUNCTION__, iAspect, iPerm);
   switch(iAspect)
   {
-    case 2: //4:3
+    case 0: //4:3
       return 4.0f / 3.0f;
     case 3: //16:9
       return 16.0f / 9.0f;
-    case 4:
-      return 2.11f / 1.0f;
     default: //Unknown, use libmpeg2
       return 0.0f;
   }
@@ -1457,22 +1491,28 @@ int CDVDInputStreamNavigator::ConvertSubtitleStreamId_ExternalToXBMC(int id)
   }
 }
 
-bool CDVDInputStreamNavigator::GetDVDTitleString(std::string& titleStr)
+std::string CDVDInputStreamNavigator::GetDVDTitleString()
 {
-  if (!m_dvdnav) return false;
+  if (!m_dvdnav)
+    return "";
+
   const char* str = NULL;
-  m_dll.dvdnav_get_title_string(m_dvdnav, &str);
-  titleStr.assign(str);
-  return true;
+  if (m_dll.dvdnav_get_title_string(m_dvdnav, &str) == DVDNAV_STATUS_OK)
+    return str;
+  else
+    return "";
 }
 
-bool CDVDInputStreamNavigator::GetDVDSerialString(std::string& serialStr)
+std::string CDVDInputStreamNavigator::GetDVDSerialString()
 {
-  if (!m_dvdnav) return false;
+  if (!m_dvdnav)
+    return "";
+
   const char* str = NULL;
-  m_dll.dvdnav_get_serial_string(m_dvdnav, &str);
-  serialStr.assign(str);
-  return true;
+  if (m_dll.dvdnav_get_serial_string(m_dvdnav, &str) == DVDNAV_STATUS_OK)
+    return str;
+  else
+    return "";
 }
 
 int64_t CDVDInputStreamNavigator::GetChapterPos(int ch)
@@ -1488,4 +1528,34 @@ int64_t CDVDInputStreamNavigator::GetChapterPos(int ch)
       return chapter->second;
   }
   return 0;
+}
+
+void CDVDInputStreamNavigator::GetVideoResolution(uint32_t* width, uint32_t* height)
+{
+  if (!m_dvdnav) return;
+
+  dvdnav_status_t status = m_dll.dvdnav_get_video_resolution(m_dvdnav, width, height);
+  if (status != DVDNAV_STATUS_OK)
+  {
+    CLog::Log(LOGWARNING, "CDVDInputStreamNavigator::GetVideoResolution - Failed to get resolution (%s)", m_dll.dvdnav_err_to_string(m_dvdnav));
+    *width = 0;
+    *height = 0;
+  }
+}
+
+DVDNavVideoStreamInfo CDVDInputStreamNavigator::GetVideoStreamInfo()
+{
+  DVDNavVideoStreamInfo info;
+  if (!m_dvdnav)
+    return info;
+
+  info.angles = GetAngleCount();
+  info.aspectRatio = GetVideoAspectRatio();
+  GetVideoResolution(&info.width, &info.height);
+
+  // Until we add get_video_attr or get_video_codec we can't distinguish MPEG-1 (h261)
+  // from MPEG-2 (h262). The latter is far more common, so use this.
+  info.codec = "h262";
+
+  return info;
 }

@@ -408,6 +408,7 @@ const std::string CSettings::SETTING_SYSTEM_PLAYLISTSPATH = "system.playlistspat
 const std::string CSettings::SETTING_ADDONS_AUTOUPDATES = "general.addonupdates";
 const std::string CSettings::SETTING_ADDONS_NOTIFICATIONS = "general.addonnotifications";
 const std::string CSettings::SETTING_ADDONS_SHOW_RUNNING = "addons.showrunning";
+const std::string CSettings::SETTING_ADDONS_ALLOW_UNKNOWN_SOURCES = "addons.unknownsources";
 const std::string CSettings::SETTING_ADDONS_MANAGE_DEPENDENCIES = "addons.managedependencies";
 const std::string CSettings::SETTING_GENERAL_ADDONFOREIGNFILTER = "general.addonforeignfilter";
 const std::string CSettings::SETTING_GENERAL_ADDONBROKENFILTER = "general.addonbrokenfilter";
@@ -870,10 +871,6 @@ void CSettings::InitializeVisibility()
 void CSettings::InitializeDefaults()
 {
   // set some default values if necessary
-#if defined(HAS_TOUCH_SKIN) && defined(TARGET_DARWIN_IOS)
-  ((CSettingAddon*)m_settingsManager->GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN))->SetDefault("skin.re-touched");
-#endif
-
 #if defined(TARGET_POSIX)
   CSettingString* timezonecountry = (CSettingString*)m_settingsManager->GetSetting(CSettings::SETTING_LOCALE_TIMEZONECOUNTRY);
   CSettingString* timezone = (CSettingString*)m_settingsManager->GetSetting(CSettings::SETTING_LOCALE_TIMEZONE);
@@ -906,11 +903,6 @@ void CSettings::InitializeDefaults()
 
   if (g_application.IsStandAlone())
     ((CSettingInt*)m_settingsManager->GetSetting(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNSTATE))->SetDefault(POWERSTATE_SHUTDOWN);
-
-#if defined(HAS_WEB_SERVER)
-  if (CUtil::CanBindPrivileged())
-    ((CSettingInt*)m_settingsManager->GetSetting(CSettings::SETTING_SERVICES_WEBSERVERPORT))->SetDefault(80);
-#endif
 }
 
 void CSettings::InitializeOptionFillers()
@@ -1163,6 +1155,7 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.insert(CSettings::SETTING_PVRCLIENT_MENUHOOK);
   settingSet.insert(CSettings::SETTING_PVRMENU_SEARCHICONS);
   settingSet.insert(CSettings::SETTING_EPG_RESETEPG);
+  settingSet.insert(CSettings::SETTING_EPG_DAYSTODISPLAY);
   settingSet.insert(CSettings::SETTING_PVRPARENTAL_ENABLED);
   m_settingsManager->RegisterCallback(&PVR::g_PVRManager, settingSet);
 
@@ -1207,6 +1200,7 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.clear();
   settingSet.insert(CSettings::SETTING_ADDONS_SHOW_RUNNING);
   settingSet.insert(CSettings::SETTING_ADDONS_MANAGE_DEPENDENCIES);
+  settingSet.insert(CSettings::SETTING_ADDONS_ALLOW_UNKNOWN_SOURCES);
   m_settingsManager->RegisterCallback(&ADDON::CAddonSystemSettings::GetInstance(), settingSet);
 
   settingSet.clear();

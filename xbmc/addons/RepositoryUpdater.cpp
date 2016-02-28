@@ -34,6 +34,7 @@
 #include "utils/JobManager.h"
 #include "utils/log.h"
 #include <algorithm>
+#include <iterator>
 #include <vector>
 
 namespace ADDON
@@ -66,19 +67,19 @@ void CRepositoryUpdater::OnJobComplete(unsigned int jobID, bool success, CJob* j
 
     if (CSettings::GetInstance().GetInt(CSettings::SETTING_ADDONS_AUTOUPDATES) == AUTO_UPDATES_NOTIFY)
     {
-      VECADDONS hasUpdate = CAddonMgr::GetInstance().GetOutdated();
-      if (!hasUpdate.empty())
+      VECADDONS updates = CAddonMgr::GetInstance().GetAvailableUpdates();
+      if (!updates.empty())
       {
-        if (hasUpdate.size() == 1)
+        if (updates.size() == 1)
           CGUIDialogKaiToast::QueueNotification(
-              hasUpdate[0]->Icon(), hasUpdate[0]->Name(), g_localizeStrings.Get(24068),
+              updates[0]->Icon(), updates[0]->Name(), g_localizeStrings.Get(24068),
               TOAST_DISPLAY_TIME, false, TOAST_DISPLAY_TIME);
         else
           CGUIDialogKaiToast::QueueNotification(
               "", g_localizeStrings.Get(24001), g_localizeStrings.Get(24061),
               TOAST_DISPLAY_TIME, false, TOAST_DISPLAY_TIME);
 
-        for (const auto &addon : hasUpdate)
+        for (const auto &addon : updates)
           CEventLog::GetInstance().Add(EventPtr(new CAddonManagementEvent(addon, 24068)));
       }
     }
@@ -93,15 +94,19 @@ void CRepositoryUpdater::OnJobComplete(unsigned int jobID, bool success, CJob* j
   }
 }
 
-void CRepositoryUpdater::CheckForUpdates(bool showProgress)
+bool CRepositoryUpdater::CheckForUpdates(bool showProgress)
 {
   VECADDONS addons;
-  if (CAddonMgr::GetInstance().GetAddons(ADDON_REPOSITORY, addons) && !addons.empty())
+  if (CAddonMgr::GetInstance().GetAddons(addons, ADDON_REPOSITORY) && !addons.empty())
   {
     CSingleLock lock(m_criticalSection);
     for (const auto& addon : addons)
       CheckForUpdates(std::static_pointer_cast<ADDON::CRepository>(addon), showProgress);
+
+    return true;
   }
+
+  return false;
 }
 
 static void SetProgressIndicator(CRepositoryUpdateJob* job)
@@ -162,7 +167,7 @@ void CRepositoryUpdater::OnSettingChanged(const CSetting* setting)
 CDateTime CRepositoryUpdater::LastUpdated() const
 {
   VECADDONS repos;
-  if (!CAddonMgr::GetInstance().GetAddons(ADDON_REPOSITORY, repos) || repos.empty())
+  if (!CAddonMgr::GetInstance().GetAddons(repos, ADDON_REPOSITORY) || repos.empty())
     return CDateTime();
 
   CAddonDatabase db;

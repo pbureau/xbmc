@@ -127,14 +127,12 @@ void CProcessorHD::ApplySupportedFormats(std::vector<ERenderFormat> *formats)
   if (SUCCEEDED(m_pEnumerator->CheckVideoProcessorFormat(DXGI_FORMAT_P010, &flags))
     && (flags & D3D11_VIDEO_PROCESSOR_FORMAT_SUPPORT_INPUT))
   {
-    // TODO: temporary disabled
-    //formats->push_back(RENDER_FMT_YUV420P10);
+    formats->push_back(RENDER_FMT_YUV420P10);
   }
   if (SUCCEEDED(m_pEnumerator->CheckVideoProcessorFormat(DXGI_FORMAT_P016, &flags))
     && (flags & D3D11_VIDEO_PROCESSOR_FORMAT_SUPPORT_INPUT))
   {
-    // TODO: temporary disabled
-    //formats->push_back(RENDER_FMT_YUV420P16);
+    formats->push_back(RENDER_FMT_YUV420P16);
   }
 }
 
@@ -476,39 +474,18 @@ CRenderPicture *CProcessorHD::Convert(DVDVideoPicture* picture)
     return nullptr;
   }
 
+  uint8_t*  pData = static_cast<uint8_t*>(rectangle.pData);
+  uint8_t*  dst[] = { pData, pData + m_texDesc.Height * rectangle.RowPitch };
+  int dstStride[] = { rectangle.RowPitch, rectangle.RowPitch };
+
   if (picture->format == RENDER_FMT_YUV420P)
   {
-    uint8_t*  pData = static_cast<uint8_t*>(rectangle.pData);
-    uint8_t*  dst[] = { pData, pData + m_texDesc.Height * rectangle.RowPitch };
-    int dstStride[] = { rectangle.RowPitch, rectangle.RowPitch };
     convert_yuv420_nv12(picture->data, picture->iLineSize, picture->iHeight, picture->iWidth, dst, dstStride);
   }
   else
   {
-    // TODO: Optimize this later using sse2/sse4
-    uint16_t * d_y = static_cast<uint16_t*>(rectangle.pData);
-    uint16_t * d_uv = d_y + m_texDesc.Height * rectangle.RowPitch;
-    // Convert to NV12 - Luma
-    for (size_t line = 0; line < picture->iHeight; ++line)
-    {
-      uint16_t * y = (uint16_t*)(picture->data[0] + picture->iLineSize[0] * line);
-      uint16_t * d = d_y + rectangle.RowPitch * line;
-      memcpy(d, y, picture->iLineSize[0]);
-    }
-    // Convert to NV12 - Chroma
-    size_t chromaWidth = (picture->iWidth + 1) >> 1;
-    size_t chromaHeight = picture->iHeight >> 1;
-    for (size_t line = 0; line < chromaHeight; ++line)
-    {
-      uint16_t * u = (uint16_t*)picture->data[1] + line * picture->iLineSize[1];
-      uint16_t * v = (uint16_t*)picture->data[2] + line * picture->iLineSize[2];
-      uint16_t * d = d_uv + line * rectangle.RowPitch;
-      for (size_t x = 0; x < chromaWidth; x++)
-      {
-        *d++ = *u++; 
-        *d++ = *v++;
-      }
-    }
+    convert_yuv420_p01x(picture->data, picture->iLineSize, picture->iHeight, picture->iWidth, dst, dstStride
+                      , picture->format == RENDER_FMT_YUV420P10 ? 10 : 16);
   }
   pContext->Unmap(pResource, subresource);
   SAFE_RELEASE(pResource);
@@ -597,26 +574,9 @@ bool CProcessorHD::Render(CRect src, CRect dst, ID3D11Resource* target, ID3D11Vi
   EDEINTERLACEMODE deinterlace_mode = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_DeinterlaceMode;
   if (g_advancedSettings.m_DXVANoDeintProcForProgressive)
     deinterlace_mode = (flags & RENDER_FLAG_FIELD0 || flags & RENDER_FLAG_FIELD1) ? VS_DEINTERLACEMODE_FORCE : VS_DEINTERLACEMODE_OFF;
-  EINTERLACEMETHOD interlace_method = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod;
 
-  bool progressive = deinterlace_mode == VS_DEINTERLACEMODE_OFF
-                  || (   interlace_method != VS_INTERLACEMETHOD_DXVA_BOB
-                      && interlace_method != VS_INTERLACEMETHOD_DXVA_BEST);
+  bool progressive = deinterlace_mode == VS_DEINTERLACEMODE_OFF;
 
-  ID3D11Texture2D* targetTex = nullptr;
-  hr = target->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&targetTex));
-  if (FAILED(hr))
-  {
-    CLog::Log(LOGERROR, __FUNCTION__" - failed getting target texture with error %x", hr);
-    return false;
-  }
-
-  D3D11_TEXTURE2D_DESC desc;
-  targetTex->GetDesc(&desc);
-  targetTex->Release();
-
-  CRect rectTarget(0, 0, float(desc.Width), float(desc.Height));
-  CWIN32Util::CropSource(src, dst, rectTarget);
   RECT sourceRECT = { src.x1, src.y1, src.x2, src.y2 };
   RECT dstRECT    = { dst.x1, dst.y1, dst.x2, dst.y2 };
 

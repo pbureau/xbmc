@@ -31,6 +31,7 @@
 #include "utils/CharsetConverter.h"
 #include "utils/StringUtils.h"
 #include "utils/XMLUtils.h"
+#include "addons/include/kodi_vfs_types.h"
 
 using namespace XFILE;
 
@@ -72,6 +73,8 @@ CAddonCallbacksAddon::CAddonCallbacksAddon(CAddon* addon)
   m_callbacks->CreateDirectory    = CreateDirectory;
   m_callbacks->DirectoryExists    = DirectoryExists;
   m_callbacks->RemoveDirectory    = RemoveDirectory;
+  m_callbacks->GetDirectory       = GetDirectory;
+  m_callbacks->FreeDirectory      = FreeDirectory;
 }
 
 CAddonCallbacksAddon::~CAddonCallbacksAddon()
@@ -275,10 +278,8 @@ char* CAddonCallbacksAddon::GetLocalizedString(const void* addonData, long dwCod
   CAddonCallbacksAddon* addonHelper = helper->GetHelperAddon();
 
   std::string string;
-  if (dwCode >= 30000 && dwCode <= 30999)
-    string = addonHelper->m_addon->GetString(dwCode).c_str();
-  else if (dwCode >= 32000 && dwCode <= 32999)
-    string = addonHelper->m_addon->GetString(dwCode).c_str();
+  if ((dwCode >= 30000 && dwCode <= 30999) || (dwCode >= 32000 && dwCode <= 32999))
+    string = g_localizeStrings.GetAddonString(addonHelper->m_addon->ID(), dwCode).c_str();
   else
     string = g_localizeStrings.Get(dwCode).c_str();
 
@@ -530,6 +531,63 @@ bool CAddonCallbacksAddon::RemoveDirectory(const void* addonData, const char *st
     CFile::Delete(fileItems.Get(i)->GetPath());
 
   return CDirectory::Remove(strPath);
+}
+
+static void CFileItemListToVFSDirEntries(VFSDirEntry* entries,
+                                         unsigned int num_entries,
+                                         const CFileItemList& items)
+{
+  if (!entries)
+    return;
+
+  int toCopy = std::min(num_entries, (unsigned int)items.Size());
+
+  for (int i=0;i<toCopy;++i)
+  {
+    entries[i].label = strdup(items[i]->GetLabel().c_str());
+    entries[i].path = strdup(items[i]->GetPath().c_str());
+    entries[i].size = items[i]->m_dwSize;
+    entries[i].folder = items[i]->m_bIsFolder;
+  }
+}
+
+bool CAddonCallbacksAddon::GetDirectory(const void* addonData, const char *strPath, const char* mask, VFSDirEntry** items, unsigned int* num_items)
+{
+  CAddonCallbacks* helper = (CAddonCallbacks*) addonData;
+  if (!helper)
+    return false;
+
+  CFileItemList fileItems;
+  if (!CDirectory::GetDirectory(strPath, fileItems, mask, DIR_FLAG_NO_FILE_DIRS))
+    return false;
+
+  if (fileItems.Size() > 0)
+  {
+    *num_items = static_cast<unsigned int>(fileItems.Size());
+    *items = new VFSDirEntry[fileItems.Size()];
+  }
+  else
+  {
+    *num_items = 0;
+    *items = nullptr;
+  }
+
+  CFileItemListToVFSDirEntries(*items, *num_items, fileItems);
+  return true;
+}
+
+void CAddonCallbacksAddon::FreeDirectory(const void* addonData, VFSDirEntry* items, unsigned int num_items)
+{
+  CAddonCallbacks* helper = (CAddonCallbacks*) addonData;
+  if (!helper)
+    return;
+
+  for (unsigned int i=0;i<num_items;++i)
+  {
+    free(items[i].label);
+    free(items[i].path);
+  }
+  delete[] items;
 }
 
 }; /* namespace ADDON */

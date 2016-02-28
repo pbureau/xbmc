@@ -2540,6 +2540,7 @@ msgctxt "#574"
 msgid "Country"
 msgstr ""
 
+#: addons/skin.confluence/720p/IncludesHomeMenuItems.xml#L105
 #: xbmc/dialogs/GUIDialogMediaFilter.cpp
 #: xbmc/playlists/SmartPlaylist.cpp
 msgctxt "#575"
@@ -2878,6 +2879,7 @@ msgid "Browse for playlist"
 msgstr ""
 
 #: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
+#: xbmc/interfaces/builtins/SkinBuiltins.cpp
 msgctxt "#657"
 msgid "Browse for folder"
 msgstr ""
@@ -3426,19 +3428,19 @@ msgctxt "#806"
 msgid "Fulltext search (or title search only)"
 msgstr ""
 
-#. special days of week representation value for a timer schedule
+#. special days of week representation value for a timer rule
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
 msgctxt "#807"
 msgid "Any day"
 msgstr ""
 
-#. special days of week representation for a repeating timer
+#. special days of week representation for a timer rule
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
 msgctxt "#808"
 msgid "Every day"
 msgstr ""
 
-#. special channel representation value for a repeating timer
+#. special channel representation value for a timer rule
 #: xbmc/pvr/dialogs/GUIDialogPVRTimerSettings.cpp
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
 msgctxt "#809"
@@ -3515,13 +3517,13 @@ msgctxt "#821"
 msgid "One time (guide-based)"
 msgstr ""
 
-#. Representation of a timer schedule
+#. Representation of a timer rule
 #: xbmc/pvr/addons/PVRClient.cpp
 msgctxt "#822"
 msgid "Repeating"
 msgstr ""
 
-#. Representation of an epg-based timer schedule.
+#. Representation of an epg-based timer rule.
 #: xbmc/pvr/addons/PVRClient.cpp
 msgctxt "#823"
 msgid "Repeating (guide-based)"
@@ -3529,10 +3531,10 @@ msgstr ""
 
 #empty strings from id 824 to 827
 
-#. Text for notification that a repeating timer has been deleted
+#. Text for notification that a timer rule has been deleted
 #: xbmc/pvr/timers/PVRTimers.cpp
 msgctxt "#828"
-msgid "Repeating timer deleted"
+msgid "Timer rule deleted"
 msgstr ""
 
 #empty strings from id 829 to 830
@@ -3588,13 +3590,13 @@ msgstr ""
 
 #empty strings from id 838 to 839
 
-#. Message in a dialog when a user wants to delete a timer that was scheduled by a repeating timer
+#. Message in a dialog when a user wants to delete a timer that was scheduled by a timer rule
 #: xbmc/pvr/windows/GUIWindowPVRBase.cpp
 msgctxt "#840"
-msgid "Do you only want to delete this timer or also the repeating timer that has scheduled it?"
+msgid "Do you only want to delete this timer or also the timer rule that has scheduled it?"
 msgstr ""
 
-#. Label for No button in a dialog when a user wants to delete a timer that was scheduled by a repeating timer
+#. Label for No button in a dialog when a user wants to delete a timer that was scheduled by a timer rule
 #: xbmc/pvr/windows/GUIWindowPVRBase.cpp
 msgctxt "#841"
 msgid "Only this"
@@ -3614,25 +3616,25 @@ msgctxt "#844"
 msgid "Deactivate"
 msgstr ""
 
-#. Message in a dialog when a user wants to delete a repeating timer
+#. Message in a dialog when a user wants to delete a timer rule
 #: xbmc/pvr/windows/GUIWindowPVRBase.cpp
 msgctxt "#845"
-msgid "Are you sure you want to delete this repeating timer and all timers it has scheduled?"
+msgid "Are you sure you want to delete this timer rule and all timers it has scheduled?"
 msgstr ""
 
-#. Message in a dialog when a user wants to delete a non-repeating timer
+#. Message in a dialog when a user wants to delete a timer
 #: xbmc/pvr/windows/GUIWindowPVRBase.cpp
 msgctxt "#846"
 msgid "Are you sure you want to delete this timer?"
 msgstr ""
 
-#. Message in a dialog when a user wants to delete a non-repeating timer
+#. Heading for a dialog for confirming to stop an active recording
 #: xbmc/pvr/windows/GUIWindowPVRBase.cpp
 msgctxt "#847"
 msgid "Confirm stop recording"
 msgstr ""
 
-#. Message in a dialog when a user wants to delete a non-repeating timer
+#. Message in a dialog when a user wants to stop an active recording
 #: xbmc/pvr/windows/GUIWindowPVRBase.cpp
 msgctxt "#848"
 msgid "Are you sure you want to stop this recording?"
@@ -5004,7 +5006,17 @@ msgctxt "#12011"
 msgid "Return to videos window"
 msgstr ""
 
-#empty strings from id 12012 to 12020
+#: xbmc/addons/GUIViewStateAddonBrowser.cpp
+msgctxt "#12012"
+msgid "Last used"
+msgstr ""
+
+#: xbmc/addons/GUIViewStateAddonBrowser.cpp
+msgctxt "#12013"
+msgid "Install date"
+msgstr ""
+
+#empty strings from id 12014 to 12020
 
 #. Label of various controls for starting playback from the beginning
 #: xbmc/Autorun.cpp
@@ -5593,6 +5605,7 @@ msgstr ""
 #: xbmc/peripherals/bus/PeripheralBus.cpp
 #: system/settings/settings.xml
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
+#: xbmc/addons/GUIWindowAddonBrowser.cpp
 msgctxt "#13106"
 msgid "Disabled"
 msgstr ""
@@ -7095,7 +7108,11 @@ msgctxt "#14081"
 msgid "File lists"
 msgstr ""
 
-#empty string with id 14082
+#. Label of button in Settings -> Audio output to clear the audio DSP database.
+#: system/settings/settings.xml
+msgctxt "#14082"
+msgid "Reset the Audio DSP database..."
+msgstr ""
 
 #: system/settings/settings.xml
 msgctxt "#14083"
@@ -8837,8 +8854,13 @@ msgctxt "#19097"
 msgid "Enter the name for the recording"
 msgstr ""
 
+#: xbmc/addons/AddonSystemSettings.cpp
+#: xbmc/cores/AudioEngine/DSPAddons/ActiveAEDSP.cpp
+#: xbmc/pvr/channels/PVRChannelGroupInternal.cpp
+#: xbmc/pvr/PVRManager.cpp
+#: xbmc/settings/dialogs/GUIDialogAudioDSPManager.cpp:
 msgctxt "#19098"
-msgid "Warning"
+msgid "Warning!"
 msgstr ""
 
 #: xbmc/pvr/PVRGUIInfo.cpp
@@ -9120,7 +9142,7 @@ msgctxt "#19160"
 msgid "to"
 msgstr ""
 
-#. timer schedule presentation string. <start-day-date|days-of-week> "from" <start-day-time|"any time"> "to" <end-day-time|"any time">
+#. timer rule presentation string. <start-day-date|days-of-week> "from" <start-day-time|"any time"> "to" <end-day-time|"any time">
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
 msgctxt "#19161"
 msgid "any time"
@@ -9481,17 +9503,27 @@ msgctxt "#19239"
 msgid "Starting background threads"
 msgstr ""
 
-#: xbmc/pvr/windows/PVRClients.cpp
+#: xbmc/pvr/addons/PVRClients.cpp
 msgctxt "#19240"
 msgid "No PVR add-on enabled"
 msgstr ""
 
-#: xbmc/pvr/windows/PVRClients.cpp
+#: xbmc/pvr/addons/PVRClients.cpp
 msgctxt "#19241"
 msgid "The PVR manager has been enabled without any enabled PVR add-on. Enable at least one add-on in order to use the PVR functionality."
 msgstr ""
 
-#empty strings from id 19242 to 19243
+#. Label for context menu entry to open settings dialog for a timer
+#: xbmc/pvr/windows/GUIWindowPVRGuide.cpp
+msgctxt "#19242"
+msgid "Edit timer"
+msgstr ""
+
+#. Label for context menu entry to open settings dialog for a timer rule
+#: xbmc/pvr/windows/GUIWindowPVRGuide.cpp
+msgctxt "#19243"
+msgid "Edit timer rule"
+msgstr ""
 
 #: system/settings/settings.xml
 msgctxt "#19244"
@@ -9543,7 +9575,17 @@ msgctxt "#19254"
 msgid "Guide update failed for channel"
 msgstr ""
 
-#empty strings from id 19255 to 19256
+#. for a timer rule, the number of child timers which are currently scheduled to record. For use in "status" fields.
+#: xbmc/pvr/timers/PVRTimerInfoTag.cpp
+msgctxt "#19255"
+msgid "%d scheduled"
+msgstr ""
+
+#. for a timer rule or timer to indicate this item has completed the intended recordings. For use in "status" fields.
+#: xbmc/pvr/timers/PVRTimerInfoTag.cpp
+msgctxt "#19256"
+msgid "Completed"
+msgstr ""
 
 msgctxt "#19257"
 msgid "Lock channel"
@@ -9628,7 +9670,7 @@ msgstr ""
 #. DialogOK for no installed ADSP add-on available
 #: xbmc/cores/AudioEngine/DSPAddons/ActiveAEDSP.cpp
 msgctxt "#19274"
-msgid "You need a add-on installed for the process of audio DSP signal. System becomes disabled."
+msgid "You need an add-on installed to be able to use audio digital signal processing (DSP)."
 msgstr ""
 
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
@@ -11409,8 +11451,10 @@ msgctxt "#20349"
 msgid "No video files found in this path!"
 msgstr ""
 
+#. Label for showing media rating and votes (combined), for example: "9.1 (87 votes)"
+#: xbmc/GUIInfoManager.cpp
 msgctxt "#20350"
-msgid "votes"
+msgid "%.1f (%i votes)"
 msgstr ""
 
 #: xbmc/video/jobs/VideoLibraryRefreshingJob.cpp
@@ -12216,9 +12260,7 @@ msgctxt "#21397"
 msgid "High quality pixel shader v2"
 msgstr ""
 
-msgctxt "#21398"
-msgid "Enable playlist at startup"
-msgstr ""
+#empty string with id 21398
 
 msgctxt "#21399"
 msgid "Use tween animations"
@@ -13604,11 +13646,7 @@ msgctxt "#24083"
 msgid "Information libraries"
 msgstr ""
 
-#. The label in the add-ons manager for visualisation libraries
-#: xbmc/addons/Addon.cpp
-msgctxt "#24084"
-msgid "Visualisation libraries"
-msgstr ""
+#empty string with id 24084
 
 #. Used as a text in the progress dialog when installing an add-on
 #: xbmc/addons/AddonInstaller.cpp
@@ -14090,6 +14128,7 @@ msgstr ""
 
 #. Concert composer of the music (if present)
 #: addons/skin.confluence/720p/DialogPVRRadioRDSInfo.xml
+#: addons/skin.confluence/720p/DialogSongInfo.xml
 msgctxt "#29903"
 msgid "Composer"
 msgstr ""
@@ -14102,6 +14141,7 @@ msgstr ""
 
 #. Conductor of the classic music (if present)
 #: addons/skin.confluence/720p/DialogPVRRadioRDSInfo.xml
+#: addons/skin.confluence/720p/DialogSongInfo.xml
 msgctxt "#29905"
 msgid "Conductor"
 msgstr ""
@@ -15179,8 +15219,8 @@ msgstr ""
 
 #empty strings from id 34409 to 34999
 
-#: addons/skin.confluence/720p/DialogPeripheralManager.xml
 #: system/settings/settings.xml
+#: xbmc/peripherals/Peripherals.cpp
 msgctxt "#35000"
 msgid "Peripherals"
 msgstr ""
@@ -15201,9 +15241,9 @@ msgctxt "#35003"
 msgid "Generic disk"
 msgstr ""
 
-#: addons/skin.confluence/720p/DialogPeripheralSettings.xml
+#: xbmc/peripherals/Peripherals.cpp
 msgctxt "#35004"
-msgid "There are no settings available\nfor this peripheral."
+msgid "There are no settings available for this peripheral."
 msgstr ""
 
 #: xbmc/peripherals/Peripherals.cpp
@@ -15245,34 +15285,33 @@ msgctxt "#35102"
 msgid "Disable joystick when this device is present"
 msgstr ""
 
-#empty strings from id 35103 to 35499
+#empty strings from id 35103 to 35504
 
-#: Unknown
-msgctxt "#35500"
-msgid "Location"
+#. connection state "host unreachable"
+#: xbmc/addons/AddonCallbacksPVR.cpp
+msgctxt "#35505"
+msgid "Server is unreachable."
 msgstr ""
 
-#: addons/skin.confluence/720p/DialogPeripheralManager.xml
-msgctxt "#35501"
-msgid "Class"
+#. connection state "server type mismatch" (reachable, but maybe an HTTP server where an FTP server is expected)
+#: xbmc/addons/AddonCallbacksPVR.cpp
+msgctxt "#35506"
+msgid "Server does not respond properly."
 msgstr ""
 
-#: Unknown
-msgctxt "#35502"
-msgid "Name"
+#. connection state "client - server version mismatch (reachable, but maybe server version to low)"
+#: xbmc/addons/AddonCallbacksPVR.cpp
+msgctxt "#35507"
+msgid "Server version is not compatible."
 msgstr ""
 
-#: addons/skin.confluence/720p/DialogPeripheralManager.xml
-msgctxt "#35503"
-msgid "Vendor"
+#. connection state "access denied" (e.g. due to wrong credentials)
+#: xbmc/addons/AddonCallbacksPVR.cpp
+msgctxt "#35508"
+msgid "Access denied."
 msgstr ""
 
-#: addons/skin.confluence/720p/DialogPeripheralManager.xml
-msgctxt "#35504"
-msgid "Product ID"
-msgstr ""
-
-#empty strings from id 35505 to 35999
+#empty strings from id 35509 to 35999
 
 #: xbmc/peripherals/devices/PeripheralCecAdapter.cpp
 msgctxt "#36000"
@@ -15419,6 +15458,7 @@ msgid "When the TV is switched off"
 msgstr ""
 
 #: xbmc/addons/addonstatushandler.cpp
+#: xbmc/addons/AddonCallbacksPVR.cpp
 #: xbmc/peripherals/devices/PeripheralCecAdapter.cpp
 msgctxt "#36030"
 msgid "Connection lost"
@@ -15439,7 +15479,10 @@ msgctxt "#36033"
 msgid "Action when switching to another source"
 msgstr ""
 
-#empty string with id 36034
+#: xbmc/addons/AddonCallbacksPVR.cpp
+msgctxt "#36034"
+msgid "Connection established"
+msgstr ""
 
 #. adjust refreshrate
 #: system/settings/settings.xml
@@ -17313,7 +17356,7 @@ msgstr ""
 #. Description of setting "TV -> Recording -> Prevent duplicate episodes" with label #812
 #: system/settings/settings.xml
 msgctxt "#36423"
-msgid "Repeating schedules shall only record new episodes. Not supported by all add-ons and backends."
+msgid "Timer rules shall only record new episodes. Not supported by all add-ons and backends."
 msgstr ""
 
 #: system/settings/settings.xml
@@ -17401,10 +17444,10 @@ msgctxt "#36438"
 msgid "Enables digital signal processing (DSP) of audio channels specified by the speaker configuration."
 msgstr ""
 
-#. Description of setting "System -> Audio output -> Reset the Audio DSP database..." with label 311
+#. Description of setting "System -> Audio output -> Reset the Audio DSP database..." with label 14082
 #: system/settings/settings.xml
 msgctxt "#36439"
-msgid "All data (add-on settings and audio DSP manager settings) in the audio DSP database is being erased."
+msgid "All data (add-on settings and audio DSP manager settings) in the audio DSP database will be erased."
 msgstr ""
 
 #. Used in confirm on dialog to erase database
@@ -17789,7 +17832,31 @@ msgctxt "#36614"
 msgid "Show add-ons that are currently running in the background."
 msgstr ""
 
-#empty strings from id 36615 to 36899
+#. Label of a setting or option referring to the source/origin of e.g. add-ons.
+#: system/settings/settings.xml
+msgctxt "#36615"
+msgid "Unknown sources"
+msgstr ""
+
+#. Description of setting "System -> Add-ons -> Unknown sources" with label #36615
+#: system/settings/settings.xml
+msgctxt "#36616"
+msgid "Allow installation of add-ons from unknown sources."
+msgstr ""
+
+#. Text in warning dialog when attempting to install add-ons from zip file.
+#: xbmc/addons/GUIWindowAddonBrowser.cpp
+msgctxt "#36617"
+msgid "For security, installation of add-ons from unknown sources is disabled."
+msgstr ""
+
+#. Text in confirm dialog when enabling setting "System -> Add-ons -> Unknown sources"
+#: xbmc/addons/AddonSystemSettings.cpp
+msgctxt "#36618"
+msgid "Add-ons will be given access to personal data stored on this device. By allowing, you agree that you are solely responsible for any loss of data, unwanted behaviour, or damage to your device. Proceed?"
+msgstr ""
+
+#empty strings from id 36619 to 36899
 
 #: xbmc/media/MediaType.cpp
 msgctxt "#36900"
@@ -18217,3 +18284,69 @@ msgstr ""
 msgctxt "#38030"
 msgid "This option uses frame-packing to output full resolution for 3D through HDMI.[CR]Enabling this improves quality of Multiview Video Coding (MVC) videos, but may not be supported by all displays."
 msgstr ""
+
+#. Label for an option to select the video stream to play if current video has more than one video stream
+#: xbmc\video\dialogs\GUIDialogVideoSettings.cpp
+msgctxt "#38031"
+msgid "Video stream"
+msgstr ""
+
+#. Label for an option to select the angle to play if current disc has more than one angle
+#: xbmc\video\dialogs\GUIDialogVideoSettings.cpp
+msgctxt "#38032"
+msgid "Angle"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogSmartPlaylistRule.cpp
+#: xbmc/playlists/SmartPlaylist.cpp
+msgctxt "#38033"
+msgid "Role"
+msgstr ""
+
+#. Orchestra playing on the recording (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38034"
+msgid "Orchestra"
+msgstr ""
+
+#. Lyricist that wrote the lyrics of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38035"
+msgid "Lyricist"
+msgstr ""
+
+#. Remixer of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38036"
+msgid "Remixer"
+msgstr "" 
+
+#. Arranger of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38037"
+msgid "Arranger"
+msgstr "" 
+
+#. Engineer of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38038"
+msgid "Engineer"
+msgstr "" 
+
+#. Producer of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38039"
+msgid "Producer"
+msgstr "" 
+
+#. DJMixer of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38040"
+msgid "DJMixer"
+msgstr "" 
+
+#. Mixer of the song (if present)
+#: addons/skin.confluence/720p/DialogSongInfo.xml
+msgctxt "#38041"
+msgid "Mixer"
+msgstr "" 

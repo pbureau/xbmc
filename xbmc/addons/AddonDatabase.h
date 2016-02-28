@@ -25,6 +25,7 @@
 #include "addons/Addon.h"
 #include "dbwrappers/Database.h"
 #include "FileItem.h"
+#include "AddonBuilder.h"
 
 class CAddonDatabase : public CDatabase
 {
@@ -40,10 +41,8 @@ public:
   /*! \brief Get an addon with a specific version and repository. */
   bool GetAddon(const std::string& addonID, const ADDON::AddonVersion& version, const std::string& repoId, ADDON::AddonPtr& addon);
 
-  bool GetAddons(ADDON::VECADDONS& addons, const ADDON::TYPE &type = ADDON::ADDON_UNKNOWN);
-
   /*! Get the addon IDs that has been set to disabled */
-  bool GetDisabled(std::vector<std::string>& addons);
+  bool GetDisabled(std::set<std::string>& addons);
 
   bool GetAvailableVersions(const std::string& addonId,
       std::vector<std::pair<ADDON::AddonVersion, std::string>>& versionsInfo);
@@ -62,6 +61,10 @@ public:
    \returns true on success, false on error or if repository have never been synced.
    */
   bool GetRepositoryContent(const std::string& id, ADDON::VECADDONS& addons);
+
+  /*! Get addons across all repositories */
+  bool GetRepositoryContent(ADDON::VECADDONS& addons);
+
   bool SetLastChecked(const std::string& id, const ADDON::AddonVersion& version, const std::string& timestamp);
 
   /*!
@@ -72,7 +75,6 @@ public:
   std::pair<CDateTime, ADDON::AddonVersion> LastChecked(const std::string& id);
 
   bool Search(const std::string& search, ADDON::VECADDONS& items);
-  static void SetPropertiesFromAddon(const ADDON::AddonPtr& addon, CFileItemPtr& item); 
 
   /*! \brief Disable an addon.
    Sets a flag that this addon has been disabled.  If disabled, it is usually still available on disk.
@@ -104,7 +106,7 @@ public:
 
   bool BlacklistAddon(const std::string& addonID);
   bool RemoveAddonFromBlacklist(const std::string& addonID);
-  bool GetBlacklisted(std::vector<std::string>& addons);
+  bool GetBlacklisted(std::set<std::string>& addons);
 
   /*! \brief Store an addon's package filename and that file's hash for future verification
       \param  addonID         id of the addon we're adding a package for
@@ -133,30 +135,28 @@ public:
   */
   bool RemovePackage(const std::string& packageFileName);
 
-  /*! \brief allow adding a system addon like PVR or AUDIODECODER
-      \param addonID id of the addon
-  */
-  bool AddSystemAddon(const std::string &addonID);
-
-  /*! \brief check if system addon is registered
-      \param addonID id of the addon
-  */
-  bool IsSystemAddonRegistered(const std::string &addonID);
-
   /*! Clear internal fields that shouldn't be kept around indefinitely */
   void OnPostUnInstall(const std::string& addonId);
+
+  void SyncInstalled(const std::set<std::string>& ids);
+
+  void GetInstalled(std::vector<ADDON::CAddonBuilder>& addons);
+
+  bool SetLastUpdated(const std::string& addonId, const CDateTime& dateTime);
+  bool SetLastUsed(const std::string& addonId, const CDateTime& dateTime);
+
 
 protected:
   virtual void CreateTables();
   virtual void CreateAnalytics();
   virtual void UpdateTables(int version);
   virtual int GetMinSchemaVersion() const { return 15; }
-  virtual int GetSchemaVersion() const { return 20; }
+  virtual int GetSchemaVersion() const { return 22; }
   const char *GetBaseDBName() const { return "Addons"; }
 
   bool GetAddon(int id, ADDON::AddonPtr& addon);
 
-  /* keep in sync with the select in GetAddon */
+  /* keep in sync with the addon table */
   enum AddonFields
   {
     addon_id=0,

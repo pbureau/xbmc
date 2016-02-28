@@ -42,12 +42,15 @@
 
 using namespace XFILE;
 
+#define CONTROL_BTN_REFRESH       6
 #define CONTROL_USERRATING        7
+#define CONTROL_BTN_GET_THUMB     10
 #define CONTROL_ALBUMINFO         12
-#define CONTROL_GETTHUMB          13
+
+#define CONTROL_LIST              50
 
 CGUIDialogSongInfo::CGUIDialogSongInfo(void)
-    : CGUIDialog(WINDOW_DIALOG_SONG_INFO, "DialogSongInfo.xml")
+    : CGUIDialog(WINDOW_DIALOG_SONG_INFO, "DialogMusicInfo.xml")
     , m_song(new CFileItem)
 {
   m_cancelled = false;
@@ -102,7 +105,7 @@ bool CGUIDialogSongInfo::OnMessage(CGUIMessage& message)
         }
         return true;
       }
-      else if (iControl == CONTROL_GETTHUMB)
+      else if (iControl == CONTROL_BTN_GET_THUMB)
       {
         OnGetThumb();
         return true;
@@ -166,6 +169,12 @@ void CGUIDialogSongInfo::OnInitWindow()
   else
     CONTROL_ENABLE(CONTROL_USERRATING);
 
+  SET_CONTROL_HIDDEN(CONTROL_BTN_REFRESH);
+  SET_CONTROL_HIDDEN(CONTROL_LIST);
+  SET_CONTROL_LABEL(CONTROL_USERRATING, 38023);
+  SET_CONTROL_LABEL(CONTROL_BTN_GET_THUMB, 13405);
+  SET_CONTROL_LABEL(CONTROL_ALBUMINFO, 10523);
+
   CGUIDialog::OnInitWindow();
 }
 
@@ -195,7 +204,7 @@ void CGUIDialogSongInfo::SetSong(CFileItem *item)
   {
     std::vector<int> artists;
     CVariant artistthumbs;
-    db.GetArtistsBySong(item->GetMusicInfoTag()->GetDatabaseId(), true, artists);
+    db.GetArtistsBySong(item->GetMusicInfoTag()->GetDatabaseId(), artists);
     for (std::vector<int>::const_iterator artistId = artists.begin(); artistId != artists.end(); ++artistId)
     {
       std::string thumb = db.GetArtForItem(*artistId, MediaTypeArtist, "thumb");

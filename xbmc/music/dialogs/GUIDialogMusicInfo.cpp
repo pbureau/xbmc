@@ -21,7 +21,6 @@
 #include "GUIDialogMusicInfo.h"
 #include "Application.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/GUIImage.h"
 #include "dialogs/GUIDialogFileBrowser.h"
 #include "dialogs/GUIDialogSelect.h"
 #include "GUIPassword.h"
@@ -32,7 +31,6 @@
 #include "FileItem.h"
 #include "profiles/ProfilesManager.h"
 #include "storage/MediaManager.h"
-#include "settings/AdvancedSettings.h"
 #include "settings/MediaSourceSettings.h"
 #include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
@@ -48,10 +46,6 @@
 
 using namespace XFILE;
 
-#define CONTROL_IMAGE            3
-#define CONTROL_TEXTAREA         4
-
-#define CONTROL_BTN_TRACKS       5
 #define CONTROL_BTN_REFRESH      6
 #define CONTROL_USERRATING       7
 #define CONTROL_BTN_GET_THUMB   10
@@ -62,7 +56,7 @@ using namespace XFILE;
 #define CONTROL_LIST_2          52
 
 CGUIDialogMusicInfo::CGUIDialogMusicInfo(void)
-    : CGUIDialog(WINDOW_DIALOG_MUSIC_INFO, "DialogAlbumInfo.xml")
+    : CGUIDialog(WINDOW_DIALOG_MUSIC_INFO, "DialogMusicInfo.xml")
     , m_albumItem(new CFileItem)
 {
   m_bRefresh = false;
@@ -70,6 +64,9 @@ CGUIDialogMusicInfo::CGUIDialogMusicInfo(void)
   m_loadType = KEEP_IN_MEMORY;
   m_startUserrating = -1;
   m_needsUpdate = false;
+  m_bViewReview = false;
+  m_hasUpdatedThumb = false; 
+  m_bArtistInfo = false;
 }
 
 CGUIDialogMusicInfo::~CGUIDialogMusicInfo(void)
@@ -94,8 +91,8 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
         }
       }
 
-      CGUIMessage message(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST);
-      OnMessage(message);
+      CGUIMessage msg(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST);
+      OnMessage(msg);
       CGUIMessage message_disco(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST_DISCO);
       OnMessage(message_disco);
       CGUIMessage message_list2(GUI_MSG_LABEL_RESET, GetID(), CONTROL_LIST_2);
@@ -142,11 +139,6 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
       {
         OnGetThumb();
       }
-      else if (iControl == CONTROL_BTN_TRACKS)
-      {
-        m_bViewReview = !m_bViewReview;
-        Update();
-      }
       else if (iControl == CONTROL_LIST || iControl == CONTROL_LIST_DISCO || iControl == CONTROL_LIST_2)
       {
         int iAction = message.GetParam1();
@@ -155,7 +147,7 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
           CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), iControl);
           g_windowManager.SendMessage(msg);
           int iItem = msg.GetParam1();
-          if (iItem < 0 || iItem >= (int)m_albumSongs->Size())
+          if (iItem < 0 || iItem >= static_cast<int>(m_albumSongs->Size()))
             break;
           CFileItemPtr pItem = m_albumSongs->Get(iItem);
           bool bResult       = false;
@@ -291,7 +283,7 @@ void CGUIDialogMusicInfo::SetArtist(const CArtist& artist, const std::string &pa
   m_albumSongs->SetContent("artists");
 }
 
-void CGUIDialogMusicInfo::SetSongs(const VECSONGS &infoSongs, const VECSONGS &songs)
+void CGUIDialogMusicInfo::SetSongs(const VECSONGS &infoSongs, const VECSONGS &songs) const
 {
   CLog::Log(LOGDEBUG,"%s:::%s Set %d Songs in Album", __FILE__, __FUNCTION__,
       songs.size());
@@ -343,7 +335,7 @@ void CGUIDialogMusicInfo::SetSongs(const VECSONGS &infoSongs, const VECSONGS &so
   m_albumSongs->Sort(SortByTrackNumber, SortOrderAscending);
 }
 
-void CGUIDialogMusicInfo::SetDiscography()
+void CGUIDialogMusicInfo::SetDiscography() const
 {
   m_albumSongs->Clear();
   CMusicDatabase database;
@@ -351,16 +343,22 @@ void CGUIDialogMusicInfo::SetDiscography()
 
   std::vector<int> albumsByArtist;
   std::set<int> albumsToSkip;
-  database.GetAlbumsByArtist(m_artist.idArtist, true, albumsByArtist);
+  database.GetAlbumsByArtist(m_artist.idArtist, albumsByArtist);
+
+  // Sort the discography by year
+  auto discography = m_artist.discography;
+  std::sort(discography.begin(), discography.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
+      return left.second < right.second;
+      });
 
   // Handle a weird case when the discography table does not
   // contain any entry for the artist, and returns a single empty item
   if( !(m_artist.discography.size() == 1 && m_artist.discography[0].first.empty()) )
   {
-    for (unsigned int i=0;i<m_artist.discography.size();++i)
+    for (unsigned int i=0; i < discography.size(); ++i)
     {
-      CFileItemPtr item(new CFileItem(m_artist.discography[i].first));
-      item->SetLabel2(m_artist.discography[i].second);
+      CFileItemPtr item(new CFileItem(discography[i].first));
+      item->SetLabel2(discography[i].second);
 
       int idAlbum = -1;
       for (std::vector<int>::const_iterator album = albumsByArtist.begin(); album != albumsByArtist.end(); ++album)
@@ -407,9 +405,9 @@ void CGUIDialogMusicInfo::Update()
 {
   if (m_bArtistInfo)
   {
-    CONTROL_ENABLE(CONTROL_BTN_GET_FANART);
+    SET_CONTROL_VISIBLE(CONTROL_BTN_GET_FANART);
+    SET_CONTROL_HIDDEN(CONTROL_USERRATING);
 
-    SetLabel(CONTROL_TEXTAREA, m_artist.strBiography);
 #if 1
     // Manage the discography list with extra content
     CGUIMessage messageExtraContent(GUI_MSG_EXTRA_CONTENT_GET, GetID(), CONTROL_LIST_DISCO, 0, 0);
@@ -531,27 +529,12 @@ void CGUIDialogMusicInfo::Update()
     CGUIMessage msg(GUI_MSG_SETFOCUS, GetID(), CONTROL_LIST_DISCO);
     OnMessage(msg);
 
-    if (GetControl(CONTROL_BTN_TRACKS)) // if no CONTROL_BTN_TRACKS found - allow skinner full visibility control over CONTROL_TEXTAREA and CONTROL_LIST
-    {
-      if (m_bViewReview)
-      {
-        SET_CONTROL_VISIBLE(CONTROL_TEXTAREA);
-        SET_CONTROL_HIDDEN(CONTROL_LIST);
-        SET_CONTROL_LABEL(CONTROL_BTN_TRACKS, 21888);
-      }
-      else
-      {
-        SET_CONTROL_VISIBLE(CONTROL_LIST);
-        SET_CONTROL_HIDDEN(CONTROL_TEXTAREA);
-        SET_CONTROL_LABEL(CONTROL_BTN_TRACKS, 21887);
-      }
-    }
   }
   else
   {
-    CONTROL_DISABLE(CONTROL_BTN_GET_FANART);
+    SET_CONTROL_VISIBLE(CONTROL_USERRATING);
+    SET_CONTROL_HIDDEN(CONTROL_BTN_GET_FANART);
 
-    SetLabel(CONTROL_TEXTAREA, m_album.strReview);
     if(!m_album.strReview.empty())
     {
       CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);
@@ -567,29 +550,6 @@ void CGUIDialogMusicInfo::Update()
       OnMessage(msg);
     }
 
-    if (GetControl(CONTROL_BTN_TRACKS)) // if no CONTROL_BTN_TRACKS found - allow skinner full visibility control over CONTROL_TEXTAREA and CONTROL_LIST
-    {
-      if (m_bViewReview)
-      {
-        SET_CONTROL_VISIBLE(CONTROL_TEXTAREA);
-        SET_CONTROL_HIDDEN(CONTROL_LIST);
-        SET_CONTROL_LABEL(CONTROL_BTN_TRACKS, 182);
-      }
-      else
-      {
-        SET_CONTROL_VISIBLE(CONTROL_LIST);
-        SET_CONTROL_HIDDEN(CONTROL_TEXTAREA);
-        SET_CONTROL_LABEL(CONTROL_BTN_TRACKS, 183);
-      }
-    }
-  }
-  // update the thumbnail
-  const CGUIControl* pControl = GetControl(CONTROL_IMAGE);
-  if (pControl)
-  {
-    CGUIImage* pImageControl = (CGUIImage*)pControl;
-    pImageControl->FreeResources();
-    pImageControl->SetFileName(m_albumItem->GetArt("thumb"));
   }
 
   // disable the GetThumb button if the user isn't allowed it
@@ -600,7 +560,7 @@ void CGUIDialogMusicInfo::SetLabel(int iControl, const std::string& strLabel)
 {
   if (strLabel.empty())
   {
-    SET_CONTROL_LABEL(iControl, (iControl == CONTROL_TEXTAREA) ? (m_bArtistInfo?547:414) : 416);
+    SET_CONTROL_LABEL(iControl, 416);
   }
   else
   {
@@ -610,10 +570,20 @@ void CGUIDialogMusicInfo::SetLabel(int iControl, const std::string& strLabel)
 
 void CGUIDialogMusicInfo::OnInitWindow()
 {
+  SET_CONTROL_LABEL(CONTROL_BTN_REFRESH, 184);
+  SET_CONTROL_LABEL(CONTROL_USERRATING, 38023);
+  SET_CONTROL_LABEL(CONTROL_BTN_GET_THUMB, 13405);
+  SET_CONTROL_LABEL(CONTROL_BTN_GET_FANART, 20413);
+
+  if (m_bArtistInfo)
+    SET_CONTROL_HIDDEN(CONTROL_USERRATING);
+  else
+    SET_CONTROL_HIDDEN(CONTROL_BTN_GET_FANART);
+
   CGUIDialog::OnInitWindow();
 }
 
-void CGUIDialogMusicInfo::SetUserrating(int userrating)
+void CGUIDialogMusicInfo::SetUserrating(int userrating) const
 {
   if (userrating < 0) userrating = 0;
   if (userrating > 10) userrating = 10;
@@ -883,11 +853,14 @@ void CGUIDialogMusicInfo::AddItemPathToFileBrowserSources(VECSOURCES &sources, c
   }
 }
 
-void CGUIDialogMusicInfo::OnSetUserrating()
+void CGUIDialogMusicInfo::OnSetUserrating() const
 {
-  CGUIDialogSelect *dialog = (CGUIDialogSelect *)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
+  CGUIDialogSelect *dialog = static_cast<CGUIDialogSelect *>(g_windowManager.GetWindow(WINDOW_DIALOG_SELECT));
   if (dialog)
   {
+    // If we refresh and then try to set the rating there will be an items already here...
+    dialog->Reset();
+
     dialog->SetHeading(CVariant{ 38023 });
     dialog->Add(g_localizeStrings.Get(38022));
     for (int i = 1; i <= 10; i++)

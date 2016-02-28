@@ -24,6 +24,7 @@
 #include "DllPaths.h"
 #include "GUIUserMessages.h"
 #include "utils/log.h"
+#include "utils/URIUtils.h"
 #include "CompileInfo.h"
 
 #undef BOOL
@@ -205,6 +206,20 @@ bool CDarwinUtils::IsMavericks(void)
   return isMavericks == 1;
 }
 
+bool CDarwinUtils::IsLion(void)  
+{  
+  static int isLion = -1;  
+#if defined(TARGET_DARWIN_OSX)  
+  if (isLion == -1)  
+  {  
+    double appKitVersion = floor(NSAppKitVersionNumber);  
+    // everything lower 10.8 is 10.7.x because 10.7 is deployment target...  
+    isLion = (appKitVersion < NSAppKitVersionNumber10_8) ? 1 : 0;  
+  }  
+#endif  
+  return isLion == 1;  
+}
+
 bool CDarwinUtils::IsSnowLeopard(void)
 {
   static int isSnowLeopard = -1;
@@ -320,7 +335,7 @@ const char *CDarwinUtils::GetOSXVersionString(void)
 #endif
 }
 
-int  CDarwinUtils::GetFrameworkPath(bool forPython, char* path, uint32_t *pathsize)
+int  CDarwinUtils::GetFrameworkPath(bool forPython, char* path, size_t *pathsize)
 {
   CCocoaAutoPool pool;
   // see if we can figure out who we are
@@ -380,7 +395,7 @@ int  CDarwinUtils::GetFrameworkPath(bool forPython, char* path, uint32_t *pathsi
   return -1;
 }
 
-int  CDarwinUtils::GetExecutablePath(char* path, uint32_t *pathsize)
+int  CDarwinUtils::GetExecutablePath(char* path, size_t *pathsize)
 {
   CCocoaAutoPool pool;
   // see if we can figure out who we are
@@ -394,6 +409,22 @@ int  CDarwinUtils::GetExecutablePath(char* path, uint32_t *pathsize)
   //CLog::Log(LOGDEBUG, "DarwinExecutablePath(b/c) -> %s", path);
 
   return 0;
+}
+
+const char* CDarwinUtils::GetUserHomeDirectory(void)
+{
+  static std::string appHomeFolder;
+  if (appHomeFolder.empty())
+  {
+#if defined(TARGET_DARWIN_IOS)
+    appHomeFolder = URIUtils::AddFileToFolder(CDarwinUtils::GetAppRootFolder(), CCompileInfo::GetAppName());
+#else
+    appHomeFolder = URIUtils::AddFileToFolder(getenv("HOME"), "Library/Application Support");
+    appHomeFolder = URIUtils::AddFileToFolder(appHomeFolder, CCompileInfo::GetAppName());
+#endif
+  }
+  
+  return appHomeFolder.c_str();
 }
 
 const char* CDarwinUtils::GetAppRootFolder(void)
@@ -421,7 +452,7 @@ bool CDarwinUtils::IsIosSandboxed(void)
   static int ret = -1;
   if (ret == -1)
   {
-    uint32_t path_size = 2*MAXPATHLEN;
+    size_t path_size = 2*MAXPATHLEN;
     char     given_path[2*MAXPATHLEN];
     int      result = -1; 
     ret = 0;
@@ -521,6 +552,16 @@ int CDarwinUtils::BatteryLevel(void)
   CFRelease(powerSourceInfo);
 #endif
   return batteryLevel * 100;  
+}
+
+void CDarwinUtils::EnableOSScreenSaver(bool enable)
+{
+
+}
+
+void CDarwinUtils::ResetSystemIdleTimer()
+{
+
 }
 
 void CDarwinUtils::SetScheduling(int message)
@@ -629,12 +670,26 @@ const std::string& CDarwinUtils::GetManufacturer(void)
   return manufName;
 }
 
-bool CDarwinUtils::IsAliasShortcut(const std::string& path)
+bool CDarwinUtils::IsAliasShortcut(const std::string& path, bool isdirectory)
 {
   bool ret = false;
 #if defined(TARGET_DARWIN_OSX)
-  NSString *nsPath = [NSString stringWithUTF8String:path.c_str()];
-  NSURL *nsUrl = [NSURL fileURLWithPath:nsPath];
+  CCocoaAutoPool pool;
+  
+  NSURL *nsUrl;
+  if (isdirectory)
+  {
+    std::string cleanpath = path;
+    URIUtils::RemoveSlashAtEnd(cleanpath);
+    NSString *nsPath = [NSString stringWithUTF8String:cleanpath.c_str()];
+    nsUrl = [NSURL fileURLWithPath:nsPath isDirectory:TRUE];
+  }
+  else
+  {
+    NSString *nsPath = [NSString stringWithUTF8String:path.c_str()];
+    nsUrl = [NSURL fileURLWithPath:nsPath isDirectory:FALSE];
+  }
+  
   NSNumber* wasAliased = nil;
 
   if (nsUrl != nil)

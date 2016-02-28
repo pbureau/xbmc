@@ -365,7 +365,8 @@ bool CGUIWindowMusicNav::GetDirectory(const std::string &strDirectory, CFileItem
     items.SetContent("plugins");
   else if (items.IsAddonsPath())
     items.SetContent("addons");
-  else if (!items.IsSourcesPath() && !items.IsVirtualDirectoryRoot() && !items.IsLibraryFolder())
+  else if (!items.IsSourcesPath() && !items.IsVirtualDirectoryRoot() &&
+           !items.IsLibraryFolder() && !items.IsPlugin() && !items.IsSmartPlayList())
     items.SetContent("files");
 
   return bResult;
@@ -454,7 +455,7 @@ void CGUIWindowMusicNav::GetContextButtons(int itemNumber, CContextButtons &butt
   CFileItemPtr item;
   if (itemNumber >= 0 && itemNumber < m_vecItems->Size())
     item = m_vecItems->Get(itemNumber);
-  if (item && !StringUtils::StartsWithNoCase(item->GetPath(), "addons://more/"))
+  if (item)
   {
     // are we in the playlists location?
     bool inPlaylists = m_vecItems->IsPath(CUtil::MusicPlaylistsLocation()) ||
@@ -766,7 +767,7 @@ bool CGUIWindowMusicNav::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
         ADDON::AddonPtr defaultScraper;
         if (ADDON::CAddonMgr::GetInstance().GetDefault(ADDON::ScraperTypeFromContent(content), defaultScraper))
         {
-          scraper = std::dynamic_pointer_cast<ADDON::CScraper>(defaultScraper->Clone());
+          scraper = std::dynamic_pointer_cast<ADDON::CScraper>(defaultScraper);
         }
       }
 

@@ -33,15 +33,8 @@ using namespace ActiveAE;
 
 #define DEFAULT_INFO_STRING_VALUE "unknown"
 
-CActiveAEDSPAddon::CActiveAEDSPAddon(const AddonProps& props) :
-    CAddonDll<DllAudioDSP, AudioDSP, AE_DSP_PROPERTIES>(props),
-    m_apiVersion("0.0.0")
-{
-  ResetProperties();
-}
-
-CActiveAEDSPAddon::CActiveAEDSPAddon(const cp_extension_t *ext) :
-    CAddonDll<DllAudioDSP, AudioDSP, AE_DSP_PROPERTIES>(ext),
+CActiveAEDSPAddon::CActiveAEDSPAddon(AddonProps props) :
+    CAddonDll<DllAudioDSP, AudioDSP, AE_DSP_PROPERTIES>(std::move(props)),
     m_apiVersion("0.0.0")
 {
   ResetProperties();
@@ -127,11 +120,6 @@ void CActiveAEDSPAddon::ResetProperties(int iClientId /* = AE_DSP_INVALID_ADDON_
   m_strAudioDSPVersion    = DEFAULT_INFO_STRING_VALUE;
   m_strFriendlyName       = DEFAULT_INFO_STRING_VALUE;
   m_strAudioDSPName       = DEFAULT_INFO_STRING_VALUE;
-  m_isPreProcessing       = false;
-  m_isPreResampling       = false;
-  m_isMasterProcessing    = false;
-  m_isPostResampling      = false;
-  m_isPostProcessing      = false;
   memset(&m_addonCapabilities, 0, sizeof(m_addonCapabilities));
   m_apiVersion = AddonVersion("0.0.0");
 }

@@ -51,25 +51,36 @@ using KODI::MESSAGING::HELPERS::DialogResponse;
 
 #define DEFAULT_INFO_STRING_VALUE "unknown"
 
-CPVRClient::CPVRClient(const AddonProps& props) :
-    CAddonDll<DllPVRClient, PVRClient, PVR_PROPERTIES>(props),
+std::unique_ptr<CPVRClient> CPVRClient::FromExtension(AddonProps props, const cp_extension_t* ext)
+{
+  std::string strAvahiType = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@avahi_type");
+  std::string strAvahiIpSetting = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@avahi_ip_setting");
+  std::string strAvahiPortSetting = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@avahi_port_setting");
+  bool bNeedsConfiguration = !(CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@needs_configuration") == "false");
+  return std::unique_ptr<CPVRClient>(new CPVRClient(std::move(props), strAvahiType,
+      strAvahiIpSetting, strAvahiPortSetting, bNeedsConfiguration));
+}
+
+CPVRClient::CPVRClient(AddonProps props)
+  : CAddonDll<DllPVRClient, PVRClient, PVR_PROPERTIES>(std::move(props)),
+    m_bNeedsConfiguration(false),
     m_apiVersion("0.0.0"),
     m_bAvahiServiceAdded(false)
 {
   ResetProperties();
 }
 
-CPVRClient::CPVRClient(const cp_extension_t *ext) :
-    CAddonDll<DllPVRClient, PVRClient, PVR_PROPERTIES>(ext),
+CPVRClient::CPVRClient(AddonProps props, const std::string& strAvahiType, const std::string& strAvahiIpSetting,
+    const std::string& strAvahiPortSetting, bool bNeedsConfiguration)
+  : CAddonDll<DllPVRClient, PVRClient, PVR_PROPERTIES>(std::move(props)),
+    m_strAvahiType(strAvahiType),
+    m_strAvahiIpSetting(strAvahiIpSetting),
+    m_strAvahiPortSetting(strAvahiPortSetting),
+    m_bNeedsConfiguration(bNeedsConfiguration),
     m_apiVersion("0.0.0"),
     m_bAvahiServiceAdded(false)
 {
   ResetProperties();
-
-  m_strAvahiType = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@avahi_type");
-  m_strAvahiIpSetting = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@avahi_ip_setting");
-  m_strAvahiPortSetting = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@avahi_port_setting");
-  m_bNeedsConfiguration = !(CAddonMgr::GetInstance().GetExtValue(ext->configuration, "@needs_configuration") == "false");
 }
 
 CPVRClient::~CPVRClient(void)
@@ -151,6 +162,7 @@ void CPVRClient::ResetProperties(int iClientId /* = PVR_INVALID_CLIENT_ID */)
   m_menuhooks.clear();
   m_timertypes.clear();
   m_bReadyToUse           = false;
+  m_connectionState       = PVR_CONNECTION_STATE_UNKNOWN;
   m_iClientId             = iClientId;
   m_strBackendVersion     = DEFAULT_INFO_STRING_VALUE;
   m_strConnectionString   = DEFAULT_INFO_STRING_VALUE;
@@ -183,6 +195,8 @@ ADDON_STATUS CPVRClient::Create(int iClientId)
   catch (std::exception &e) { LogException(e, __FUNCTION__); }
 
   m_bReadyToUse = bReadyToUse;
+
+  SetEPGTimeFrame(CSettings::GetInstance().GetInt(CSettings::SETTING_EPG_DAYSTODISPLAY));
 
   return status;
 }
@@ -224,6 +238,20 @@ void CPVRClient::ReCreate(void)
 bool CPVRClient::ReadyToUse(void) const
 {
   return m_bReadyToUse;
+}
+
+void CPVRClient::SetConnectionState(PVR_CONNECTION_STATE state)
+{
+  if (m_connectionState != state)
+  {
+    m_connectionState = state;
+
+    if (state == PVR_CONNECTION_STATE_CONNECTED)
+    {
+      CLog::Log(LOGDEBUG, "PVRClient - %s - refetching addon properties", __FUNCTION__);
+      GetAddonProperties();
+    }
+  }
 }
 
 int CPVRClient::GetID(void) const
@@ -314,8 +342,8 @@ void CPVRClient::WriteClientTimerInfo(const CPVRTimerInfoTag &xbmcTimer, PVR_TIM
   strncpy(addonTimer.strSummary, xbmcTimer.m_strSummary.c_str(), sizeof(addonTimer.strSummary) - 1);
   addonTimer.iMarginStart              = xbmcTimer.m_iMarginStart;
   addonTimer.iMarginEnd                = xbmcTimer.m_iMarginEnd;
-  addonTimer.iGenreType                = xbmcTimer.m_iGenreType;
-  addonTimer.iGenreSubType             = xbmcTimer.m_iGenreSubType;
+  addonTimer.iGenreType                = epgTag ? epgTag->GenreType() : 0;
+  addonTimer.iGenreSubType             = epgTag ? epgTag->GenreSubType() : 0;
 }
 
 /*!
@@ -374,7 +402,8 @@ bool CPVRClient::CheckAPIVersion(void)
   try { guiVersion = AddonVersion(m_pStruct->GetGUIAPIVersion()); }
   catch (std::exception &e) { LogException(e, "GetGUIAPIVersion()"); return false;  }
 
-  if (!IsCompatibleGUIAPIVersion(minVersion, guiVersion))
+  /* Only do the check, if add-on depends on GUI API. */
+  if (!guiVersion.empty() && !IsCompatibleGUIAPIVersion(minVersion, guiVersion))
   {
     CLog::Log(LOGERROR, "PVR - Add-on '%s' is using an incompatible GUI API version. XBMC minimum GUI API version = '%s', add-on GUI API version '%s'", Name().c_str(), minVersion.asString().c_str(), guiVersion.asString().c_str());
     return false;
@@ -580,7 +609,7 @@ const std::string& CPVRClient::GetFriendlyName(void) const
 PVR_ERROR CPVRClient::GetDriveSpace(long long *iTotal, long long *iUsed)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   try { return m_pStruct->GetDriveSpace(iTotal, iUsed); }
   catch (std::exception &e) { LogException(e, __FUNCTION__); }
@@ -595,7 +624,7 @@ PVR_ERROR CPVRClient::GetDriveSpace(long long *iTotal, long long *iUsed)
 PVR_ERROR CPVRClient::StartChannelScan(void)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelScan)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -609,7 +638,7 @@ PVR_ERROR CPVRClient::StartChannelScan(void)
 PVR_ERROR CPVRClient::OpenDialogChannelAdd(const CPVRChannelPtr &channel)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelSettings)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -634,7 +663,7 @@ PVR_ERROR CPVRClient::OpenDialogChannelAdd(const CPVRChannelPtr &channel)
 PVR_ERROR CPVRClient::OpenDialogChannelSettings(const CPVRChannelPtr &channel)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelSettings)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -659,7 +688,7 @@ PVR_ERROR CPVRClient::OpenDialogChannelSettings(const CPVRChannelPtr &channel)
 PVR_ERROR CPVRClient::DeleteChannel(const CPVRChannelPtr &channel)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelSettings)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -684,7 +713,7 @@ PVR_ERROR CPVRClient::DeleteChannel(const CPVRChannelPtr &channel)
 PVR_ERROR CPVRClient::RenameChannel(const CPVRChannelPtr &channel)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelSettings)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -752,7 +781,7 @@ void CPVRClient::CallMenuHook(const PVR_MENUHOOK &hook, const CFileItem *item)
 PVR_ERROR CPVRClient::GetEPGForChannel(const CPVRChannelPtr &channel, CEpg *epg, time_t start /* = 0 */, time_t end /* = 0 */, bool bSaveInDb /* = false*/)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsEPG)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -771,6 +800,29 @@ PVR_ERROR CPVRClient::GetEPGForChannel(const CPVRChannelPtr &channel, CEpg *epg,
         addonChannel,
         start ? start - g_advancedSettings.m_iPVRTimeCorrection : 0,
         end ? end - g_advancedSettings.m_iPVRTimeCorrection : 0);
+
+    LogError(retVal, __FUNCTION__);
+  }
+  catch (std::exception &e)
+  {
+    LogException(e, __FUNCTION__);
+  }
+
+  return retVal;
+}
+
+PVR_ERROR CPVRClient::SetEPGTimeFrame(int iDays)
+{
+  if (!m_bReadyToUse)
+    return PVR_ERROR_SERVER_ERROR;
+
+  if (!m_addonCapabilities.bSupportsEPG)
+    return PVR_ERROR_NOT_IMPLEMENTED;
+
+  PVR_ERROR retVal(PVR_ERROR_UNKNOWN);
+  try
+  {
+    retVal = m_pStruct->SetEPGTimeFrame(iDays);
 
     LogError(retVal, __FUNCTION__);
   }
@@ -801,7 +853,7 @@ int CPVRClient::GetChannelGroupsAmount(void)
 PVR_ERROR CPVRClient::GetChannelGroups(CPVRChannelGroups *groups)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelGroups)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -827,7 +879,7 @@ PVR_ERROR CPVRClient::GetChannelGroups(CPVRChannelGroups *groups)
 PVR_ERROR CPVRClient::GetChannelGroupMembers(CPVRChannelGroup *group)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsChannelGroups)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -871,7 +923,7 @@ int CPVRClient::GetChannelsAmount(void)
 PVR_ERROR CPVRClient::GetChannels(CPVRChannelGroup &channels, bool radio)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if ((!m_addonCapabilities.bSupportsRadio && radio) ||
       (!m_addonCapabilities.bSupportsTV && !radio))
@@ -918,7 +970,7 @@ int CPVRClient::GetRecordingsAmount(bool deleted)
 PVR_ERROR CPVRClient::GetRecordings(CPVRRecordings *results, bool deleted)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsRecordings || (deleted && !m_addonCapabilities.bSupportsRecordingsUndelete))
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -944,7 +996,7 @@ PVR_ERROR CPVRClient::GetRecordings(CPVRRecordings *results, bool deleted)
 PVR_ERROR CPVRClient::DeleteRecording(const CPVRRecording &recording)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsRecordings)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -970,7 +1022,7 @@ PVR_ERROR CPVRClient::DeleteRecording(const CPVRRecording &recording)
 PVR_ERROR CPVRClient::UndeleteRecording(const CPVRRecording &recording)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsRecordingsUndelete)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -996,7 +1048,7 @@ PVR_ERROR CPVRClient::UndeleteRecording(const CPVRRecording &recording)
 PVR_ERROR CPVRClient::DeleteAllRecordingsFromTrash()
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsRecordingsUndelete)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1019,7 +1071,7 @@ PVR_ERROR CPVRClient::DeleteAllRecordingsFromTrash()
 PVR_ERROR CPVRClient::RenameRecording(const CPVRRecording &recording)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsRecordings)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1045,7 +1097,7 @@ PVR_ERROR CPVRClient::RenameRecording(const CPVRRecording &recording)
 PVR_ERROR CPVRClient::SetRecordingPlayCount(const CPVRRecording &recording, int count)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsRecordingPlayCount)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1071,7 +1123,7 @@ PVR_ERROR CPVRClient::SetRecordingPlayCount(const CPVRRecording &recording, int 
 PVR_ERROR CPVRClient::SetRecordingLastPlayedPosition(const CPVRRecording &recording, int lastplayedposition)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsLastPlayedPosition)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1170,7 +1222,7 @@ int CPVRClient::GetTimersAmount(void)
 PVR_ERROR CPVRClient::GetTimers(CPVRTimers *results)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsTimers)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1196,7 +1248,7 @@ PVR_ERROR CPVRClient::GetTimers(CPVRTimers *results)
 PVR_ERROR CPVRClient::AddTimer(const CPVRTimerInfoTag &timer)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsTimers)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1222,7 +1274,7 @@ PVR_ERROR CPVRClient::AddTimer(const CPVRTimerInfoTag &timer)
 PVR_ERROR CPVRClient::DeleteTimer(const CPVRTimerInfoTag &timer, bool bForce /* = false */)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsTimers)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1248,7 +1300,7 @@ PVR_ERROR CPVRClient::DeleteTimer(const CPVRTimerInfoTag &timer, bool bForce /* 
 PVR_ERROR CPVRClient::RenameTimer(const CPVRTimerInfoTag &timer, const std::string &strNewName)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsTimers)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1274,7 +1326,7 @@ PVR_ERROR CPVRClient::RenameTimer(const CPVRTimerInfoTag &timer, const std::stri
 PVR_ERROR CPVRClient::UpdateTimer(const CPVRTimerInfoTag &timer)
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   if (!m_addonCapabilities.bSupportsTimers)
     return PVR_ERROR_NOT_IMPLEMENTED;
@@ -1300,7 +1352,7 @@ PVR_ERROR CPVRClient::UpdateTimer(const CPVRTimerInfoTag &timer)
 PVR_ERROR CPVRClient::GetTimerTypes(CPVRTimerTypes& results) const
 {
   if (!m_bReadyToUse)
-    return PVR_ERROR_REJECTED;
+    return PVR_ERROR_SERVER_ERROR;
 
   results = m_timertypes;
   return PVR_ERROR_NO_ERROR;
@@ -1372,16 +1424,6 @@ int64_t CPVRClient::GetStreamLength(void)
   {
     try { return m_pStruct->LengthRecordedStream(); }
     catch (std::exception &e) { LogException(e, "LengthRecordedStream()"); }
-  }
-  return -EINVAL;
-}
-
-int CPVRClient::GetCurrentClientChannel(void)
-{
-  if (IsPlayingLiveStream())
-  {
-    try { return m_pStruct->GetCurrentClientChannel(); }
-    catch (std::exception &e) { LogException(e, __FUNCTION__); }
   }
   return -EINVAL;
 }
@@ -1970,5 +2012,19 @@ bool CPVRClient::Autoconfigure(void)
     }
   }
 
+  return bReturn;
+}
+
+bool CPVRClient::IsRealTimeStream(void) const
+{
+  bool bReturn(false);
+  if (IsPlaying())
+  {
+    try
+    {
+      bReturn = m_pStruct->IsRealTimeStream();
+    }
+    catch (std::exception &e) { LogException(e, __FUNCTION__); }
+  }
   return bReturn;
 }

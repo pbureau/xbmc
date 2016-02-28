@@ -1151,6 +1151,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
 
       control = new CGUIControlGroupList(
         parentID, id, posX, posY, width, height, buttonGap, pageControl, orientation, useControlCoords, labelInfo.align, scroller);
+      ((CGUIControlGroup *)control)->SetDefaultControl(defaultControl, defaultAlways);
       ((CGUIControlGroup *)control)->SetRenderFocusedLast(renderFocusedLast);
       ((CGUIControlGroupList *)control)->SetMinSize(minWidth, minHeight);
     }
@@ -1336,7 +1337,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
     break;
   case CGUIControl::GUICONTROL_SCROLLBAR:
     {
-      control = new CGUIScrollBar(
+      control = new GUIScrollBarControl(
         parentID, id, posX, posY, width, height,
         textureBackground, textureBar, textureBarFocus, textureNib, textureNibFocus, orientation, showOnePage);
     }

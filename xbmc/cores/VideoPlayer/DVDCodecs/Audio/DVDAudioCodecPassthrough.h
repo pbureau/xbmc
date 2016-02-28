@@ -37,7 +37,7 @@ public:
 
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options);
   virtual void Dispose();
-  virtual int Decode(uint8_t* pData, int iSize);
+  virtual int Decode(uint8_t* pData, int iSize, double dts, double pts);
   virtual void GetData(DVDAudioFrame &frame);
   virtual int GetData(uint8_t** dst);
   virtual void Reset();
@@ -51,9 +51,13 @@ private:
   unsigned int m_bufferSize;
   unsigned int m_dataSize;
   AEAudioFormat m_format;
+  uint8_t m_backlogBuffer[61440];
+  unsigned int m_backlogSize;
+  double m_currentPts;
+  double m_nextPts;
 
   // TrueHD specifics
   std::unique_ptr<uint8_t[]> m_trueHDBuffer;
-  unsigned int       m_trueHDoffset;
+  unsigned int m_trueHDoffset;
 };
 

@@ -79,7 +79,7 @@ void CGUIWindowPictures::OnInitWindow()
     {
       if (wndw && wndw->GetCurrentSlide())
         m_viewControl.SetSelectedItem(wndw->GetCurrentSlide()->GetPath());
-      m_iSelectedItem = m_viewControl.GetSelectedItem();
+      SaveSelectedItemInHistory();
     }
     m_slideShowStarted = false;
   }
@@ -98,10 +98,6 @@ bool CGUIWindowPictures::OnMessage(CGUIMessage& message)
       if (m_thumbLoader.IsLoading())
         m_thumbLoader.StopThread();
 
-      if (message.GetParam1() != WINDOW_SLIDESHOW)
-      {
-        m_ImageLib.Unload();
-      }
     }
     break;
 
@@ -112,11 +108,6 @@ bool CGUIWindowPictures::OnMessage(CGUIMessage& message)
         message.SetStringParam(CMediaSourceSettings::GetInstance().GetDefaultSource("pictures"));
 
       m_dlgProgress = (CGUIDialogProgress*)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
-
-      if (message.GetParam1() != WINDOW_SLIDESHOW)
-      {
-        m_ImageLib.Load();
-      }
 
       if (!CGUIMediaWindow::OnMessage(message))
         return false;
@@ -347,7 +338,7 @@ bool CGUIWindowPictures::GetDirectory(const std::string &strDirectory, CFileItem
   if (items.GetLabel().empty() && m_rootDir.IsSource(items.GetPath(), CMediaSourceSettings::GetInstance().GetSources("pictures"), &label))
     items.SetLabel(label);
 
-  if (items.GetContent().empty() && !items.IsVirtualDirectoryRoot())
+  if (items.GetContent().empty() && !items.IsVirtualDirectoryRoot() && !items.IsPlugin())
     items.SetContent("images");
   return true;
 }
@@ -513,7 +504,7 @@ void CGUIWindowPictures::GetContextButtons(int itemNumber, CContextButtons &butt
     }
     else
     {
-      if (item && !StringUtils::StartsWithNoCase(item->GetPath(), "addons://more/"))
+      if (item)
       {
         if (!m_vecItems->IsPlugin() && (item->IsPlugin() || item->IsScript()))
           buttons.Add(CONTEXT_BUTTON_INFO, 24003); // Add-on info

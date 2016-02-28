@@ -179,8 +179,6 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
 
   case ACTION_SHOW_OSD_TIME:
     m_bShowCurrentTime = !m_bShowCurrentTime;
-    if(!m_bShowCurrentTime)
-      g_infoManager.SetDisplayAfterSeek(0); //Force display off
     g_infoManager.SetShowTime(m_bShowCurrentTime);
     return true;
     break;
@@ -369,8 +367,6 @@ void CGUIWindowFullScreen::FrameMove()
 {
   if (g_application.m_pPlayer->GetPlaySpeed() != 1)
     g_infoManager.SetDisplayAfterSeek();
-  if (m_bShowCurrentTime)
-    g_infoManager.SetDisplayAfterSeek();
 
   if (!g_application.m_pPlayer->HasPlayer()) return;
 
@@ -453,7 +449,7 @@ void CGUIWindowFullScreen::FrameMove()
     }
     // show sizing information
     SPlayerVideoStreamInfo info;
-    g_application.m_pPlayer->GetVideoStreamInfo(info);
+    g_application.m_pPlayer->GetVideoStreamInfo(CURRENT_STREAM,info);
     {
       // Splitres scaling factor
       float xscale = (float)res.iScreenWidth  / (float)res.iWidth;

@@ -172,14 +172,10 @@ missing_headers="Could not find some required headers. Please see the README for
 missing_program="Could not find a required program. Please see the README for your platform."
 alsa_disabled="== ALSA support disabled. =="
 dbus_disabled="== DBUS support disabled. =="
-wayland_enabled="== Wayland enabled. =="
-wayland_disabled="== Wayland disabled. =="
 x11_enabled="== X11 enabled. =="
 x11_disabled="== X11 disabled. =="
 pulse_not_found="== Could not find libpulse. PulseAudio support disabled. =="
 pulse_disabled="== PulseAudio support disabled. =="
-dvdcss_enabled="== DVDCSS support enabled. =="
-dvdcss_disabled="== DVDCSS support disabled. =="
 avahi_not_found="== Could not find libavahi-common or libavahi-client. Avahi support disabled. =="
 avahi_disabled="== Avahi support disabled. =="
 mdnsembedded_not_found="== Could not find mDNSEmbedded. Might prevent zeroconf support. =="
@@ -192,14 +188,10 @@ vtbdecoder_enabled="== VTBDecoder support enabled. =="
 vtbdecoder_disabled="== VTBDecoder support manually disabled. =="
 openmax_disabled="== OpenMax support manually disabled. =="
 openmax_not_found="== Could not find OpenMax headers. OpenMax support disabled. =="
-ssh_not_found="== Could not find libssh. =="
-ssh_disabled="== SSH SFTP disabled. =="
 librtmp_not_found="== Could not find libRTMP. RTMP support disabled. =="
 librtmp_disabled="== RTMP support disabled. =="
 libnfs_not_found="== Could not find libnfs. NFS client support disabled. =="
 libnfs_disabled="== NFS support disabled. =="
-libgif_not_found="== Could not find libgif. libgif support disabled. =="
-libgif_disabled="== libgif support disabled. =="
 libshairplay_not_found="== Could not find libshairplay. =="
 samba_disabled="== SAMBA support disabled. =="
 libplist_not_found="== Could not find libplist. AirPlay support disabled. =="
@@ -221,6 +213,10 @@ libusb_disabled="== libusb disabled. Plug and play USB device support will not b
 libusb_disabled_udev_found="== libusb disabled. =="
 libcec_enabled="== libcec enabled. =="
 libcec_disabled="== libcec disabled. CEC adapter support will not be available. =="
+libbluetooth_not_found="== Could not find libbluetooth. Bluetooth support will not be available =="
+libbluetooth_enabled="== libbluetooth enabled. =="
+libbluetooth_disabled="== libbluetooth disabled. Bluetooth support will not be available. =="
+
 
 AC_ARG_WITH([ffmpeg],
   [AS_HELP_STRING([--with-ffmpeg],
@@ -306,12 +302,6 @@ AC_ARG_ENABLE([joystick],
   [use_joystick=$enableval],
   [use_joystick=auto])
 
-AC_ARG_ENABLE([wayland],
-  [AS_HELP_STRING([--enable-wayland],
-  [enable wayland (default is no) 'Linux Only'])],
-  [use_wayland=$enableval],
-  [use_wayland=no])
-
 AC_ARG_ENABLE([x11],
   [AS_HELP_STRING([--enable-x11],
   [enable x11 (default is yes) 'Linux Only'])],
@@ -366,12 +356,6 @@ AC_ARG_ENABLE([nfs],
   [use_libnfs=$enableval],
   [use_libnfs=auto])
 
-AC_ARG_ENABLE([gif],
-  [AS_HELP_STRING([--enable-gif],
-  [enable gif support via libgif (default is auto)])],
-  [use_libgif=$enableval],
-  [use_libgif=auto])
-
 AC_ARG_ENABLE([airplay],
   [AS_HELP_STRING([--enable-airplay],
   [enable AirPlay support(default is auto)])],
@@ -389,12 +373,6 @@ AC_ARG_ENABLE([upnp],
   [disable UPnP support (default is enabled)])],
   [use_upnp=$enableval],
   [use_upnp=yes])
-
-AC_ARG_ENABLE([dvdcss],
-  [AS_HELP_STRING([--enable-dvdcss],
-  [enable DVDCSS support (default is yes)])],
-  [use_dvdcss=$enableval],
-  [use_dvdcss=yes])
 
 AC_ARG_ENABLE([mid],
   [AS_HELP_STRING([--enable-mid],
@@ -419,12 +397,6 @@ AC_ARG_ENABLE([non-free],
   [disable componentents with non-compliant licenses])],
   [use_nonfree=$enableval],
   [use_nonfree=yes])
-
-AC_ARG_ENABLE([asap-codec],
-  [AS_HELP_STRING([--enable-asap-codec],
-  [enable ASAP ADPCM support])],
-  [use_asap=$enableval],
-  [use_asap=no])
 
 AC_ARG_ENABLE([mysql],
   [AS_HELP_STRING([--disable-mysql],
@@ -486,6 +458,12 @@ AC_ARG_ENABLE([libcec],
   [enable libcec support (default is auto)])],
   [use_libcec=$enableval],
   [use_libcec=auto])
+
+AC_ARG_ENABLE([libbluetooth],
+  [AS_HELP_STRING([--enable-libbluetooth],
+  [enable libbluetooth support (default is auto)])],
+  [use_libbluetooth=$enableval],
+  [use_libbluetooth=auto])
 
 AC_ARG_ENABLE([libcap],
   [AS_HELP_STRING([--enable-libcap],
@@ -653,7 +631,6 @@ case $host in
      use_neon=yes
      use_gles=yes
      use_gl=no
-     use_wayland=no
      USE_STATIC_FFMPEG=1
      ;;
   arm*-*linux-android*)
@@ -666,7 +643,6 @@ case $host in
      use_gles=yes
      use_optical_drive=no
      use_x11=no
-     use_wayland=no
      build_shared_lib=yes
      ;;
   mips*-*-linux-gnu*)
@@ -677,7 +653,6 @@ case $host in
      use_gles=no
      use_gl=yes
      use_sdl=yes
-     use_wayland=no
      USE_STATIC_FFMPEG=1
      ;;
   *)
@@ -689,7 +664,6 @@ if test "$target_platform" = "target_android" ; then
   USE_ANDROID=1
   webserver_checkdepends=yes
   CFLAGS="$CFLAGS -Wno-psabi"
-  DROID_DVDLIB_SEEK64="-D_FILE_OFFSET_BITS=64 -D_OFF_T_DEFINED_ -Doff_t=off64_t -Dlseek=lseek64"
   CXXFLAGS="$CXXFLAGS -Wno-psabi"
   AC_DEFINE(HAS_EGLGLES, [1], [Define if supporting EGL based GLES Framebuffer])
 fi
@@ -726,7 +700,6 @@ if test "$host_vendor" = "apple"; then
   use_libudev=no
   use_libusb=no
   use_x11=no
-  use_wayland=no
 fi
 
 XBMC_SETUP_ARCH_DEFINES()
@@ -922,11 +895,6 @@ AC_LANG_POP([C++])
 # Check inotify availability
 AC_CHECK_HEADER([sys/inotify.h], AC_DEFINE([HAVE_INOTIFY],[1],[Define if we have inotify]),)
 
-# Checks for boost headers using CXX instead of CC
-AC_LANG_PUSH([C++])
-AC_CHECK_HEADER([boost/circular_buffer.hpp],, AC_MSG_ERROR($missing_library))
-AC_LANG_POP([C++])
-
 # Python
 if test -z "$PYTHON_NOVERSIONCHECK"; then
   AX_PYTHON_DEVEL([>= '2.6'])
@@ -939,64 +907,6 @@ if test -z "$PYTHON_VERSION"; then
 else
   LIBS="$LIBS $PYTHON_LDFLAGS"
   AC_MSG_NOTICE([Using Python $PYTHON_VERSION])
-fi
-
-# Wayland
-if test "$use_wayland" = "yes"; then
-  AC_MSG_NOTICE($wayland_enabled)
-  PKG_CHECK_MODULES([WAYLAND_CLIENT],    [wayland-client],
-    [INCLUDES="$INCLUDES $WAYLAND_CLIENT_CFLAGS";
-     WAYLAND_CLIENT_LIBRARY_LINE=`LIBRARY=\`${PKG_CONFIG} --libs-only-l wayland-client\`; echo ${LIBRARY:2}`;
-     XB_FIND_SONAME([WAYLAND_CLIENT_LIBRARY], ${WAYLAND_CLIENT_LIBRARY_LINE})],
-     AC_MSG_ERROR($missing_library))
-  PKG_CHECK_MODULES([WAYLAND_EGL],    [wayland-egl],
-    [INCLUDES="$INCLUDES $WAYLAND_EGL_CFLAGS";
-     WAYLAND_EGL_LIBRARY_LINE=`LIBRARY=\`${PKG_CONFIG} --libs-only-l wayland-egl\`; echo ${LIBRARY:2:11}`
-     XB_FIND_SONAME([WAYLAND_EGL_LIBRARY], ${WAYLAND_EGL_LIBRARY_LINE})],
-    AC_MSG_ERROR($missing_library))
-  PKG_CHECK_MODULES([XKBCOMMON],    [xkbcommon],
-    [INCLUDES="$INCLUDES $XKBCOMMON_CFLAGS";
-     XKBCOMMON_LIBRARY_LINE=`LIBRARY=\`${PKG_CONFIG} --libs-only-l xkbcommon\`; echo ${LIBRARY:2}`;
-     XB_FIND_SONAME([XKBCOMMON_LIBRARY], $XKBCOMMON_LIBRARY_LINE)],
-    AC_MSG_ERROR($missing_library))
-  AC_DEFINE([HAVE_WAYLAND], [1], [Define to 1 if you have Wayland libs installed.])
-  AC_DEFINE([HAVE_XKBCOMMON], [1], [Define to 1 if you have libxkbcommon installed.])
-
-  # If we are also building with tests then we want to build
-  # wayland tests as well
-  if test "$configure_gtest" = "yes"; then
-    have_weston_sdk=no;
-    PKG_CHECK_MODULES([PIXMAN],
-                      [pixman-1],have_pixman=yes,
-                      [AC_MSG_WARN($missing_library); have_pixman=no])
-    PKG_CHECK_MODULES([WESTON],
-                      [weston >= 1.1.90],[have_weston_sdk=yes],
-                      [have_weston_sdk=no; AC_MSG_WARN($missing_library)])
-
-    AC_CHECK_PROG(WAYLAND_SCANNER, wayland-scanner, "wayland-scanner", "no")
-    if test "x$WAYLAND_SCANNER" == "xno"; then
-      AC_MSG_WARN($missing_program)
-    else
-      if test "x$have_weston_sdk" == "xyes" && test "x$have_pixman" = "xyes"; then
-        AC_SUBST(WAYLAND_TEST_INCLUDES,"$WAYLAND_CLIENT_CFLAGS $XKBCOMMON_CFLAGS $PIXMAN_CFLAGS $WESTON_CFLAGS")
-        AC_SUBST(WAYLAND_TEST_LIBS,"$WAYLAND_CLIENT_LIBS $XKBCOMMON_LIBS $PIXMAN_LIBS $WESTON_LIBS")
-        AC_DEFINE([HAVE_WESTON_SDK], [1], [Define to 1 if Weston SDK is installed.])
-        AC_SUBST(USE_WAYLAND_TEST_EXTENSION, 1)
-      fi
-      AC_SUBST(WAYLAND_SCANNER)
-      AC_DEFINE([HAVE_WAYLAND_XBMC_PROTO],[1],["Define to 1 if the wayland test-protocol will be built"])
-    fi
-  fi
-
-  # Disable SDL and X11 builds
-  use_joystick=no
-  use_x11=no
-
-  # Wayland requires the EGL "window system" which in turn only supports
-  # the OpenGL ES API, so enable gles support
-  use_gles=yes
-else
-  AC_MSG_RESULT($wayland_disabled)
 fi
 
 # Checks for platforms libraries.
@@ -1051,11 +961,6 @@ if test "$use_mysql" = "yes"; then
   fi
 fi
 AC_CHECK_HEADER([ass/ass.h],, AC_MSG_ERROR($missing_library))
-AC_CHECK_HEADER([mpeg2dec/mpeg2.h],, AC_MSG_ERROR($missing_library))
-AC_CHECK_HEADER([mpeg2dec/mpeg2convert.h],, AC_MSG_ERROR($missing_library),
-  AC_INCLUDES_DEFAULT()
-  [#include <mpeg2dec/mpeg2.h>])
-AC_CHECK_HEADER([jpeglib.h],,        AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([ogg/ogg.h],,        AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([vorbis/vorbisfile.h],, AC_MSG_ERROR($missing_library))
 PKG_CHECK_MODULES([LIBDCADEC], [dcadec],, AC_MSG_ERROR([libdcadec not found]))
@@ -1077,7 +982,8 @@ else
   AC_MSG_RESULT(no)
 fi
 
-AC_CHECK_HEADER([openssl/crypto.h], AC_DEFINE([HAVE_OPENSSL],[1],[Define if we have openssl]),)
+PKG_CHECK_MODULES([OPENSSL], [openssl],
+  [INCLUDES="$INCLUDES $OPENSSL_CFLAGS"; LIBS="$LIBS $OPENSSL_LIBS"; AC_DEFINE([HAVE_OPENSSL],[1],[Define if we have openssl])],)
 AC_CHECK_HEADER([gcrypt.h], gcrypt_headers_available=yes,gcrypt_headers_available=no)
 if test "$gcrypt_headers_available" = "yes"; then
    # if we have the headers then we must have the lib
@@ -1088,8 +994,6 @@ fi
 PKG_CHECK_MODULES([GNUTLS], [gnutls], [have_gnutls=yes];AC_DEFINE([HAVE_GNUTLS], [1], [Define if we have gnutls]), AC_MSG_WARN("gnutls not found"))
 
 AC_CHECK_LIB([bz2],         [main],, AC_MSG_ERROR($missing_library))
-AC_CHECK_LIB([jpeg],        [main],, AC_MSG_ERROR($missing_library)) # check for cximage
-AC_CHECK_LIB([tiff],        [main],, AC_MSG_ERROR($missing_library))
 if echo "$ARCH" | grep -q freebsd; then
 AC_CHECK_LIB([pthread],     [main],LIBS="-pthread $LIBS", AC_MSG_ERROR($missing_library))
 AC_CHECK_LIB([pthread],     [pthread_set_name_np],
@@ -1110,7 +1014,7 @@ AC_CHECK_LIB([ssl],         [main],, AC_MSG_ERROR($missing_library))
 if test "$use_mysql" = "yes"; then
   AC_CHECK_LIB([mysqlclient], [main],, AC_MSG_ERROR($missing_library))
 fi
-AC_CHECK_LIB([bluetooth],   [hci_devid],, AC_MSG_RESULT([Could not find suitable version of libbluetooth]))
+
 
 AC_LANG_PUSH([C++])
 PKG_CHECK_MODULES([TINYXML], [tinyxml >= 2.6.2],
@@ -1249,9 +1153,6 @@ if test "$host_vendor" = "apple" ; then
     AC_DEFINE([HAVE_SDL_VERSION],[1],["SDL major version"])
   fi
 else
-if test "$target_platform" != "target_android" ; then
-  AC_CHECK_LIB([jasper],     [main],, AC_MSG_ERROR($missing_library)) # check for cximage
-fi
 if test "x$use_alsa" != "xno"; then
   PKG_CHECK_MODULES([ALSA],  [alsa],
     [INCLUDES="$INCLUDES $ALSA_CFLAGS"; LIBS="$LIBS $ALSA_LIBS"; use_alsa=yes],
@@ -1285,7 +1186,6 @@ fi
 fi
 
 XB_FIND_SONAME([ASS],         [ass])
-XB_FIND_SONAME([MPEG2],       [mpeg2])
 
 # WebServer
 if test "$use_webserver" = "yes"; then
@@ -1407,11 +1307,12 @@ fi
 
 # libssh
 if test "x$use_ssh" = "xno"; then
-  AC_MSG_NOTICE($ssh_disabled)
+  AC_MSG_NOTICE(ssh support disabled by user)
   use_libssh="no"
 else
-  AC_CHECK_LIB([ssh], [sftp_tell64],, AC_MSG_ERROR($ssh_not_found))
-  AC_DEFINE([HAVE_LIBSSH], [1], [Whether to use libSSH library.])
+  PKG_CHECK_MODULES([LIBSSH], [libssh],
+    [INCLUDES="$INCLUDES $LIBSSH_CFLAGS"; LIBS="$LIBS $LIBSSH_LIBS"; AC_DEFINE([HAVE_LIBSSH], [1], [Whether to use libSSH library.])],
+    AC_MSG_ERROR(libssh not found))
 fi
 
 # libRTMP
@@ -1474,30 +1375,6 @@ if test "$use_libnfs" != "no"; then
 else
   USE_LIBNFS=0
   AC_MSG_NOTICE($libnfs_disabled)
-fi
-
-# libgif
-if test "$use_libgif" != "no"; then
-  AC_CHECK_HEADERS([gif_lib.h],,
-   [if test "$use_libgif" = "yes"; then
-      AC_MSG_ERROR($libgif_not_found)
-      USE_LIBGIF=0
-    elif test "$use_libgif" != "no"; then
-      AC_MSG_NOTICE($libgif_not_found)
-      use_libgif="no"
-      USE_LIBGIF=0
-    fi
-   ])
-  if test "$use_libgif" != "no"; then
-    XB_FIND_SONAME([GIF], [gif], [use_libgif])
-  fi
-  if test "$use_libgif" != "no"; then
-    AC_DEFINE([HAVE_LIBGIF], [1], [Whether to use libgif library.])
-    USE_LIBGIF=1
-  fi
-else
-  USE_LIBGIF=0
-  AC_MSG_NOTICE($libgif_disabled)
 fi
 
 # libplist for airplay feature
@@ -1607,6 +1484,22 @@ if test "x$use_libcec" != "xno"; then
 else
   use_libcec="no"
   AC_MSG_NOTICE($libcec_disabled)
+fi
+
+# libbluetooth
+USE_LIBBLUETOOTH=0
+if test "$use_libbluetooth" = "auto"; then
+  PKG_CHECK_MODULES([BLUETOOTH],[bluez],,[use_libbluetooth="no";AC_MSG_RESULT($libbluetooth_not_found)])
+elif test "$use_libbluetooth" = "yes"; then
+  PKG_CHECK_MODULES([BLUETOOTH],[bluez],,[use_libbluetooth="no";AC_MSG_ERROR($libbluetooth_not_found)])
+else
+  AC_MSG_NOTICE($libbluetooth_disabled)
+fi
+
+if test "x$use_libbluetooth" != "xno"; then
+  USE_LIBBLUETOOTH=1;INCLUDES="$INCLUDES $BLUETOOTH_CFLAGS";LIBS="$LIBS $BLUETOOTH_LIBS"
+  AC_DEFINE([HAVE_LIBBLUETOOTH],[1],["Define to 1 if libbluetooth is installed"])
+  AC_MSG_NOTICE($libbluetooth_enabled)
 fi
 
 # libcap
@@ -1962,6 +1855,7 @@ AC_C_BIGENDIAN
 
 if test "$cross_compiling" = "yes"; then
   final_message="$final_message\n  Crosscomp.:\tYes"
+  CROSS_COMPILING=yes
   if [[ -d "$NATIVE_ROOT" ]]; then
     CFLAGS_FOR_BUILD="$CFLAGS_FOR_BUILD -I$NATIVE_ROOT/include"
     CXXFLAGS_FOR_BUILD="$CXXFLAGS_FOR_BUILD -I$NATIVE_ROOT/include"
@@ -2054,29 +1948,11 @@ else
   final_message="$final_message\n  X11:\t\tNo"
 fi
 
-if test "$use_wayland" = "yes"; then
-  final_message="$final_message\n  Wayland:\tYes"
-  USE_WAYLAND=1
-  USE_XKBCOMMON=1
-else
-  final_message="$final_message\n  Wayland:\tNo"
-fi
-
 if test "$use_libbluray" = "yes"; then
   final_message="$final_message\n  Bluray:\tYes"
 else
   final_message="$final_message\n  Bluray:\tNo"
 fi
-
-# we don't compile with default upstream squish, so we use our own one
-# even on non unified deps platforms
-if test "$cross_compiling" != "yes"; then
-  make -C ${abs_top_srcdir}/tools/depends/native/libsquish-native CXX=${CXX}
-  export PKG_CONFIG_PATH="${abs_top_srcdir}/tools/depends/native/libsquish-native/squish-install/lib/pkgconfig:$PKG_CONFIG_PATH"
-fi
-PKG_CHECK_MODULES([SQUISH], [squish],
- [INCLUDES="$INCLUDES $SQUISH_CFLAGS" LIBS="$LIBS $SQUISH_LIBS"],
- AC_MSG_ERROR("squish not found"))
 
 if test "x$use_texturepacker" != "xno"; then
   AC_PATH_PROG([TEXTUREPACKER], [TexturePacker], ["none"],
@@ -2144,24 +2020,6 @@ else
   final_message="$final_message\n  PulseAudio:\tNo"
 fi
 
-# DVDCSS
-if test "$use_dvdcss" = "yes"; then
-  AC_MSG_NOTICE($dvdcss_enabled)
-  final_message="$final_message\n  DVDCSS:\tYes"
-  BUILD_DVDCSS=1
-  SKIP_CONFIG_DVDCSS=0
-  DVDREAD_CFLAGS="-D_XBMC -DHAVE_DVDCSS_DVDCSS_H"
-else
-  AC_MSG_NOTICE($dvdcss_disabled)
-  final_message="$final_message\n  DVDCSS:\tNo"
-  BUILD_DVDCSS=0
-  SKIP_CONFIG_DVDCSS=1
-  DVDREAD_CFLAGS="-D_XBMC -UHAVE_DVDCSS_DVDCSS_H"
-fi
-if test "$host_vendor" = "apple"; then
- DVDREAD_CFLAGS="$DVDREAD_CFLAGS -D__DARWIN__"
-fi
-
 # Google Test Framework
 if test "$configure_gtest" = "yes"; then
   AC_MSG_NOTICE($gtest_enabled)
@@ -2211,23 +2069,6 @@ else
   final_message="$final_message\n  Non-free:\tNo"
 fi
 
-if test "$use_asap" = "yes"; then
-  AC_CHECK_PROGS(HAVE_GDC,gdc-4.4 gdc-4.3 gdc,"no")
-  if test "$HAVE_GDC" = "no"; then
-    AC_MSG_ERROR($missing_program);
-  fi
-  AC_CHECK_PROG(HAVE_FPC,fpc,"yes","no")
-  if test "$HAVE_FPC" = "no"; then
-    AC_MSG_ERROR($missing_program);
-  fi
-  USE_ASAP_CODEC=1
-  AC_DEFINE([USE_ASAP_CODEC], [1], [Define to 1 to enable ASAP codec.])
-  final_message="$final_message\n  ASAP Codec:\tYes"
-else
-  USE_ASAP_CODEC=0
-  final_message="$final_message\n  ASAP Codec:\tNo"
-fi
-
 if test "$use_mysql" = "yes"; then
   final_message="$final_message\n  MySQL:\tYes"
   USE_MYSQL=1
@@ -2265,12 +2106,6 @@ if test "$use_libnfs" != "no"; then
   final_message="$final_message\n  libnfs client support:Yes"
 else
   final_message="$final_message\n  libnfs client support:No"
-fi
-
-if test "$use_libgif" != "no"; then
-  final_message="$final_message\n  libgif support:\tYes"
-else
-  final_message="$final_message\n  libgif support:\tNo"
 fi
 
 if test "$use_airplay" != "no"; then
@@ -2317,6 +2152,12 @@ if test "x$use_libcec" != "xno"; then
   final_message="$final_message\n  libcec support:\tYes"
 else
   final_message="$final_message\n  libcec support:\tNo"
+fi
+
+if test "x$use_libbluetooth" != "xno"; then
+  final_message="$final_message\n  libbluetooth support:\tYes"
+else
+  final_message="$final_message\n  libbluetooth support:\tNo"
 fi
 
 if test "x$use_libcap" != "xno"; then
@@ -2383,7 +2224,6 @@ OUTPUT_FILES="Makefile \
     xbmc/network/Makefile \
     xbmc/network/upnp/Makefile \
     lib/libexif/Makefile \
-    lib/cximage-6.0/Makefile \
     lib/libUPnP/Makefile \
     xbmc/DllPaths_generated.h \
     xbmc/DllPaths_generated_android.h \
@@ -2418,7 +2258,7 @@ OUTPUT_FILES="Makefile \
     tools/darwin/packaging/osx/mkdmg-osx.sh \
     tools/darwin/packaging/migrate_to_kodi_ios.sh \
     xbmc/platform/darwin/osx/Info.plist \
-    xbmc/platform/darwin/ios/IOS-Info.plist \
+    xbmc/platform/darwin/ios/Info.plist \
     project/cmake/kodi-config.cmake \
     project/cmake/xbmc-config.cmake \
     tools/android/packaging/xbmc/AndroidManifest.xml \
@@ -2436,10 +2276,6 @@ OUTPUT_FILES="Makefile \
 
 if test "$use_webserver" = "yes"; then
 OUTPUT_FILES="$OUTPUT_FILES xbmc/network/httprequesthandler/python/Makefile"
-fi
-
-if test "$use_wayland" = "yes"; then
-OUTPUT_FILES="$OUTPUT_FILES xbmc/windowing/tests/wayland/Makefile"
 fi
 
 if test "$use_touch_skin" = "yes"; then
@@ -2487,7 +2323,6 @@ AC_SUBST(CFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS_FOR_BUILD)
 AC_SUBST(LDFLAGS_FOR_BUILD)
 AC_SUBST(SDL_DEFINES)
-AC_SUBST(BUILD_DVDCSS)
 AC_SUBST(FFMPEG_LIBDIR)
 AC_SUBST(USE_STATIC_FFMPEG)
 AC_SUBST(GNUTLS_ALL_LIBS)
@@ -2498,7 +2333,6 @@ AC_SUBST(USE_LIBAV_HACKS)
 AC_SUBST(PYTHON_VERSION)
 AC_SUBST(OUTPUT_FILES)
 AC_SUBST(HAVE_XBMC_NONFREE)
-AC_SUBST(USE_ASAP_CODEC)
 AC_SUBST(LIBCURL_BASENAME)
 AC_SUBST(LIBVORBISFILE_BASENAME)
 AC_SUBST(LIBOGG_BASENAME)
@@ -2512,7 +2346,6 @@ AC_SUBST(USE_VDPAU)
 AC_SUBST(USE_VAAPI)
 AC_SUBST(USE_LIBSMBCLIENT)
 AC_SUBST(USE_LIBNFS)
-AC_SUBST(USE_LIBGIF)
 AC_SUBST(USE_AIRPLAY)
 AC_SUBST(USE_OPENMAX)
 AC_SUBST(USE_PULSE)
@@ -2524,11 +2357,10 @@ AC_SUBST(USE_AIRTUNES)
 AC_SUBST(USE_LIBUDEV)
 AC_SUBST(USE_LIBUSB)
 AC_SUBST(USE_LIBCEC)
+AC_SUBST(USE_LIBBLUETOOTH)
 AC_SUBST(USE_MYSQL)
-AC_SUBST(USE_WAYLAND)
 AC_SUBST(USE_WEB_SERVER)
 AC_SUBST(USE_UPNP)
-AC_SUBST(USE_XKBCOMMON)
 AC_SUBST(USE_OMXLIB)
 AC_SUBST(USE_ANDROID)
 AC_SUBST(GTEST_CONFIGURED)
@@ -2538,6 +2370,7 @@ AC_SUBST(USE_SSE4)
 AC_SUBST(USE_MMAL)
 AC_SUBST(USE_X11)
 AC_SUBST(USE_BREAKPAD)
+AC_SUBST(CROSS_COMPILING)
 
 # pushd and popd are not available in other shells besides bash, so implement
 # our own pushd/popd functions
@@ -2588,51 +2421,6 @@ else
 fi
 ])
 ])
-
-XB_CONFIG_MODULE([lib/libdvd/libdvdcss], [
-  ./configure \
-    CC="$CC" \
-    CXX="$CXX" \
-    CFLAGS="$CFLAGS $DROID_DVDLIB_SEEK64" \
-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
-    --host=$host_alias \
-    --build=$build_alias \
-    --target=$target_alias \      
-    --disable-doc \
-    --enable-static \
-    --with-pic
-], [$SKIP_CONFIG_DVDCSS])
-
-XB_CONFIG_MODULE([lib/libdvd/libdvdread], [
-  ./configure2 \
-    --extra-cflags="$CFLAGS $DVDREAD_CFLAGS -I`pwd`/../libdvdcss/src $DROID_DVDLIB_SEEK64" \
-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
-    --host=$host_alias \
-    --build=$build_alias \
-    --target=$target_alias \      
-    --enable-static \
-    --disable-shared \
-    --disable-strip \
-    --disable-opts \
-    --cc="$CC" &&
-  mkdir -p `pwd`/../includes/dvdread
-  cp `pwd`/../libdvdread/src/*.h `pwd`/../includes/dvdread
-  cp `pwd`/../libdvdread/src/dvdread/*.h `pwd`/../includes/dvdread
-], [0])
-
-XB_CONFIG_MODULE([lib/libdvd/libdvdnav], [
-  ./configure2 \
-    --extra-cflags="$CFLAGS $DVDREAD_CFLAGS -I`pwd`/../includes $DROID_DVDLIB_SEEK64" \
-    --extra-ldflags="-L`pwd`/../libdvdread/obj" \
-    --with-dvdread-config="`pwd`/../dvdread-config" \
-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
-    --host=$host_alias \
-    --build=$build_alias \
-    --target=$target_alias \      
-    --enable-static \
-    --disable-shared \
-    --cc="$CC"
-], [0])
 
 XB_CONFIG_MODULE([lib/cpluff], [
   ./configure --disable-nls \

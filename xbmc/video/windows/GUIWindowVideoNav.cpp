@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2005-2015 Team Kodi
+ *      Copyright (C) 2016 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -207,6 +207,7 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
         CMediaSettings::GetInstance().CycleWatchedMode(m_vecItems->GetContent());
         CSettings::GetInstance().Save();
         OnFilterItems(GetProperty("filter").asString());
+        UpdateButtons();
         return true;
       }
       else if (iControl == CONTROL_BTNSHOWALL)
@@ -217,6 +218,7 @@ bool CGUIWindowVideoNav::OnMessage(CGUIMessage& message)
           CMediaSettings::GetInstance().SetWatchedMode(m_vecItems->GetContent(), WatchedModeAll);
         CSettings::GetInstance().Save();
         OnFilterItems(GetProperty("filter").asString());
+        UpdateButtons();
         return true;
       }
       else if (iControl == CONTROL_UPDATE_LIBRARY)
@@ -480,7 +482,8 @@ bool CGUIWindowVideoNav::GetDirectory(const std::string &strDirectory, CFileItem
         }
         items.SetContent("movies");
       }
-      else if (node == NODE_TYPE_TITLE_TVSHOWS)
+      else if (node == NODE_TYPE_TITLE_TVSHOWS ||
+               node == NODE_TYPE_INPROGRESS_TVSHOWS)
         items.SetContent("tvshows");
       else if (node == NODE_TYPE_TITLE_MUSICVIDEOS ||
                node == NODE_TYPE_RECENTLY_ADDED_MUSICVIDEOS)
@@ -553,7 +556,7 @@ void CGUIWindowVideoNav::LoadVideoInfo(CFileItemList &items, CVideoDatabase &dat
   if (content.empty())
   {
     content = database.GetContentForPath(items.GetPath());
-    items.SetContent(content.empty() ? "files" : content);
+    items.SetContent((content.empty() && !items.IsPlugin()) ? "files" : content);
   }
 
   /*
@@ -1264,6 +1267,8 @@ std::string CGUIWindowVideoNav::GetStartFolder(const std::string &dir)
     return "videodb://recentlyaddedepisodes/";
   else if (lower == "recentlyaddedmusicvideos")
     return "videodb://recentlyaddedmusicvideos/";
+  else if (lower == "inprogresstvshows")
+    return "videodb://inprogresstvshows/";
   else if (lower == "files")
     return "sources://video/";
   return CGUIWindowVideoBase::GetStartFolder(dir);
@@ -1314,8 +1319,9 @@ bool CGUIWindowVideoNav::ApplyWatchedFilter(CFileItemList &items)
 
     if (filterWatched)
     {
-      if((watchMode==WatchedModeWatched   && item->GetVideoInfoTag()->m_playCount== 0)
-      || (watchMode==WatchedModeUnwatched && item->GetVideoInfoTag()->m_playCount > 0))
+      if(!item->IsParentFolder() && // Don't delete the go to parent folder
+         ((watchMode == WatchedModeWatched   && item->GetVideoInfoTag()->m_playCount == 0) ||
+          (watchMode == WatchedModeUnwatched && item->GetVideoInfoTag()->m_playCount > 0)))
       {
         items.Remove(i);
         i--;
@@ -1323,6 +1329,10 @@ bool CGUIWindowVideoNav::ApplyWatchedFilter(CFileItemList &items)
       }
     }
   }
+
+  // Remove the parent folder icon, if it's the only thing in the folder. This is needed for hiding seasons.
+  if (items.GetObjectCount() == 0 && items.Get(0)->IsParentFolder())
+      items.Remove(0);
 
   if(node == NODE_TYPE_TITLE_TVSHOWS || node == NODE_TYPE_SEASONS)
   {

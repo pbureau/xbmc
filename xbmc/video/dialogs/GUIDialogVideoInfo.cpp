@@ -65,6 +65,8 @@
 #include "cores/IPlayer.h"
 #include "utils/LangCodeExpander.h"
 
+#include <iterator>
+
 using namespace XFILE::VIDEODATABASEDIRECTORY;
 using namespace XFILE;
 using namespace KODI::MESSAGING;
@@ -462,7 +464,7 @@ void CGUIDialogVideoInfo::SetMovie(const CFileItem *item)
       }
     }
 
-  m_castList->SetContent(MediaTypes::ToPlural(type));
+  m_castList->SetContent(CMediaTypes::ToPlural(type));
 
   CVideoThumbLoader loader;
   loader.LoadItem(m_movieItem.get());
@@ -525,7 +527,7 @@ void CGUIDialogVideoInfo::Update()
     pImageControl->SetFileName(m_movieItem->GetArt("thumb"));
   }
   // Update the Audio Stream and Subtitles spinners
-  PLAYERCOREID eNewCore   = EPC_NONE;
+  std::string eNewCore    = "";
   int audioStream         = 0;
   int subtitleStream      = 0;
   int audioStreamCount    = 0;
@@ -569,7 +571,7 @@ void CGUIDialogVideoInfo::Update()
     subtitlesOnFlag = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleOn;
   }
 
-  if( m_pPlayer->GetCurrentPlayer() == EPC_NONE )
+  if( m_pPlayer->GetCurrentPlayer().empty() )
     CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: no current player");
   else
   {
@@ -1410,7 +1412,7 @@ bool CGUIDialogVideoInfo::UpdateVideoItemTitle(const CFileItemPtr &pItem)
   std::string title;
   if (mediaType == MediaTypeMovie)
   {
-    database.GetMovieInfo("", detail, iDbId);
+    database.GetMovieInfo("", detail, iDbId, VideoDbDetailsNone);
     title = detail.m_strTitle;
   }
   else if (mediaType == MediaTypeVideoCollection)
@@ -1420,7 +1422,7 @@ bool CGUIDialogVideoInfo::UpdateVideoItemTitle(const CFileItemPtr &pItem)
   }
   else if (mediaType == MediaTypeEpisode)
   {
-    database.GetEpisodeInfo(pItem->GetPath(), detail, iDbId);
+    database.GetEpisodeInfo(pItem->GetPath(), detail, iDbId, VideoDbDetailsNone);
     title = detail.m_strTitle;
   }
   else if (mediaType == MediaTypeSeason)
@@ -1430,12 +1432,12 @@ bool CGUIDialogVideoInfo::UpdateVideoItemTitle(const CFileItemPtr &pItem)
   }
   else if (mediaType == MediaTypeTvShow)
   {
-    database.GetTvShowInfo(pItem->GetVideoInfoTag()->m_strFileNameAndPath, detail, iDbId);
+    database.GetTvShowInfo(pItem->GetVideoInfoTag()->m_strFileNameAndPath, detail, iDbId, 0, VideoDbDetailsNone);
     title = detail.m_strTitle;
   }
   else if (mediaType == MediaTypeMusicVideo)
   {
-    database.GetMusicVideoInfo(pItem->GetVideoInfoTag()->m_strFileNameAndPath, detail, iDbId);
+    database.GetMusicVideoInfo(pItem->GetVideoInfoTag()->m_strFileNameAndPath, detail, iDbId, VideoDbDetailsNone);
     title = detail.m_strTitle;
   }
 
@@ -2112,13 +2114,13 @@ bool CGUIDialogVideoInfo::ManageVideoItemArtwork(const CFileItemPtr &item, const
 
 std::string CGUIDialogVideoInfo::GetLocalizedVideoType(const std::string &strType)
 {
-  if (MediaTypes::IsMediaType(strType, MediaTypeMovie))
+  if (CMediaTypes::IsMediaType(strType, MediaTypeMovie))
     return g_localizeStrings.Get(20342);
-  else if (MediaTypes::IsMediaType(strType, MediaTypeTvShow))
+  else if (CMediaTypes::IsMediaType(strType, MediaTypeTvShow))
     return g_localizeStrings.Get(20343);
-  else if (MediaTypes::IsMediaType(strType, MediaTypeEpisode))
+  else if (CMediaTypes::IsMediaType(strType, MediaTypeEpisode))
     return g_localizeStrings.Get(20359);
-  else if (MediaTypes::IsMediaType(strType, MediaTypeMusicVideo))
+  else if (CMediaTypes::IsMediaType(strType, MediaTypeMusicVideo))
     return g_localizeStrings.Get(20391);
 
   return "";
@@ -2141,9 +2143,9 @@ bool CGUIDialogVideoInfo::UpdateVideoItemSortTitle(const CFileItemPtr &pItem)
   CVideoInfoTag detail;
   VIDEODB_CONTENT_TYPE iType = (VIDEODB_CONTENT_TYPE)pItem->GetVideoContentType();
   if (iType == VIDEODB_CONTENT_MOVIES)
-    database.GetMovieInfo("", detail, iDbId);
+    database.GetMovieInfo("", detail, iDbId, VideoDbDetailsNone);
   else if (iType == VIDEODB_CONTENT_TVSHOWS)
-    database.GetTvShowInfo(pItem->GetVideoInfoTag()->m_strFileNameAndPath, detail, iDbId);
+    database.GetTvShowInfo(pItem->GetVideoInfoTag()->m_strFileNameAndPath, detail, iDbId, 0, VideoDbDetailsNone);
 
   std::string currentTitle;
   if (detail.m_strSortTitle.empty())
@@ -2172,7 +2174,7 @@ bool CGUIDialogVideoInfo::LinkMovieToTvShow(const CFileItemPtr &item, bool bRemo
     for (unsigned int i = 0; i < ids.size(); ++i)
     {
       CVideoInfoTag tag;
-      database.GetTvShowInfo("", tag, ids[i]);
+      database.GetTvShowInfo("", tag, ids[i], 0 , VideoDbDetailsNone);
       CFileItemPtr show(new CFileItem(tag));
       list.Add(show);
     }

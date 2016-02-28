@@ -60,6 +60,7 @@ static const translateField fields[] = {
   { "albumartist",       FieldAlbumArtist,             CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  566 },
   { "artist",            FieldArtist,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  557 },
   { "tracknumber",       FieldTrackNumber,             CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 554 },
+  { "role",              FieldRole,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true, 38033 },
   { "comment",           FieldComment,                 CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 569 },
   { "review",            FieldReview,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 183 },
   { "themes",            FieldThemes,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21895 },
@@ -76,7 +77,7 @@ static const translateField fields[] = {
   { "inprogress",        FieldInProgress,              CDatabaseQueryRule::BOOLEAN_FIELD,  NULL,                                 false, 575 },
   { "rating",            FieldRating,                  CDatabaseQueryRule::NUMERIC_FIELD,  CSmartPlaylistRule::ValidateRating,   false, 563 },
   { "userrating",        FieldUserRating,              CDatabaseQueryRule::NUMERIC_FIELD,  CSmartPlaylistRule::ValidateMyRating, false, 38018 },
-  { "votes",             FieldVotes,                   CDatabaseQueryRule::TEXT_FIELD,     StringValidation::IsPositiveInteger,  false, 205 },
+  { "votes",             FieldVotes,                   CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 205 },
   { "top250",            FieldTop250,                  CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 13409 },
   { "mpaarating",        FieldMPAA,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 20074 },
   { "dateadded",         FieldDateAdded,               CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 570 },
@@ -329,6 +330,7 @@ std::vector<Field> CSmartPlaylistRule::GetFields(const std::string &type)
     fields.push_back(FieldRating);
     fields.push_back(FieldUserRating);
     fields.push_back(FieldPlaycount);
+    fields.push_back(FieldPath);
   }
   else if (type == "artists")
   {
@@ -342,6 +344,7 @@ std::vector<Field> CSmartPlaylistRule::GetFields(const std::string &type)
     fields.push_back(FieldBandFormed);
     fields.push_back(FieldDisbanded);
     fields.push_back(FieldDied);
+    fields.push_back(FieldRole);
   }
   else if (type == "tvshows")
   {
@@ -467,7 +470,21 @@ std::vector<SortBy> CSmartPlaylistRule::GetOrders(const std::string &type)
 {
   std::vector<SortBy> orders;
   orders.push_back(SortByNone);
-  if (type == "songs")
+  if (type == "mixed")
+  {
+    orders.push_back(SortByGenre);
+    orders.push_back(SortByAlbum);
+    orders.push_back(SortByArtist);
+    orders.push_back(SortByTitle);
+    orders.push_back(SortByYear);
+    orders.push_back(SortByTime);
+    orders.push_back(SortByTrackNumber);
+    orders.push_back(SortByFile);
+    orders.push_back(SortByPath);
+    orders.push_back(SortByPlaycount);
+    orders.push_back(SortByLastPlayed);
+  }
+  else if (type == "songs")
   {
     orders.push_back(SortByGenre);
     orders.push_back(SortByAlbum);
@@ -776,6 +793,8 @@ std::string CSmartPlaylistRule::FormatWhereClause(const std::string &negate, con
       query = negate + " EXISTS (SELECT 1 FROM song, song_artist, artist WHERE song.idAlbum = " + GetField(FieldId, strType) + " AND song.idSong = song_artist.idSong AND song_artist.idArtist = artist.idArtist AND artist.strArtist" + parameter + ")";
     else if (m_field == FieldAlbumArtist)
       query = negate + " EXISTS (SELECT 1 FROM album_artist, artist WHERE album_artist.idAlbum = " + GetField(FieldId, strType) + " AND album_artist.idArtist = artist.idArtist AND artist.strArtist" + parameter + ")";
+    else if (m_field == FieldPath)
+      query = negate + " EXISTS (SELECT 1 FROM song JOIN path on song.idpath = path.idpath WHERE song.idAlbum = " + GetField(FieldId, strType) + " AND path.strPath" + parameter + ")";
   }
   else if (strType == "artists")
   {
@@ -786,6 +805,10 @@ std::string CSmartPlaylistRule::FormatWhereClause(const std::string &negate, con
       query = negate + " (EXISTS (SELECT DISTINCT song_artist.idArtist FROM song_artist, song_genre, genre WHERE song_artist.idArtist = " + GetField(FieldId, strType) + " AND song_artist.idSong = song_genre.idSong AND song_genre.idGenre = genre.idGenre AND genre.strGenre" + parameter + ")";
       query += " OR ";
       query += "EXISTS (SELECT DISTINCT album_artist.idArtist FROM album_artist, album_genre, genre WHERE album_artist.idArtist = " + GetField(FieldId, strType) + " AND album_artist.idAlbum = album_genre.idAlbum AND album_genre.idGenre = genre.idGenre AND genre.strGenre" + parameter + "))";
+    }
+    if (m_field == FieldRole)
+    {
+      query = negate + " (EXISTS (SELECT DISTINCT song_artist.idArtist FROM song_artist, role WHERE song_artist.idArtist = " + GetField(FieldId, strType) + " AND song_artist.idRole = role.idRole AND role.strRole" + parameter + "))";
     }
   }
   else if (strType == "movies")
@@ -904,7 +927,7 @@ std::string CSmartPlaylistRule::FormatWhereClause(const std::string &negate, con
 std::string CSmartPlaylistRule::GetField(int field, const std::string &type) const
 {
   if (field >= FieldUnknown && field < FieldMax)
-    return DatabaseUtils::GetField((Field)field, MediaTypes::FromString(type), DatabaseQueryPartWhere);
+    return DatabaseUtils::GetField((Field)field, CMediaTypes::FromString(type), DatabaseQueryPartWhere);
   return "";
 }
 

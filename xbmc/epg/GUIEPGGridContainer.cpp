@@ -47,6 +47,7 @@ using namespace EPG;
 #define MINSPERBLOCK 5 /// would be nice to offer zooming of busy schedules /// performance cost to increase resolution 5 fold?
 #define BLOCKJUMP    4 // how many blocks are jumped with each analogue scroll action
 #define BLOCK_SCROLL_OFFSET 60 / MINSPERBLOCK // how many blocks are jumped if we are at left/right edge of grid
+static const int PAGE_NOW_OFFSET = 30 / MINSPERBLOCK;
 
 CGUIEPGGridContainer::CGUIEPGGridContainer(int parentID, int controlID, float posX, float posY, float width,
                                            float height, int scrollTime, int preloadItems, int timeBlocks, int rulerUnit,
@@ -841,8 +842,51 @@ void CGUIEPGGridContainer::UpdateItems(CFileItemList *items)
 
   CSingleLock lock(m_critSection);
 
-  /* Safe currently selected epg tag. Selection shall be restored after update. */
+  /* Safe currently selected epg tag and grid coordinates. Selection shall be restored after update. */
   const CEpgInfoTagPtr prevSelectedEpgTag(GetSelectedEpgInfoTag());
+  const int oldChannelIndex = m_channelOffset + m_channelCursor;
+  const int oldBlockIndex   = m_blockOffset + m_blockCursor;
+  int eventOffset           = oldBlockIndex;
+  int newChannelIndex       = oldChannelIndex;
+  int newBlockIndex         = oldBlockIndex;
+  int channelUid            = -1;
+  unsigned int broadcastUid = 0;
+
+  if (prevSelectedEpgTag)
+  {
+    // get the block offset relative to the first block of the selected event
+    while (eventOffset > 0)
+    {
+      if (m_gridIndex[oldChannelIndex][eventOffset - 1].item !=
+          m_gridIndex[oldChannelIndex][oldBlockIndex].item)
+        break;
+
+      eventOffset--;
+    }
+
+    eventOffset = oldBlockIndex - eventOffset;
+
+    if (prevSelectedEpgTag->StartAsUTC().IsValid()) // "normal" tag selected
+    {
+      newBlockIndex = (prevSelectedEpgTag->StartAsUTC() - m_gridStart).GetSecondsTotal() / 60 / MINSPERBLOCK + eventOffset;
+      channelUid    = prevSelectedEpgTag->ChannelTag()->UniqueID();
+      broadcastUid  = prevSelectedEpgTag->UniqueBroadcastID();
+    }
+    else // "gap" tag seleceted
+    {
+      const GridItemsPtr *prevItem(GetPrevItem(m_channelCursor));
+      if (prevItem)
+      {
+        const CEpgInfoTagPtr tag(prevItem->item->GetEPGInfoTag());
+        if (tag && tag->EndAsUTC().IsValid())
+        {
+          newBlockIndex = (tag->EndAsUTC() - m_gridStart).GetSecondsTotal() / 60 / MINSPERBLOCK + eventOffset;
+          channelUid    = tag->ChannelTag()->UniqueID();
+          broadcastUid  = tag->UniqueBroadcastID();
+        }
+      }
+    }
+  }
 
   Reset();
 
@@ -898,6 +942,14 @@ void CGUIEPGGridContainer::UpdateItems(CFileItemList *items)
   FreeItemsMemory();
   UpdateLayout();
 
+  /* check for invalid start and end time */
+  if (m_gridStart >= m_gridEnd)
+  {
+    // default to start "now minus 30 minutes" and end "start plus one page".
+    m_gridStart = CDateTime::GetCurrentDateTime().GetAsUTCDateTime() - CDateTimeSpan(0, 0, 30, 0);
+    m_gridEnd = m_gridStart + CDateTimeSpan(0, 0, m_blocksPerPage * MINSPERBLOCK, 0);
+  }
+
   /* Create Ruler items */
   CDateTime ruler; ruler.SetFromUTCDateTime(m_gridStart);
   CDateTime rulerEnd; rulerEnd.SetFromUTCDateTime(m_gridEnd);
@@ -913,33 +965,17 @@ void CGUIEPGGridContainer::UpdateItems(CFileItemList *items)
     m_rulerItems.push_back(rulerItem);
   }
 
-  /* check for invalid start and end time */
-  if (m_gridStart >= m_gridEnd)
-  {
-    CLog::Log(LOGERROR, "CGUIEPGGridContainer - %s - invalid start and end time set", __FUNCTION__);
-    CGUIMessage msg(GUI_MSG_LABEL_RESET, GetID(), GetParentID()); // message the window
-    SendWindowMessage(msg);
-    return;
-  }
-
   CDateTimeSpan gridDuration = m_gridEnd - m_gridStart;
   m_blocks = (gridDuration.GetDays()*24*60 + gridDuration.GetHours()*60 + gridDuration.GetMinutes()) / MINSPERBLOCK;
   if (m_blocks >= MAXBLOCKS)
     m_blocks = MAXBLOCKS;
 
-  /* if less than one page, can't display grid */
-  if (m_blocks < m_blocksPerPage)
-  {
-    CLog::Log(LOGERROR, "CGUIEPGGridContainer - %s - Less than one page of data available.", __FUNCTION__);
-    CGUIMessage msg(GUI_MSG_LABEL_RESET, GetID(), GetParentID()); // message the window
-    SendWindowMessage(msg);
-    return;
-  }
-
   CDateTimeSpan blockDuration;
   blockDuration.SetDateTimeSpan(0, 0, MINSPERBLOCK, 0);
 
   long tick(XbmcThreads::SystemClockMillis());
+  bool bFoundPrevTag     = false;
+  bool bFoundPrevChannel = false;
 
   for (unsigned int row = 0; row < m_epgItemsPtr.size(); ++row)
   {
@@ -969,6 +1005,21 @@ void CGUIEPGGridContainer::UpdateItems(CFileItemList *items)
         if (gridCursor < tag->EndAsUTC())
         {
           m_gridIndex[row][block].item = item;
+
+          if (prevSelectedEpgTag)
+          {
+            if (!bFoundPrevTag && broadcastUid > 0 && tag->UniqueBroadcastID() == broadcastUid)
+            {
+              bFoundPrevTag   = true;
+              newChannelIndex = row;
+              newBlockIndex   = block + eventOffset;
+            }
+            if (!bFoundPrevTag && !bFoundPrevChannel && channelUid > -1 && tag->ChannelTag()->UniqueID() == channelUid)
+            {
+              bFoundPrevChannel = true;
+              newChannelIndex   = row;
+            }
+          }
           break;
         }
         
@@ -1029,44 +1080,32 @@ void CGUIEPGGridContainer::UpdateItems(CFileItemList *items)
 
   if (prevSelectedEpgTag)
   {
-    // Grid index got recreated. Do cursors and offsets still point to the same epg tag?
-    if (prevSelectedEpgTag == GetSelectedEpgInfoTag())
-      return;
-
-    int newChannelCursor = GetChannel(prevSelectedEpgTag);
-    if (newChannelCursor >= 0)
+    // restore previous selection.
+    if (newChannelIndex == oldChannelIndex && newBlockIndex == oldBlockIndex)
     {
-      int newBlockCursor = GetBlock(prevSelectedEpgTag, newChannelCursor);
-      if (newBlockCursor >= 0)
-      {
-        if (newChannelCursor == m_channelCursor && newBlockCursor == m_blockCursor)
-          return;
+      // same coordinates, keep current grid view port
+      m_item = GetItem(m_channelCursor);
+    }
+    else
+    {
+      // new coordinates, move grid view port accordingly
+      SetInvalid();
 
-        if (newBlockCursor > 0 && newBlockCursor != m_blockCursor)
-        {
-          SetInvalid();
-          SetSelectedBlock(newBlockCursor);
-        }
+      if (newBlockIndex != oldBlockIndex)
+        GoToBlock(newBlockIndex);
 
-        if (newChannelCursor != m_channelCursor)
-        {
-          SetInvalid();
-          SetSelectedChannel(newChannelCursor);
-        }
-
-        if (newBlockCursor > 0)
-          return;
-      }
+      if (newChannelIndex != oldChannelIndex)
+        GoToChannel(newChannelIndex);
     }
   }
+  else
+  {
+    // no previous selection, goto now
+    m_item = GetItem(m_channelCursor);
 
-  // Fallback. Goto now.
-  m_item = GetItem(m_channelCursor);
-  if (m_item)
-    SetBlock(GetBlock(m_item->item, m_channelCursor));
-
-  SetInvalid();
-  GoToNow();
+    SetInvalid();
+    GoToNow();
+  }
 }
 
 void CGUIEPGGridContainer::ChannelScroll(int amount)
@@ -1193,43 +1232,37 @@ void CGUIEPGGridContainer::OnRight()
 
 void CGUIEPGGridContainer::SetChannel(const std::string &channel)
 {
-  int iChannelIndex(-1);
   for (unsigned int iIndex = 0; iIndex < m_channelItems.size(); iIndex++)
   {
     std::string strPath = m_channelItems[iIndex]->GetProperty("path").asString();
     if (strPath == channel)
     {
-      iChannelIndex = iIndex;
+      GoToChannel(iIndex);
       break;
     }
   }
-
-  SetSelectedChannel(iChannelIndex);
 }
 
 void CGUIEPGGridContainer::SetChannel(const CPVRChannelPtr &channel)
 {
   assert(channel.get());
 
-  int iChannelIndex(-1);
   for (unsigned int iIndex = 0; iIndex < m_channelItems.size(); iIndex++)
   {
     int iChannelId = (int)m_channelItems[iIndex]->GetProperty("channelid").asInteger(-1);
     if (iChannelId == channel->ChannelID())
     {
-      iChannelIndex = iIndex;
+      GoToChannel(iIndex);
       break;
     }
   }
-
-  SetSelectedChannel(iChannelIndex);
 }
 
-void CGUIEPGGridContainer::SetChannel(int channel)
+void CGUIEPGGridContainer::SetChannel(int channel, bool bFindClosestItem /* = true */)
 {
   CSingleLock lock(m_critSection);
 
-  if (m_blockCursor + m_blockOffset == 0 || m_blockOffset + m_blockCursor + GetItemSize(m_item) == m_blocks)
+  if (!bFindClosestItem || m_blockCursor + m_blockOffset == 0 || m_blockOffset + m_blockCursor + GetItemSize(m_item) == m_blocks)
   {
     m_item = GetItem(channel);
     if (m_item)
@@ -1421,58 +1454,6 @@ CPVRChannelPtr CGUIEPGGridContainer::GetChannel(int iIndex)
   return CPVRChannelPtr();
 }
 
-void CGUIEPGGridContainer::SetSelectedChannel(int channelIndex)
-{
-  if (channelIndex < 0)
-    return;
-
-  if (channelIndex - m_channelOffset <= 0)
-  {
-    ScrollToChannelOffset(0);
-    SetChannel(channelIndex);
-  }
-  else if (channelIndex - m_channelOffset < m_channelsPerPage && channelIndex - m_channelOffset >= 0)
-  {
-    SetChannel(channelIndex - m_channelOffset);
-  }
-  else if(channelIndex < m_channels - m_channelsPerPage)
-  {
-    ScrollToChannelOffset(channelIndex - m_channelsPerPage + 1);
-    SetChannel(m_channelsPerPage - 1);
-  }
-  else
-  {
-    ScrollToChannelOffset(m_channels - m_channelsPerPage);
-    SetChannel(channelIndex - (m_channels - m_channelsPerPage));
-  }
-}
-
-void CGUIEPGGridContainer::SetSelectedBlock(int blockIndex)
-{
-  if (blockIndex < 0)
-    return;
-
-  if (blockIndex - m_blockOffset <= 0)
-  {
-    ScrollToBlockOffset(0);
-    SetBlock(blockIndex);
-  }
-  else if (blockIndex - m_blockOffset < m_blocksPerPage && blockIndex - m_blockOffset >= 0)
-  {
-    SetBlock(blockIndex - m_blockOffset);
-  }
-  else if(blockIndex < m_blocks - m_blocksPerPage)
-  {
-    ScrollToBlockOffset(blockIndex - m_blocksPerPage + 1);
-    SetBlock(m_blocksPerPage - 1);
-  }
-  else
-  {
-    ScrollToBlockOffset(m_blocks - m_blocksPerPage);
-    SetBlock(blockIndex - (m_blocks - m_blocksPerPage));
-  }
-}
-
 int CGUIEPGGridContainer::GetSelectedItem() const
 {
   if (m_gridIndex.empty() ||
@@ -1526,50 +1507,6 @@ CEpgInfoTagPtr CGUIEPGGridContainer::GetSelectedEpgInfoTag() const
   }
 
   return tag;
-}
-
-int CGUIEPGGridContainer::GetBlock(const CEpgInfoTagPtr &tag, int channel) const
-{
-  for (int block = 0; block < m_blocks; ++block)
-  {
-    CFileItemPtr item = m_gridIndex[channel + m_channelOffset][block].item;
-    if (item)
-    {
-      CEpgInfoTagPtr currentTag(item->GetEPGInfoTag());
-      if (currentTag == tag)
-        return (block - m_blockOffset >= 0) ? block - m_blockOffset : 0;
-    }
-  }
-
-  return -1;
-}
-
-int CGUIEPGGridContainer::GetChannel(const CEpgInfoTagPtr &tag) const
-{
-  if (tag->HasPVRChannel())
-  {
-    int channelId = tag->ChannelTag()->ChannelID();
-    for (int row = 0; row < m_channels; ++row)
-    {
-      for (int block = 0; block < m_blocks; ++block)
-      {
-        CFileItemPtr item = m_gridIndex[row][block].item;
-        if (item)
-        {
-          CEpgInfoTagPtr currentTag(item->GetEPGInfoTag());
-          if (currentTag->HasPVRChannel()) // Take care. Gap tags have no channel.
-          {
-            if (currentTag->ChannelTag()->ChannelID() == channelId)
-              return (row - m_channelOffset >= 0) ? row - m_channelOffset : 0;
-            else
-              break;
-          }
-        }
-      }
-    }
-  }
-
-  return -1;
 }
 
 CGUIListItemPtr CGUIEPGGridContainer::GetListItem(int offset, unsigned int flag) const
@@ -1938,36 +1875,10 @@ void CGUIEPGGridContainer::GoToEnd()
 
 void CGUIEPGGridContainer::GoToNow()
 {
-  if (!m_gridStart.IsValid())
-    return;
-
   CDateTime currentDate = CDateTime::GetCurrentDateTime().GetAsUTCDateTime();
-  int offset = ((currentDate - m_gridStart).GetSecondsTotal() / 60 - 30) / MINSPERBLOCK;
+  int offset = (currentDate - m_gridStart).GetSecondsTotal() / 60 / MINSPERBLOCK - PAGE_NOW_OFFSET;
   ScrollToBlockOffset(offset);
-
-  if (m_channelCursor + m_channelOffset >= 0 &&
-      m_channelCursor + m_channelOffset < m_channels)
-  {
-    // make sure offset is in valid range
-    offset = std::max(0, std::min(offset, m_blocks - m_blocksPerPage));
-
-    for (int blockIndex = 0; blockIndex < m_blocksPerPage; blockIndex++)
-    {
-      if (offset + blockIndex >= m_blocks)
-        break;
-
-      const CFileItemPtr item = m_gridIndex[m_channelCursor + m_channelOffset][offset + blockIndex].item;
-      if (item)
-      {
-        const CEpgInfoTagPtr tag = item->GetEPGInfoTag();
-        if (tag && tag->StartAsUTC() <= currentDate && tag->EndAsUTC() > currentDate)
-        {
-          SetBlock(blockIndex); // Select currently active epg element
-          break;
-        }
-      }
-    }
-  }
+  SetBlock(PAGE_NOW_OFFSET);
 }
 
 void CGUIEPGGridContainer::SetStartEnd(CDateTime start, CDateTime end)
@@ -1977,6 +1888,34 @@ void CGUIEPGGridContainer::SetStartEnd(CDateTime start, CDateTime end)
 
   CLog::Log(LOGDEBUG, "CGUIEPGGridContainer - %s - start=%s end=%s",
       __FUNCTION__, m_gridStart.GetAsLocalizedDateTime(false, true).c_str(), m_gridEnd.GetAsLocalizedDateTime(false, true).c_str());
+}
+
+void CGUIEPGGridContainer::GoToChannel(int channelIndex)
+{
+  if (channelIndex > m_channels - m_channelsPerPage)
+  {
+    ScrollToChannelOffset(m_channels - m_channelsPerPage);
+    SetChannel(channelIndex - (m_channels - m_channelsPerPage), false);
+  }
+  else
+  {
+    ScrollToChannelOffset(channelIndex - m_channelCursor);
+    SetChannel(m_channelCursor, false);
+  }
+}
+
+void CGUIEPGGridContainer::GoToBlock(int blockIndex)
+{
+  if (blockIndex > m_blocks - m_blocksPerPage)
+  {
+    ScrollToBlockOffset(m_blocks - m_blocksPerPage);
+    SetBlock(blockIndex - (m_blocks - m_blocksPerPage));
+  }
+  else
+  {
+    ScrollToBlockOffset(blockIndex - m_blockCursor);
+    SetBlock(m_blockCursor);
+  }
 }
 
 void CGUIEPGGridContainer::UpdateLayout()

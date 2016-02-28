@@ -269,11 +269,11 @@ bool CDVDFileInfo::ExtractThumb(const std::string &strPath,
         if (iDecoderState & VC_PICTURE && !(picture.iFlags & DVP_FLAG_DROPPED))
         {
           {
-            unsigned int nWidth = g_advancedSettings.GetThumbSize();
+            unsigned int nWidth = g_advancedSettings.m_imageRes;
             double aspect = (double)picture.iDisplayWidth / (double)picture.iDisplayHeight;
             if(hint.forced_aspect && hint.aspect != 0)
               aspect = hint.aspect;
-            unsigned int nHeight = (unsigned int)((double)g_advancedSettings.GetThumbSize() / aspect);
+            unsigned int nHeight = (unsigned int)((double)g_advancedSettings.m_imageRes / aspect);
 
             uint8_t *pOutBuf = new uint8_t[nWidth * nHeight * 4];
             struct SwsContext *context = sws_getContext(picture.iWidth, picture.iHeight,
@@ -407,9 +407,10 @@ bool CDVDFileInfo::DemuxerToStreamDetails(CDVDInputStream *pInputStream, CDVDDem
       p->m_fAspect = ((CDemuxStreamVideo *)stream)->fAspect;
       if (p->m_fAspect == 0.0f)
         p->m_fAspect = (float)p->m_iWidth / p->m_iHeight;
-      pDemux->GetStreamCodecName(iStream, p->m_strCodec);
+      p->m_strCodec = pDemux->GetStreamCodecName(iStream);
       p->m_iDuration = pDemux->GetStreamLength();
       p->m_strStereoMode = ((CDemuxStreamVideo *)stream)->stereo_mode;
+      p->m_strLanguage = ((CDemuxStreamVideo *)stream)->language;
 
       // stack handling
       if (URIUtils::IsStack(path))
@@ -440,7 +441,7 @@ bool CDVDFileInfo::DemuxerToStreamDetails(CDVDInputStream *pInputStream, CDVDDem
       CStreamDetailAudio *p = new CStreamDetailAudio();
       p->m_iChannels = ((CDemuxStreamAudio *)stream)->iChannels;
       p->m_strLanguage = stream->language;
-      pDemux->GetStreamCodecName(iStream, p->m_strCodec);
+      p->m_strCodec = pDemux->GetStreamCodecName(iStream);
       details.AddStream(p);
       retVal = true;
     }

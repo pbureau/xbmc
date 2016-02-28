@@ -71,6 +71,7 @@ public:
   virtual bool SupportsStereo(RENDER_STEREO_MODE mode) const;
   virtual bool TestRender();
   virtual void Project(float &x, float &y, float &z);
+  virtual CRect GetBackBufferRect() { return CRect(0.f, 0.f, static_cast<float>(m_nBackBufferWidth), static_cast<float>(m_nBackBufferHeight)); }
 
   IDXGIOutput* GetCurrentOutput(void) { return m_pOutput; }
   void GetDisplayMode(DXGI_MODE_DESC *mode, bool useCached = false);
@@ -95,7 +96,7 @@ protected:
   void DeleteDevice();
   void OnDeviceLost();
   void OnDeviceReset();
-  bool PresentRenderImpl(const CDirtyRegionList &dirty);
+  void PresentRenderImpl(bool rendered);
 
   void SetFocusWnd(HWND wnd) { m_hFocusWnd = wnd; }
   void SetDeviceWnd(HWND wnd) { m_hDeviceWnd = wnd; }

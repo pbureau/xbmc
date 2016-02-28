@@ -32,6 +32,7 @@ class CDarwinUtils
 public:
   static const char *getIosPlatformString(void);
   static bool        IsMavericks(void);
+  static bool        IsLion(void); 
   static bool        IsSnowLeopard(void);
   static bool        DeviceHasRetina(double &scale);
   static bool        DeviceHasLeakyVDA(void);
@@ -40,18 +41,21 @@ public:
   static float       GetIOSVersion(void);
   static const char *GetIOSVersionString(void);
   static const char *GetOSXVersionString(void);
-  static int         GetFrameworkPath(bool forPython, char* path, uint32_t *pathsize);
-  static int         GetExecutablePath(char* path, uint32_t *pathsize);
+  static int         GetFrameworkPath(bool forPython, char* path, size_t *pathsize);
+  static int         GetExecutablePath(char* path, size_t *pathsize);
+  static const char *GetUserHomeDirectory(void);
   static const char *GetAppRootFolder(void);
   static bool        IsIosSandboxed(void);
   static bool        HasVideoToolboxDecoder(void);
   static int         BatteryLevel(void);
+  static void        EnableOSScreenSaver(bool enable);
+  static void        ResetSystemIdleTimer();
   static void        SetScheduling(int message);
   static void        PrintDebugString(std::string debugString);
   static bool        CFStringRefToString(CFStringRef source, std::string& destination);
   static bool        CFStringRefToUTF8String(CFStringRef source, std::string& destination);
   static const std::string&  GetManufacturer(void);
-  static bool        IsAliasShortcut(const std::string& path);
+  static bool        IsAliasShortcut(const std::string& path, bool isdirectory);
   static void        TranslateAliasShortcut(std::string& path);
   static bool        CreateAliasShortcut(const std::string& fromPath, const std::string& toPath);
 };
