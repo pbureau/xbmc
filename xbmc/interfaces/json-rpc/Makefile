@@ -11,6 +11,7 @@ SRCS=AddonsOperations.cpp \
      PlayerOperations.cpp \
      PlaylistOperations.cpp \
      ProfilesOperations.cpp \
+     VODOperations.cpp \
      PVROperations.cpp \
      SettingsOperations.cpp \
      SystemOperations.cpp \

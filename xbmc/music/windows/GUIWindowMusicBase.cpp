@@ -65,6 +65,9 @@
 #include "CueDocument.h"
 #include "Autorun.h"
 
+#include "network/Network.h"
+#include "network/TcpClient.h"
+#include "utils/JSONVariantWriter.h"
 
 using namespace XFILE;
 using namespace MUSICDATABASEDIRECTORY;
@@ -80,6 +83,8 @@ using namespace MUSIC_INFO;
 #define CONTROL_BTNSCAN         9
 #define CONTROL_BTNREC          10
 #define CONTROL_BTNRIP          11
+
+#define CONTROL_BTN_TEST        2211
 
 CGUIWindowMusicBase::CGUIWindowMusicBase(int id, const std::string &xmlFile)
     : CGUIMediaWindow(id, xmlFile.c_str())
@@ -211,6 +216,47 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
         if (!m_vecItems->IsPath("special://musicplaylists/"))
           Update("special://musicplaylists/");
       }
+      else if (iControl == CONTROL_BTN_TEST)
+      {
+          CLog::Log(LOGDEBUG,"%s::%s", __FILE__, __FUNCTION__);
+          if (g_application.getNetwork().IsAvailable())
+              CLog::Log(LOGDEBUG,"%s::%s Network OK!", __FILE__, __FUNCTION__);
+
+          CVariant a;
+          CVariant b;
+          b["skey1"] = 1;
+          b["skey2"] = 2;
+          b["skey3"] = 3;
+          a["key1"] = "string";
+          a["key2"] = b;
+          a["key3"] = "string";
+          a["strSearch"] = "terminator";
+          //a["command"] = "action_search";
+          a["command"] = "action_player_ctrl";
+          a["strAction"] = "toto";
+
+          std::string str;
+
+          str = CJSONVariantWriter::Write(a, true);
+          CLog::Log(LOGDEBUG,"%s::%s json is: %s", __FILE__, __FUNCTION__, str.c_str());
+
+#if 1
+          if(!m_testclient)
+          {
+              m_testclient = new CTcpClient();
+              //testclient->Create("10.10.10.10", 10);
+              m_testclient->Create("192.168.1.25", 64567);
+              //m_testclient->Create("10.10.244.219", 64567);
+          }
+          else
+          {
+              //m_testclient->Send("127.0.0.1", 9090, "test");
+              m_testclient->Send(str);
+              //testclient->Send("127.0.0.1", 9090, "grotrucpourri");
+          }
+#endif
+
+      }
       else if (iControl == CONTROL_BTNSCAN)
       {
         OnScan(-1);
@@ -276,6 +322,19 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
           return true;
         }
       }
+    }
+    break;
+  case GUI_MSG_VOD_ACTION:
+    {
+      CLog::Log(LOGDEBUG,"%s::%s VOD in", __FILE__, __FUNCTION__);
+      CVariant * parameterObject = (CVariant*)message.GetPointer();
+      CLog::Log(LOGDEBUG,"%s::%s param results: %d", __FILE__, __FUNCTION__, (*parameterObject)["results"].isArray());
+      if (parameterObject->isMember("results") && (*parameterObject)["results"].isArray())
+      {
+        for (CVariant::const_iterator_array field = (*parameterObject)["results"].begin_array(); field != (*parameterObject)["results"].end_array(); field++)
+          CLog::Log(LOGDEBUG,"%s::%s title: %s", __FILE__, __FUNCTION__, (*field)["title"].asString().c_str());
+      }
+      return true;
     }
     break;
   case GUI_MSG_NOTIFY_ALL:

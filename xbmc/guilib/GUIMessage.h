@@ -172,6 +172,16 @@
 
 #define GUI_MSG_USER         1000
 
+/******************************************************/
+/* Additional messages for KHT
+ */
+#define GUI_MSG_KHT_BASE 2000
+/*!
+ \brief Action related with the VOD services
+ */
+#define GUI_MSG_VOD_ACTION   GUI_MSG_KHT_BASE+1
+
+
 /*!
 \brief Complete to get codingtable page
 */

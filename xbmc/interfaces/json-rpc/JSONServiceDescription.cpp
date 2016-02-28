@@ -36,6 +36,7 @@
 #include "XBMCOperations.h"
 #include "ApplicationOperations.h"
 #include "PVROperations.h"
+#include "VODOperations.h"
 #include "ProfilesOperations.h"
 #include "FavouritesOperations.h"
 #include "TextureOperations.h"
@@ -180,6 +181,12 @@ JsonRpcMethodMap CJSONServiceDescription::m_methodMaps[] = {
   { "PVR.GetRecordingDetails",                      CPVROperations::GetRecordingDetails },
   { "PVR.Record",                                   CPVROperations::Record },
   { "PVR.Scan",                                     CPVROperations::Scan },
+
+// VOD operations
+  { "VOD.ActionSearch",                             CVODOperations::ActionSearch},
+  { "VOD.GetProfiles",                              CVODOperations::GetProfiles},
+  { "VOD.GetCurrentProfile",                        CVODOperations::GetCurrentProfile},
+  { "VOD.LoadProfile",                              CVODOperations::LoadProfile},
 
 // Profiles operations
   { "Profiles.GetProfiles",                         CProfilesOperations::GetProfiles},
