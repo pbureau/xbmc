@@ -30,6 +30,8 @@
 #include "music/MusicInfoLoader.h"
 #include "music/MusicThumbLoader.h"
 
+#include "network/TcpClient.h"
+
 /*!
  \ingroup windows
  \brief The base class for music windows
@@ -45,6 +47,8 @@ public:
   virtual bool OnMessage(CGUIMessage& message);
   virtual bool OnAction(const CAction &action);
   virtual bool OnBack(int actionID);
+
+  CTcpClient * m_testclient = NULL;
 
   void OnItemInfo(CFileItem *pItem, bool bShowInfo = false);
   /* Reference to the last Artist displayed in the ArtistInfoDialog */
