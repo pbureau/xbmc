@@ -47,7 +47,7 @@ var MovieInfo_t = {
 /* Purchase option details */
 var PurchaseOption_t = {
     type : 'none',
-    quality : '',
+    quality : 'SD',
     price : '0'
 };
 
@@ -60,6 +60,8 @@ function playParser()
         case playStateEnum.optionLink:
             {
                 dump("in again\n");
+                /* in case the movie is already watchable */
+                /* in the movie is not rent or bought */
                 var options = doctarget.querySelectorAll('div.purchase-option-chooser');
                 if(options && options.length > 0)
                 {
@@ -111,7 +113,20 @@ function playParser()
             {
                 var finalLink = doctarget.getElementById('loonie-purchase-ok-button');
                 if(finalLink)
+                {
                     dump("C LE LIEN FINAAAAAAL\n");
+                    var ev = doctarget.createEvent("MouseEvent");
+                    ev.initMouseEvent(
+                            "click",
+                            true /* bubble */, true /* cancelable */,
+                            window, null,
+                            0,0,0,0,  /* coordinates */
+                            false, false, false, false, /* modifier keys */
+                            0 /*left*/, null
+                            );
+                    finalLink.dispatchEvent(ev);
+                    playState = playStateEnum.idle;
+                }
             }
             break;
     }
@@ -196,12 +211,24 @@ function resultParser()
                                     option.type = optionType;
 
                                     var quality = doctarget.getElementById('purchase-quality-buy-' + k);
-                                    if(quality)
+                                    if(quality && quality.innerHTML.length != 0)
                                         option.quality = quality.innerHTML;
+                                    else
+                                    {
+                                        quality = doctarget.getElementById('purchase-quality-' + k);
+                                        if(quality)
+                                            option.quality = quality.innerHTML;
+                                    }
 
                                     var price = doctarget.getElementById('purchase-price-buy-' + k);
-                                    if(price)
+                                    if(price && price.innerHTML.length != 0)
                                         option.price = price.innerHTML;
+                                    else
+                                    {
+                                        price = doctarget.getElementById('purchase-price-' + k);
+                                        if(price)
+                                            option.price = price.innerHTML;
+                                    }
 
                                     searchResults[searchDetailsCount].purchaseOptions.push(option);
                                 }
@@ -240,6 +267,25 @@ function resultParser()
                         /* Stop the search polling */
                         clearInterval(searchIntervalId);
                         searchDetailsStartFlag = false;
+                        /* Send results to Kodi */
+                        var xhttp = new XMLHttpRequest();
+                        xhttp.open("POST", "http://localhost:8080/jsonrpc", false);
+                        xhttp.setRequestHeader("Content-type", "application/json");
+                        xhttp.setRequestHeader("Authorization", "authorization");
+
+                        var request = {};
+                        request.jsonrpc = "2.0";
+                        request.method  = "VOD.ActionSearch";
+                        request.params  = {};
+                        request.params.results = searchResults;
+                        request.id      = 1;
+
+                        dump(JSON.stringify(request) + "\n");
+
+                        xhttp.send(JSON.stringify(request));
+
+                        dump(xhttp.responseText + "\n");
+
                     }
                 }
             }
@@ -446,8 +492,6 @@ WebProgressListener.prototype = {
 };
 
 /****************************************************************************************/
-var listener;
-
 function go() {
   var urlbar = document.getElementById("urlbar");
   var browser = document.getElementById("browser");
@@ -482,9 +526,158 @@ function showConsole() {
     "chrome,extrachrome,menubar,resizable,scrollbars,status,toolbar");
 }
 
-var input;
-var output;
+/****************************************************************************************/
 
+/*
+function serverSocket_listener() {
+}
+serverSocket_listener.prototype = {
+    onSocketAccepted: function(serverSocket, transport) {
+        dump("Accepted connection on " + transport.host + ":" + transport.port + "\n");
+        var input  = transport.openInputStream(Components.interfaces.nsITransport.OPEN_BLOCKING, 0, 0);//.QueryInterface(Ci.nsIAsyncInputStream);
+        output = transport.openOutputStream(Components.interfaces.nsITransport.OPEN_BLOCKING, 0, 0);
+
+        //input.asyncWait(reader,0,0,null);
+        var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
+        input.asyncWait(reader,0,0,tm.mainThread);
+
+           //finally
+           //{
+           //sin.close();
+           //input.close();
+           //output.close();
+           //}
+    }
+};
+*/
+
+/****************************************************************************************/
+/*
+function serverSocket_reader() {
+}
+serverSocket_reader.prototype = {
+    onInputStreamReady : function(input) {
+        var sin = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
+        dump("Data in \n");
+        try
+        {
+            sin.init(input);
+            var readBytes = sin.available();
+            var request   = '';
+            request       = sin.read(readBytes);
+            dump('Received: ' + request + "\n");
+            //getUrl(request);
+            output.write("yes", "yes".length);
+            output.flush();
+
+            var reqObj = JSON.parse(request);
+
+            if('command' in reqObj)
+                dump('cmd: ' + reqObj.command + "\n");
+
+            if('key2' in reqObj && 'skey2' in reqObj.key2)
+                dump('skey2: ' + reqObj.key2.skey2 + "\n");
+
+            dump("contains toto is: " + ('toto' in reqObj) + "\n");
+
+            switch(reqObj.command)
+            {
+                case 'action_search':
+                    action_search(reqObj.strSearch);
+                    break;
+            }
+
+            dump("Request complet\n");
+            //input.asyncWait(reader,0,0,null);
+            var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
+            input.asyncWait(reader,0,0,tm.mainThread);
+        }
+        catch(e)
+        {
+        }
+    }
+};
+*/
+
+/****************************************************************************************/
+function serverStart() {
+    var serverSocket_output;
+    var serverSocket_input;
+
+    var serverSocket_reader = {
+        onInputStreamReady : function(input) {
+            var sin = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
+            dump("Data in \n");
+            try
+            {
+                sin.init(serverSocket_input);
+                var readBytes = sin.available();
+                var request   = '';
+                request       = sin.read(readBytes);
+                dump('Received: ' + request + "\n");
+                //getUrl(request);
+                serverSocket_output.write("yes", "yes".length);
+                serverSocket_output.flush();
+
+                var reqObj = JSON.parse(request);
+
+                if('command' in reqObj)
+                    dump('cmd: ' + reqObj.command + "\n");
+
+                if('key2' in reqObj && 'skey2' in reqObj.key2)
+                    dump('skey2: ' + reqObj.key2.skey2 + "\n");
+
+                dump("contains toto is: " + ('toto' in reqObj) + "\n");
+
+                switch(reqObj.command)
+                {
+                    case 'action_search':
+                        action_search(reqObj.strSearch);
+                        break;
+                }
+
+                dump("Request complet\n");
+                //input.asyncWait(reader,0,0,null);
+                var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
+                serverSocket_input.asyncWait(serverSocket_reader,0,0,tm.mainThread);
+            }
+            catch(e)
+            {
+                dump("exception: " + e.message);
+            }
+        }
+    };
+
+  var serverSocket_listener = {
+      onSocketAccepted: function(serverSocket, transport) {
+          dump("Accepted connection on " + transport.host + ":" + transport.port + "\n");
+          serverSocket_input  = transport.openInputStream(Components.interfaces.nsITransport.OPEN_BLOCKING, 0, 0);//.QueryInterface(Ci.nsIAsyncInputStream);
+          serverSocket_output = transport.openOutputStream(Components.interfaces.nsITransport.OPEN_BLOCKING, 0, 0);
+
+          //input.asyncWait(reader,0,0,null);
+          var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
+          serverSocket_input.asyncWait(serverSocket_reader,0,0,tm.mainThread);
+
+          //finally
+          //{
+          //sin.close();
+          //input.close();
+          //output.close();
+          //}
+      },
+      onStopListening : function(socket, status) { 
+          dump("Socket stop listen\n");
+      }
+  };
+
+  var serverSocket = Components.classes["@mozilla.org/network/server-socket;1"].createInstance(Components.interfaces.nsIServerSocket);
+  serverSocket.init(9090, true, 5);
+  dump("Opened socket on " + serverSocket.port + "\n");
+  //var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
+  //serverSocket.asyncListen(serverSocket_listener,0,0,tm.mainThread);
+  serverSocket.asyncListen(serverSocket_listener);
+}
+/****************************************************************************************/
 function onload() {
   var urlbar = document.getElementById("urlbar");
   urlbar.value = "http://www.mozilla.org/";
@@ -498,6 +691,7 @@ function onload() {
   dump("toto on load\n");
   go();
 
+/*
   var xhttp = new XMLHttpRequest();
   xhttp.open("POST", "http://localhost:8080/jsonrpc", false);
   xhttp.setRequestHeader("Content-type", "application/json");
@@ -505,8 +699,10 @@ function onload() {
 
   var request = {};
   request.jsonrpc = "2.0";
-  request.method  = "JSONRPC.Version";
-  request.params  = {};
+  request.method  = "VOD.ActionSearch";
+  //request.method  = "JSONRPC.Version";
+  request.params  = MovieInfo_t;
+  request.params.docid = "routoutoutou";
   request.id      = 1;
 
   dump(JSON.stringify(request) + "\n");
@@ -514,74 +710,8 @@ function onload() {
   xhttp.send(JSON.stringify(request));
 
   dump(xhttp.responseText + "\n");
-
-  var reader = {
-      onInputStreamReady : function(input) {
-          var sin = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
-          dump("Data in \n");
-          try
-          {
-              sin.init(input);
-              var readBytes = sin.available();
-              var request   = '';
-              request       = sin.read(readBytes);
-              dump('Received: ' + request + "\n");
-              //getUrl(request);
-              output.write("yes", "yes".length);
-              output.flush();
-
-              var reqObj = JSON.parse(request);
-
-              if('command' in reqObj)
-                  dump('cmd: ' + reqObj.command + "\n");
-
-              if('key2' in reqObj && 'skey2' in reqObj.key2)
-                  dump('skey2: ' + reqObj.key2.skey2 + "\n");
-
-              dump("contains toto is: " + ('toto' in reqObj) + "\n");
-
-              switch(reqObj.command)
-              {
-                  case 'action_search':
-                      action_search(reqObj.strSearch);
-                      break;
-              }
-
-              //input.asyncWait(reader,0,0,null);
-              var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
-              input.asyncWait(reader,0,0,tm.mainThread);
-          }
-          catch(e)
-          {
-          }
-      }
-  }
-
-  var listener = {
-      onSocketAccepted: function(serverSocket, transport) {
-          dump("Accepted connection on " + transport.host + ":" + transport.port + "\n");
-          input  = transport.openInputStream(Components.interfaces.nsITransport.OPEN_BLOCKING, 0, 0);//.QueryInterface(Ci.nsIAsyncInputStream);
-          output = transport.openOutputStream(Components.interfaces.nsITransport.OPEN_BLOCKING, 0, 0);
-
-          //input.asyncWait(reader,0,0,null);
-          var tm = Components.classes["@mozilla.org/thread-manager;1"].getService();
-          input.asyncWait(reader,0,0,tm.mainThread);
-
-/*
-          finally
-          {
-              sin.close();
-              input.close();
-              output.close();
-          }
 */
-      }
-  }
 
-  var serverSocket = Components.classes["@mozilla.org/network/server-socket;1"].createInstance(Components.interfaces.nsIServerSocket);
-  serverSocket.init(9090, true, 5);
-  dump("Opened socket on " + serverSocket.port + "\n");
-  serverSocket.asyncListen(listener);
 
 /*
   var transportService =
@@ -728,6 +858,7 @@ function action_log_in()
 //         Rent / Buy
 //         Pricing
 //         HD / SD
+//         FIXME: Language selection
 function action_search(strSearch)
 {
   // Load the search result
@@ -749,9 +880,9 @@ function action_play()
   var browser = document.getElementById("browser");
 
   playStartFlag = true;
-  playItemId    = 18;
-  playOption    = searchResults[18].purchaseOptions[1];
-  browser.loadURI(searchResults[18].href, null, null);
+  playItemId    = 2;
+  playOption    = searchResults[playItemId].purchaseOptions[1];
+  browser.loadURI(searchResults[playItemId].href, null, null);
 }
 
 // Action Control Player
@@ -851,6 +982,7 @@ state = logged_idle
                         //toclick   = links[i];
                         var buttons = links[i].querySelectorAll('button.price.buy.id-track-click');
                         toclick     = buttons[0];
+                        dump("start play, click on: " + buttons[0].id);
                     }
                 }
             }
@@ -913,5 +1045,6 @@ state = logged_idle
 }
 
 addEventListener("load", onload, true);
+addEventListener("load", serverStart, true);
 addEventListener("DOMContentLoaded", onPageLoad, false);
 addEventListener("click", onCommand, true);

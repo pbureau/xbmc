@@ -8,9 +8,7 @@
             width     ="800"
             height    ="600">
     <xul:script type="application/javascript"
-                src="chrome://myapp/content/mybrowser.js" />
-    <xul:script type="application/javascript"
-                src="chrome://myapp/content/pmrpc.js" />
+                src="chrome://myapp/content/mybrowser-canal.js" />
     <html:h1>My Browser</html:h1>
     <html:p>My browser can use XUL or HTML elements in it's UI.</html:p>
     <xul:hbox>
@@ -47,7 +45,7 @@
                     disabled ="false" />
         <xul:button id       ="action_search"
                     label    ="&mybrowser.action_search;"
-                    oncommand="action_search('star wars');"
+                    oncommand="action_search('ted2');"
                     disabled ="false" />
         <xul:button id       ="action_play"
                     label    ="&mybrowser.action_play;"
