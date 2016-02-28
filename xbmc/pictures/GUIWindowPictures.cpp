@@ -219,7 +219,7 @@ void CGUIWindowPictures::OnPrepareFileItems(CFileItemList& items)
       CFileItemPtr pItem = items.Get(i);
       //CLog::Log(LOGDEBUG,"%s:::%s item: %s", __FILE__, __FUNCTION__, CURL::GetRedacted(pItem->GetPath()).c_str());
 
-      if(!pItem->GetPath().empty() && !pItem->IsPath("addons://sources/image/"))
+      if(!pItem->GetPath().empty() && !pItem->IsPath("addons://sources/image/") && !pItem->IsRemovable())
       {
         std::string directory = pItem->GetPath();
         // check if the path contains a filter and temporarily remove it
