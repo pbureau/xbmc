@@ -14,6 +14,17 @@
                 <height>590</height>
                 <texture background="false" border="10">RecentAddedBack.png</texture>
             </control>
+            <!-- Tooltip text when the panel is empty -->
+            <control type="textbox">
+                <visible>!Library.HasContent(Pictures)</visible>
+                <width>650</width>
+                <height>90</height>
+                <top>90</top>
+                <left>80</left>
+                <font>font16</font>
+                <textcolor>grey</textcolor>
+                <label>$LOCALIZE[31969]</label>
+            </control>
             <!-- Main Panel - Pictures library -->
             <control type="panel" id="552">
                 <left>65</left>
@@ -107,8 +118,22 @@
                 <height>110</height>
                 <texture background="false" border="10">RecentAddedBack.png</texture>
             </control>
+            <!-- Default tooltip when library is empty -->
+            <control type="label">
+                <visible>!Library.HasContent(Pictures)</visible>
+                <width>314</width>
+                <height>30</height>
+                <top>640</top>
+                <left>63</left>
+                <font>font16</font>
+                <textcolor>grey</textcolor>
+                <scroll>true</scroll>
+                <label>$LOCALIZE[31971]</label>
+                <textoffsetx>6</textoffsetx>
+            </control>
             <!-- File info details -->
             <control type="grouplist">
+                <visible>Library.HasContent(Pictures)</visible>
                 <orientation>vertical</orientation>
                 <itemgap>3</itemgap>
                 <usecontrolcoords>true</usecontrolcoords>

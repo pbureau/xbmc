@@ -57,17 +57,17 @@ Réseau -> Scan de tous les prototoles (bouton ajout à la main pour cancel)
        -> Sélection pour ajout à la main
        -> Selection habituelle
 
-Vue Empty pour les photo -> HasContent(Pictures)
-    Attention: J'ai vire le truc qui agrege les sources pour tester
-Add Src complet + Start scan pour:
+USB Add Src complet + Start scan pour:
     music - ok
     video - ok
-    photo 
+    photo - ok 
 custom dialog pour le choix d'un album dans le interactive scan
 custom dialog pour le choix des noms artists/album pendant le interactive scan
 fonction cancel all pendant le interactive scan
 Progress bar to fix pendant le scan des films
 Scan des artist?
 Choix du scrapper dans les settings
-
+Penser a faire la bonne operation quand on retire une source:
+	- video / music: Clean de la Db
+	- pictures: rescan for content
 

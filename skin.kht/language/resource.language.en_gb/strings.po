@@ -745,3 +745,7 @@ msgstr ""
 msgctxt "#31970"
 msgid "Empty Movie Library"
 msgstr ""
+
+msgctxt "#31971"
+msgid "Empty Picture Library"
+msgstr ""

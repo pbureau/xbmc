@@ -24,8 +24,10 @@
 		<control type="group">
 			<include>Window_OpenClose_Animation</include>		
 			<include>CommonRootView</include> view id = 50
+                        <!--
 			<include>FullWidthList</include> view id = 51 
 			<include>ThumbnailView</include> view id = 500 
+                        -->
 			<include>PictureWrapView</include> view id = 552 
 			<include>PictureThumbView</include> view id = 514 
 			<include>AddonInfoListView1</include> view id = 550 
@@ -149,6 +151,12 @@
 					<include>ButtonCommonValues</include>
 					<label>13319</label>
 				</control>
+                                <control type="togglebutton" id="2210">
+                                    <description>Add Source</description>
+                                    <textwidth>235</textwidth>
+                                    <include>ButtonCommonValues</include>
+                                    <label>Add Source</label>
+                                </control>
 				<include>CommonNowPlaying_Controls</include>
 			</control>
 		</control>
