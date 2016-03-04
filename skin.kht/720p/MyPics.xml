@@ -2,7 +2,9 @@
 <window>
 	<defaultcontrol always="true">552</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
+        <!--
 	<onload condition="!Skin.HasSetting(FirstTimeRun)">ActivateWindow(1112)</onload>
+        -->
         <views>50,51,550,551,500,514,510,552</views>
 	<controls>
 		<include>CommonBackground</include>

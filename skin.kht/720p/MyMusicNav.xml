@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
 	<allowoverlay>no</allowoverlay>
-	<onload condition="!Skin.HasSetting(FirstTimeRun)">ActivateWindow(1112)</onload>
 	<defaultcontrol always="true">2200</defaultcontrol>
 <!--
+	<onload condition="!Skin.HasSetting(FirstTimeRun)">ActivateWindow(1112)</onload>
 	<views>50,51,500,550,551,509,506,511,512,513</views>
 -->
 	<views>512,51,500,506,509</views>
