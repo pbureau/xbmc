@@ -3,8 +3,8 @@
 /****************************************************************************************/
 /* Globals
  */
-var doctarget;
-var toclick;
+var doctarget = null;
+var toclick   = null;
 var g_splayer;
 var g_sl_html;
 var state = 0;
@@ -12,7 +12,10 @@ var state = 0;
 playStateEnum = {
     idle : 0,
     optionLink : 1,
-    finalLink : 2
+    finalLink : 2,
+    startLink : 3,
+    waitStreamStart: 4,
+    fullscreen : 5 
 };
 
 searchStateEnum = {
@@ -35,6 +38,7 @@ var playStartFlag = false;
 var playState     = playStateEnum.idle;
 var playIntervalId;
 var playOption;
+var playTimeoutCounter = 0;
 
 var thiscount = 0;
 
@@ -54,69 +58,53 @@ var PurchaseOption_t = {
 };
 
 /****************************************************************************************/
+function sl_leftClickAtPos(X, Y)
+{
+    var utils = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
+        getInterface(Components.interfaces.nsIDOMWindowUtils);
+
+    dump('click: ' + X + '\n');
+    var MOUSEEVENTF_RIGHTDOWN = 0x0008;
+    var MOUSEEVENTF_RIGHTUP   = 0x0010;
+    var MOUSEEVENTF_LEFTDOWN  = 0x0002;
+    var MOUSEEVENTF_LEFTUP    = 0x0004; 
+    var MOUSEEVENTF_ABSOLUTE  = 0x8000;
+    var MOUSEEVENTF_HWHEEL    = 0x01000;
+    var MOUSEEVENTF_MOVE      = 0x0001;
+    utils.sendNativeMouseEvent(X, Y, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 1, null);
+}
+/****************************************************************************************/
 function playParser()
 {
     dump("in\n");
     switch(playState)
     {
-        case playStateEnum.optionLink:
+        case playStateEnum.startLink:
             {
                 dump("in again\n");
-                /* in case the movie is already watchable */
-                /* in the movie is not rent or bought */
-                var options = doctarget.querySelectorAll('div.purchase-option-chooser');
-                if(options && options.length > 0)
+                var sapp = doctarget.getElementById('slapp');
+                if(sapp)
                 {
-                    for (var i=0, max=options.length; i < max; i++) 
+                    dump('Silverlight App found\n');
+
+                    toclick   = null;
+                    playState = playStateEnum.waitStreamStart;
+                    /* bring the brower on top and maximized */
+                    //window.maximize();
+                }
+                else
+                {
+                    /* Search the start button */
+                    var links = doctarget.getElementsByTagName('a');
+                    for (var i=0, max=links.length; i < max; i++) 
                     {
-                        dump("XXXXXXXXXXXXXXXXXXXXXXXXX found \n");
-                        var content = options[0].getElementsByClassName('purchase-option');
-                        for (var j=0, max2=content.length; j < max2; j++) 
+                        //dump('link is ' + links[i].href + "\n");
+                        if (links[i].href.indexOf("playConsumption") > -1) 
                         {
-                            var optionType = 'none';
-                            var purchaseType = content[j].querySelectorAll('div.name');
-                            if(content[j].style.display != 'none' && purchaseType && purchaseType.length>0)
-                                for (var k=0, max3=purchaseType.length; k < max3; k++) 
-                                {
-                                    if(purchaseType[k].style.display != 'none')
-                                    {
-                                        optionType = purchaseType[k].innerHTML;
-                                    }
-                                }
-                            /* Purchase options pricing and quality */
-                            var prices = content[j].querySelectorAll('button.id-buy-single-option.buy-single-button.small.play-button.movies');
-                            if(optionType == playOption.type && content[j].style.display != 'none' && prices && prices.length>0)
-                                for (var k=0, max3=prices.length; k < max3; k++) 
-                                {
-                                    var quality = doctarget.getElementById('purchase-quality-buy-' + k);
-                                    var price   = doctarget.getElementById('purchase-price-buy-' + k);
-                                    if(quality && quality.innerHTML == playOption.quality && price && price.innerHTML == playOption.price)
-                                    {
-                                        var ev = doctarget.createEvent("MouseEvent");
-                                        ev.initMouseEvent(
-                                                "click",
-                                                true /* bubble */, true /* cancelable */,
-                                                window, null,
-                                                0,0,0,0,  /* coordinates */
-                                                false, false, false, false, /* modifier keys */
-                                                0 /*left*/, null
-                                                );
-                                        prices[k].dispatchEvent(ev);
-                                        playState = playStateEnum.finalLink;
-                                    }
-                                }
+                            toclick   = links[i];
                         }
                     }
-                }
-            }
-            break;
-
-        case playStateEnum.finalLink:
-            {
-                var finalLink = doctarget.getElementById('loonie-purchase-ok-button');
-                if(finalLink)
-                {
-                    dump("C LE LIEN FINAAAAAAL\n");
+                    /* Dispatch another click on the start button */
                     var ev = doctarget.createEvent("MouseEvent");
                     ev.initMouseEvent(
                             "click",
@@ -126,8 +114,59 @@ function playParser()
                             false, false, false, false, /* modifier keys */
                             0 /*left*/, null
                             );
-                    finalLink.dispatchEvent(ev);
-                    playState = playStateEnum.idle;
+                    toclick.dispatchEvent(ev);
+                }
+            }
+            break;
+
+        case playStateEnum.waitStreamStart:
+            {
+                /* Timeout counter - Error if the stream is not started after timeout */
+                playTimeoutCounter++;
+                if(playTimeoutCounter > 10)
+                {
+                    /* Stop the play polling */
+                    clearInterval(playIntervalId);
+                    playState          = playStateEnum.idle;
+                    playTimeoutCounter = 0;
+                }
+            }
+            break;
+
+        case playStateEnum.fullscreen:
+            {
+                /* check if silverlight is loaded */
+                var sapp = doctarget.getElementById('slapp');
+                if(sapp != null)
+                {
+                    //dump('Silverlight App loaded: ' + sapp.innerHTML + '\n');
+                    //dump('Silverlight App loaded: ' + sapp.wrappedJSObject.IsLoaded + ' fullscreen: ' + sapp.wrappedJSObject.Content.FullScreen + '\n');
+                    //dump('Silverlight App loaded: ' + window.Silverlight._silverlightCount + '\n');
+                    //dump('Silverlight App loaded: ' + sapp.wrappedJSObject.content + '\n');
+                    //dump('Silverlight App loaded: ' + typeof(sapp) + '\n');
+                    //for(var key in sapp)
+                        //dump('prop: ' + key + '\n');
+                    //forEachDescendant(sapp.wrappedJSObject.content.root);
+
+                    /* When silverlight is loaded, dispatch a click anywhere to go fullscreen */
+                    if(sapp.wrappedJSObject.IsLoaded)
+                    {
+                        sl_leftClickAtPos(450, 600);
+                        setTimeout(sl_leftClickAtPos, 100, 450, 600);
+                        /* Next state */
+                        playState = playStateEnum.finalLink;
+                    }
+                }
+            }
+            break;
+
+        case playStateEnum.finalLink:
+            {
+                /* check if silverlight is fullscreen */
+                var sapp = doctarget.getElementById('slapp');
+                if(sapp != null)
+                {
+                    dump('Silverlight wait full screen: ' + sapp.wrappedJSObject.IsLoaded + ' fullscreen: ' + sapp.wrappedJSObject.Content.FullScreen + '\n');
                 }
             }
             break;
@@ -382,15 +421,15 @@ WebProgressListener.prototype = {
                     0 /*left*/, null
                     );
             toclick.dispatchEvent(ev);
-            // Start the play clik task
+            // Start the play click task
             playIntervalId = setInterval(playParser, 500);
             playStartFlag  = false;
-            playState      = playStateEnum.optionLink;
+            playState      = playStateEnum.startLink;
             // Reset the click target 
-            toclick   = null;
+            //toclick   = null;
         }
 
-        if(doctarget && toclick) {
+        if(false && doctarget && toclick) {
             //for (var j=0, max2=toclick.length; j < max2; j++) {
             ////elements[i].click();
             ////eventFire(elements[i], 'click');
@@ -875,16 +914,44 @@ function onCommand(aEvent) {
 
 function forEachDescendant(elem) {
     if (elem != null) {
-        console.log('Type: ' + elem.toString());
-        if (typeof elem.children == 'object') {
-            for (var i = 0; i < elem.children.count; i++) {
-                var child = elem.children.getItem(i);
-                forEachDescendant(child);
-            }
+        //dump('Type: ' + elem.toString() + '\n');
+        //dump('Name: ' + elem.name + '\n');
+        //dump('Content: ' + elem.content + '\n');
+        //dump('Children: ' + elem.children + '\n');
+        //if(element.children == 'UIElementCollection')
+        if( typeof elem.children != 'undefined')
+        {
+            dump('Children count: ' + elem.children.count + '\n');
+            //if (typeof elem.children == 'object') {
+                for (var i = 0; i < elem.children.count; i++) {
+                    var child = elem.children.getItem(i);
+                    forEachDescendant(child);
+                }
+            //}
         }
-        else if (typeof elem.content == 'object') {
+        //else if (typeof elem.content == 'object') {
+
+        if (typeof elem.content != 'undefined') {
             forEachDescendant(elem.content);
         }
+/*
+        while((typeof elem.content != 'undefined') || (typeof elem.children != 'undefined'))
+        {
+            dump('Type: ' + elem.toString() + '\n');
+            dump('Name: ' + elem.name + '\n');
+            dump('Content: ' + elem.content + '\n');
+            dump('Children: ' + elem.children + '\n');
+            if( typeof elem.children != 'undefined')
+            {
+                dump('Children count: ' + elem.children.count + '\n');
+                elem = elem.children.getItem(0);
+            }
+            else if (typeof elem.content != 'undefined') 
+            {
+                elem = elem.content;
+            }
+        }
+*/
     }
 }
 
@@ -902,57 +969,65 @@ function action_log_in()
   browser.loadURI("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fplay.google.com%2Fstore&service=googleplay&sacu=1&passive=1209600&acui=0#Email=pierro.buro%40gmail.com", null, null);
 */
 
+
+
   var sapp = doctarget.getElementById('slapp');
+  //var sapp = doctarget.getElementById('player_header');
   if(sapp)
   {
       dump('Silverlight App found\n');
+/*
       var ev = doctarget.createEvent("MouseEvent");
       ev.initMouseEvent(
               "click",
-              true /* bubble */, true /* cancelable */,
+              true, true,
               window, null,
-              0,0,100,100,  /* coordinates */
-              false, false, false, false, /* modifier keys */
+              0,0,100,100,  
+              false, false, false, false,
               2, null
               );
-      sapp.dispatchTrustedEvent(ev);
-  }
+      ev.QueryInterface(Components.interfaces.nsIDOMEvent);
+      //ev.SetTrusted(true);
+      dump('trust: ' + ev.isTrusted + '\n');
+      //sapp.dispatchEvent(ev);
+*/
 
-/*
-  Components.utils.import("resource://gre/modules/ctypes.jsm");
-  var user32 = ctypes.open("user32");
+      Components.utils.import("resource://gre/modules/ctypes.jsm");
+      var user32 = ctypes.open("user32");
 
-  var BOOL  = ctypes.int;
-  var LONG  = ctypes.long;
+      var BOOL  = ctypes.int;
+      var LONG  = ctypes.long;
 
-  var POINT = ctypes.StructType("tagPOINT", [
-          { x : LONG },
-          { y : LONG }
-          ]);
+      var POINT = ctypes.StructType("tagPOINT", [
+              { x : LONG },
+              { y : LONG }
+              ]);
 
-  var LPPOINT = POINT.ptr;
+      var LPPOINT = POINT.ptr;
 
-  var GetCursorPos = user32.declare('GetCursorPos', ctypes.winapi_abi, BOOL, LPPOINT);
-  var point = new POINT;
-  if(GetCursorPos(point.address())) {
-      dump('mouse: ' + point.x + ':' + point.y + '\n');
-      var utils = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
-          getInterface(Components.interfaces.nsIDOMWindowUtils);
+      var GetCursorPos = user32.declare('GetCursorPos', ctypes.winapi_abi, BOOL, LPPOINT);
+      var point = new POINT;
+      if(GetCursorPos(point.address())) {
+          dump('mouse: ' + point.x + ':' + point.y + '\n');
+          var utils = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
+              getInterface(Components.interfaces.nsIDOMWindowUtils);
 
-      var MOUSEEVENTF_RIGHTDOWN = 0x0008;
-      var MOUSEEVENTF_RIGHTUP   = 0x0010;
-      var MOUSEEVENTF_LEFTDOWN  = 0x0002;
-      var MOUSEEVENTF_LEFTUP    = 0x0004; 
-      var MOUSEEVENTF_ABSOLUTE  = 0x8000;
-      var MOUSEEVENTF_HWHEEL    = 0x01000;
-      var MOUSEEVENTF_MOVE      = 0x0001;
-      utils.sendNativeMouseEvent(375, 475, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, null);
-      //utils.sendNativeMouseEvent(450, 600, MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, 0, sapp);
-      //utils.sendNativeMouseEvent(300, 400, MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, 0, null);
+          var MOUSEEVENTF_RIGHTDOWN = 0x0008;
+          var MOUSEEVENTF_RIGHTUP   = 0x0010;
+          var MOUSEEVENTF_LEFTDOWN  = 0x0002;
+          var MOUSEEVENTF_LEFTUP    = 0x0004; 
+          var MOUSEEVENTF_ABSOLUTE  = 0x8000;
+          var MOUSEEVENTF_HWHEEL    = 0x01000;
+          var MOUSEEVENTF_MOVE      = 0x0001;
+          //utils.sendNativeMouseEvent(375, 475, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, null);
+          utils.sendNativeMouseEvent(450, 600, MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, 0, sapp);
+          //utils.sendNativeMouseEvent(300, 400, MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, 0, null);
+
+          //utils.dispatchDOMEventViaPresShell(sapp, ev, true);
+      }
   }
 
   user32.close(); 
-*/
 }
 
 // Action item search 
@@ -969,7 +1044,9 @@ function action_search(strSearch)
   // Load the search result
   var browser = document.getElementById("browser");
 
-  browser.loadURI("://vod.canalplay.com/films/cinema/terminator-genisys-8-minutes-gratuites,297,377,52107.aspx", null, null);
+  playStartFlag = true;
+  //browser.loadURI("://vod.canalplay.com/films/cinema/terminator-genisys-8-minutes-gratuites,297,377,52107.aspx", null, null);
+  browser.loadURI("http://vod.canalplay.com/pages/movies/mesvideos.aspx", null, null);
   //browser.loadURI("chrome://myapp/content/test.html", null, null);
 
 /*
@@ -1000,6 +1077,7 @@ function action_play()
 // Return: Sucess state
 function action_player_ctrl(strAction)
 {
+
   dump('Player action ' + strAction + ' received\n');
   //var rect = window.getBoundingClientRect();
   //dump('size: ' + rect.width + ',' + rect.height + '\n');
@@ -1009,24 +1087,67 @@ function action_player_ctrl(strAction)
     getInterface(Components.interfaces.nsIDOMWindowUtils);
 
   dump('factor: ' + utils.screenPixelsPerCSSPixel + '\n');
-/*
-  var MOUSEEVENTF_RIGHTDOWN = 0x0008;
-  var MOUSEEVENTF_RIGHTUP   = 0x0010;
-  var MOUSEEVENTF_LEFTDOWN  = 0x0002;
-  var MOUSEEVENTF_LEFTUP    = 0x0004; 
-  var MOUSEEVENTF_ABSOLUTE  = 0x8000;
-  var MOUSEEVENTF_HWHEEL    = 0x01000;
-  var MOUSEEVENTF_MOVE      = 0x0001;
-  utils.sendNativeMouseEvent(160, 475, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, null);
-*/
-  var px_x = 160;
-  var px_y = 470;
-  var css_x = (px_x - window.mozInnerScreenX) / utils.screenPixelsPerCSSPixel;
-  var css_y = (px_y - window.mozInnerScreenY) / utils.screenPixelsPerCSSPixel;
-  utils.sendMouseEventToWindow('mousedown', css_x, css_y, 1, 1, 0, true);
-  utils.sendMouseEventToWindow('mouseup', css_x, css_y, 1, 1, 0, true);
+
+  var sapp = doctarget.getElementById('slapp');
+  if(sapp)
+  {
+      var MOUSEEVENTF_RIGHTDOWN = 0x0008;
+      var MOUSEEVENTF_RIGHTUP   = 0x0010;
+      var MOUSEEVENTF_LEFTDOWN  = 0x0002;
+      var MOUSEEVENTF_LEFTUP    = 0x0004; 
+      var MOUSEEVENTF_ABSOLUTE  = 0x8000;
+      var MOUSEEVENTF_HWHEEL    = 0x01000;
+      var MOUSEEVENTF_MOVE      = 0x0001;
+      var px_x = 300;
+      var px_y = 460;
+      var css_x = (px_x - window.mozInnerScreenX) / utils.screenPixelsPerCSSPixel;
+      var css_y = (px_y - window.mozInnerScreenY) / utils.screenPixelsPerCSSPixel;
+
+      dump('final pos : ' + css_x + ',' + css_y + '\n');
+      //utils.sendNativeMouseEvent(160, 475, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, null);
+      //utils.sendNativeMouseEvent(css_x, css_y, MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, 0, null);
+      //utils.sendMouseEventToWindow('mousedown', css_x, css_y, 1, 1, 0, true);
+      //utils.sendMouseEventToWindow('mouseup', css_x, css_y, 1, 1, 0, true);
+
+      window.maximize();
+      utils.sendNativeMouseEvent(px_x, px_y, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, sapp);
+      utils.sendNativeMouseEvent(px_x, px_y, MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, sapp);
+      //utils.sendNativeMouseEvent(160, 460, MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, 0, sapp);
+  }
 }
 
+/****************************************************************************************/
+function onAfterScript(aEvent) {
+    dump("Script is done " + aEvent.target.getAttribute('src') + "\n");
+}
+/****************************************************************************************/
+var onHttpRequest = {
+    observe: function (aSubject, aTopic, aData) 
+    {
+        if (aTopic == 'http-on-modify-request') 
+        {
+            var oHttp = aSubject.QueryInterface(Components.interfaces.nsIHttpChannel);
+            var uri   = oHttp.URI;
+            //dump("http req: " + uri.host  + " - " + uri.path + " type: " + oHttp.getRequestHeader('Content-Type') + "\n");
+            //dump("http req: " + uri.host  + " - " + uri.path + "\n");
+        }
+        else if (aTopic == 'http-on-examine-response')
+        {
+            try
+            {
+                var oHttp = aSubject.QueryInterface(Components.interfaces.nsIHttpChannel);
+                var uri   = oHttp.URI;
+                dump("http response: " + uri.host  + " - " + uri.path + " type: " + oHttp.getResponseHeader('Content-Type') + "\n");
+                if(oHttp.getResponseHeader('Content-Type') == 'video/mp4')
+                {
+                    dump('Received video stream packet \n');
+                    playTimeoutCounter = 0;
+                    playState = playStateEnum.fullscreen;
+                }
+            } catch (e) {}
+        }
+    }
+};
 /****************************************************************************************/
 function onPageLoad(aEvent) {
     var doc = aEvent.originalTarget; // doc is document that triggered the event
@@ -1103,22 +1224,15 @@ state = logged_idle
     if(playStartFlag)
     {
         //var links = doc.querySelectorAll('button.price.buy.id-track-click');
-        var links = doc.getElementsByClassName('buy-button-container');
+        //var links = doc.getElementsByClassName('buy-button-container');
+        var links = doc.getElementsByTagName('a');
         for (var i=0, max=links.length; i < max; i++) 
         {
-            if (links[i].hasAttributes()) 
+            dump('link is ' + links[i].href + "\n");
+            if (links[i].href.indexOf("playConsumption") > -1) 
             {
-                for each ( var item in links[i].attributes) 
-                {
-                    if(item.nodeName == "data-docid" && item.nodeValue == searchResults[playItemId].docid)
-                    {
-                        doctarget = doc;
-                        //toclick   = links[i];
-                        var buttons = links[i].querySelectorAll('button.price.buy.id-track-click');
-                        toclick     = buttons[0];
-                        dump("start play, click on: " + buttons[0].id);
-                    }
-                }
+                doctarget = doc;
+                toclick   = links[i];
             }
         }
     }
@@ -1203,7 +1317,12 @@ state = logged_idle
     }
 }
 
+addEventListener("afterscriptexecute", onAfterScript, true);
 addEventListener("load", onload, true);
 addEventListener("load", serverStart, true);
 addEventListener("DOMContentLoaded", onPageLoad, false);
 addEventListener("click", onCommand, true);
+/* Observer for http requests */
+Components.utils.import('resource://gre/modules/Services.jsm');
+Services.obs.addObserver(onHttpRequest, 'http-on-modify-request', false);
+Services.obs.addObserver(onHttpRequest, 'http-on-examine-response', false);

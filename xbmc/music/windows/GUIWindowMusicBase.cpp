@@ -245,8 +245,8 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
           {
               m_testclient = new CTcpClient();
               //testclient->Create("10.10.10.10", 10);
-              m_testclient->Create("192.168.1.25", 64567);
-              //m_testclient->Create("10.10.244.219", 64567);
+              //m_testclient->Create("192.168.1.25", 64567);
+              m_testclient->Create("10.10.244.219", 64567);
           }
           else
           {

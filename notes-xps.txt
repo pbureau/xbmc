@@ -46,8 +46,6 @@ Internet:
 	DropBox
 	etc...
 
-
-
 ADD
 Choix local/réseau/Internet
 local -> liste de tous les drive USB
@@ -61,12 +59,16 @@ USB Add Src complet + Start scan pour:
     music - ok
     video - ok
     photo - ok 
+
 custom dialog pour le choix d'un album dans le interactive scan
 custom dialog pour le choix des noms artists/album pendant le interactive scan
 fonction cancel all pendant le interactive scan
 Progress bar to fix pendant le scan des films
 Scan des artist?
 Choix du scrapper dans les settings
+
+MANAGE / REMOVE SOURCE:
+Dialog custom pour le management des sources avec un bouton add
 Penser a faire la bonne operation quand on retire une source:
 	- video / music: Clean de la Db
 	- pictures: rescan for content

@@ -1204,6 +1204,7 @@
                     </control>
                 </control>
                 -->
+                <!--
                 <control type="label">
                     <right>130</right>
                     <top>40</top>
@@ -1259,6 +1260,7 @@
                     <textcolor>-</textcolor>
                     <showonepage>true</showonepage>
                 </control>
+                -->
                 <!--
                 <control type="image">
                     <description>Actor image</description>
@@ -1424,7 +1426,6 @@
                         <include>ButtonInfoDialogsCommonValues</include>
                         <label>206</label>
                     </control>
--->
                     <control type="button" id="6">
                         <description>Refresh</description>
                         <include>ButtonInfoDialogsCommonValues</include>
@@ -1440,6 +1441,7 @@
                         <include>ButtonInfoDialogsCommonValues</include>
                         <label>20413</label>
                     </control>
+-->
                 </control>
             </control>
         </control>
