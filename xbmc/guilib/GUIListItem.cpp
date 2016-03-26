@@ -29,7 +29,7 @@
 #include "utils/Variant.h"
 #include "utils/log.h"
 
-#include <execinfo.h>
+//#include <execinfo.h>
 
 bool CGUIListItem::icompare::operator()(const std::string &s1, const std::string &s2) const
 {

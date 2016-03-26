@@ -457,6 +457,7 @@
     <ClCompile Include="..\..\xbmc\guilib\GUIControlProfiler.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIDialog.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIEditControl.cpp" />
+    <ClCompile Include="..\..\xbmc\guilib\GUIExtPanelContainer.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIFadeLabelControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIFixedListContainer.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIFont.cpp" />
@@ -746,6 +747,7 @@
     <ClCompile Include="..\..\xbmc\pictures\GUIWindowPictures.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\GUIWindowSlideShow.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\Picture.cpp" />
+    <ClCompile Include="..\..\xbmc\pictures\PictureContentCheck.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\PictureInfoLoader.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\PictureInfoTag.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\PictureScalingAlgorithm.cpp" />

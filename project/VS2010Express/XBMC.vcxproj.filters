@@ -3228,6 +3228,12 @@
     <ClCompile Include="..\..\xbmc\pvr\PVRSettings.cpp">
       <Filter>pvr</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\pictures\PictureContentCheck.cpp">
+      <Filter>pictures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\guilib\GUIExtPanelContainer.cpp">
+      <Filter>guilib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\xbmc\win32\pch.h">

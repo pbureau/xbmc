@@ -403,7 +403,8 @@ void StringUtils::ToCapitalize(std::wstring &str)
 
 struct ConditionAlphaNum {
    bool operator()( char ch ) const {
-      return !std::isalnum(ch);
+	  std::locale loc2("en_US.UTF-8");
+      return !std::isalnum(ch, loc2);
    }
 };
 

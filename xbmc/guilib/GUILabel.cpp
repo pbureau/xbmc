@@ -22,7 +22,7 @@
 #include <limits>
 
 #include "utils/log.h"
-#include <execinfo.h>
+//#include <execinfo.h>
 
 CGUILabel::CGUILabel(float posX, float posY, float width, float height, const CLabelInfo& labelInfo, CGUILabel::OVER_FLOW overflow)
     : m_label(labelInfo)
