@@ -28,7 +28,7 @@
 #define CONTROL_BTNGROUPITEMS             5
 #define CONTROL_BTNSHOWHIDDEN             6
 #define CONTROL_BTNSHOWDELETED            7
-#define CONTROL_BTNTIMERTYPEFILTER        8
+#define CONTROL_BTNHIDEDISABLEDTIMERS     8
 #define CONTROL_BTNCHANNELGROUPS          28
 #define CONTROL_BTNFILTERCHANNELS         31
 
@@ -58,43 +58,43 @@ namespace PVR
   {
   public:
     virtual ~CGUIWindowPVRBase(void);
-    virtual void OnInitWindow(void);
-    virtual void OnDeinitWindow(int nextWindowID);
-    virtual bool OnMessage(CGUIMessage& message);
-    virtual bool OnContextButton(int itemNumber, CONTEXT_BUTTON button);
+    virtual void OnInitWindow(void) override;
+    virtual void OnDeinitWindow(int nextWindowID) override;
+    virtual bool OnMessage(CGUIMessage& message) override;
+    virtual bool OnContextButton(int itemNumber, CONTEXT_BUTTON button) override;
     virtual bool OnContextButton(const CFileItem &item, CONTEXT_BUTTON button) { return false; };
     virtual bool OnContextButtonActiveAEDSPSettings(CFileItem *item, CONTEXT_BUTTON button);
-    virtual void UpdateButtons(void);
-    virtual bool OnAction(const CAction &action);
-    virtual bool OnBack(int actionID);
+    virtual void UpdateButtons(void) override;
+    virtual bool OnAction(const CAction &action) override;
+    virtual bool OnBack(int actionID) override;
     virtual bool OpenGroupSelectionDialog(void);
-    virtual void ResetObservers(void) {};
-    virtual void Notify(const Observable &obs, const ObservableMessage msg);
-    virtual void SetInvalid();
-    virtual bool CanBeActivated() const;
+    virtual void Notify(const Observable &obs, const ObservableMessage msg) override;
+    virtual void SetInvalid() override;
+    virtual bool CanBeActivated() const override;
+
+    void ResetObservers(void);
 
     static std::string GetSelectedItemPath(bool bRadio);
     static void SetSelectedItemPath(bool bRadio, const std::string &path);
 
-    /*!
-     * @brief Open a dialog to confirm timer delete.
-     * @param item the timer to delete.
-     * @param bDeleteSchedule in: ignored
-     *                        out, for one shot timer scheduled by a repeating timer: true to also delete the
-     *                             repeating timer that has scheduled this timer, false to only delete the one shot timer.
-     *                        out, for one shot timer not scheduled by a repeating timer: ignored
-     * @return true, to proceed with delete, false otherwise.
-     */
-    static bool ConfirmDeleteTimer(CFileItem *item, bool &bDeleteSchedule);
+    static bool ShowTimerSettings(const CPVRTimerInfoTagPtr &timer);
+    static bool AddTimer(CFileItem *item, bool bShowTimerSettings = false);
+    static bool AddTimerRule(CFileItem *item, bool bShowTimerSettings = true);
+    static bool EditTimer(CFileItem *item);
+    static bool EditTimerRule(CFileItem *item);
+    static bool DeleteTimer(CFileItem *item);
+    static bool DeleteTimerRule(CFileItem *item);
+    static bool StopRecordFile(CFileItem *item);
 
   protected:
     CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile);
 
-    virtual std::string GetDirectoryPath(void) { return ""; };
+    virtual std::string GetDirectoryPath(void) = 0;
     virtual CPVRChannelGroupPtr GetGroup(void);
     virtual void SetGroup(CPVRChannelGroupPtr group);
 
-    virtual bool ActionRecord(CFileItem *item);
+    virtual bool ActionShowTimerRule(CFileItem *item);
+    virtual bool ActionToggleTimer(CFileItem *item);
     virtual bool ActionPlayChannel(CFileItem *item);
     virtual bool ActionPlayEpg(CFileItem *item, bool bPlayRecording);
     virtual bool ActionDeleteChannel(CFileItem *item);
@@ -102,9 +102,6 @@ namespace PVR
 
     virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
     virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
-    virtual bool ShowTimerSettings(CFileItem *item);
-    virtual bool AddTimer(CFileItem *item, bool bAdvanced = false);
-    virtual bool StopRecordFile(CFileItem *item);
     virtual void ShowEPGInfo(CFileItem *item);
     virtual void ShowRecordingInfo(CFileItem *item);
     virtual bool UpdateEpgForChannel(CFileItem *item);
@@ -112,12 +109,41 @@ namespace PVR
     virtual bool IsValidMessage(CGUIMessage& message);
     void CheckResumeRecording(CFileItem *item);
 
-    static std::map<bool, std::string> m_selectedItemPaths;
+    bool OnContextButtonEditTimer(CFileItem *item, CONTEXT_BUTTON button);
+    bool OnContextButtonEditTimerRule(CFileItem *item, CONTEXT_BUTTON button);
+    bool OnContextButtonDeleteTimerRule(CFileItem *item, CONTEXT_BUTTON button);
+
+    virtual void RegisterObservers(void) {};
+    virtual void UnregisterObservers(void) {};
+
+    static CCriticalSection m_selectedItemPathsLock;
+    static std::string m_selectedItemPaths[2];
 
     CCriticalSection m_critSection;
     bool m_bRadio;
 
   private:
+    /*!
+     * @brief Open a dialog to confirm timer delete.
+     * @param timer the timer to delete.
+     * @param bDeleteRule in: ignored
+     *                    out, for one shot timer scheduled by a timer rule: true to also delete the timer
+     *                    rule that has scheduled this timer, false to only delete the one shot timer.
+     *                    out, for one shot timer not scheduled by a timer rule: ignored
+     * @return true, to proceed with delete, false otherwise.
+     */
+    static bool ConfirmDeleteTimer(const CPVRTimerInfoTagPtr &timer, bool &bDeleteRule);
+
+    /*!
+     * @brief Open a dialog to confirm stop recording.
+     * @param timer the recording to stop (actually the timer to delete).
+     * @return true, to proceed with delete, false otherwise.
+     */
+    static bool ConfirmStopRecording(const CPVRTimerInfoTagPtr &timer);
+
+    static bool DeleteTimer(CFileItem *item, bool bIsRecording, bool bDeleteRule);
+    static bool AddTimer(CFileItem *item, bool bCreateRule, bool bShowTimerSettings);
+
     CPVRChannelGroupPtr m_group;
     XbmcThreads::EndTime m_refreshTimeout;
   };

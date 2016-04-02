@@ -297,7 +297,7 @@ namespace XBMCAddon
           else if (key == "count")
             item->m_iprogramCount = strtol(value.c_str(), NULL, 10);
           else if (key == "rating")
-            item->GetVideoInfoTag()->m_fRating = (float)strtod(value.c_str(), NULL);
+            item->GetVideoInfoTag()->SetRating((float)strtod(value.c_str(), NULL));
           else if (key == "userrating")
             item->GetVideoInfoTag()->m_iUserRating = strtol(value.c_str(), NULL, 10);
           else if (key == "size")
@@ -350,6 +350,8 @@ namespace XBMCAddon
           }
           else if (key == "genre")
             item->GetVideoInfoTag()->m_genre = StringUtils::Split(value, g_advancedSettings.m_videoItemSeparator);
+          else if (key == "country")
+            item->GetVideoInfoTag()->m_country = StringUtils::Split(value, g_advancedSettings.m_videoItemSeparator);
           else if (key == "director")
             item->GetVideoInfoTag()->m_director = StringUtils::Split(value, g_advancedSettings.m_videoItemSeparator);
           else if (key == "mpaa")
@@ -389,7 +391,7 @@ namespace XBMCAddon
           else if (key == "album")
             item->GetVideoInfoTag()->m_strAlbum = value;
           else if (key == "votes")
-            item->GetVideoInfoTag()->m_strVotes = value;
+            item->GetVideoInfoTag()->SetVotes(StringUtils::ReturnDigits(value));
           else if (key == "trailer")
             item->GetVideoInfoTag()->m_strTrailer = value;
           else if (key == "date")
@@ -408,7 +410,7 @@ namespace XBMCAddon
             item->GetVideoInfoTag()->m_dateAdded.SetFromDBDateTime(value.c_str());
           else if (key == "mediatype")
           {
-            if (MediaTypes::IsValidMediaType(value))
+            if (CMediaTypes::IsValidMediaType(value))
               item->GetVideoInfoTag()->m_type = value;
             else
               CLog::Log(LOGWARNING, "Invalid media type \"%s\"", value.c_str());
@@ -451,7 +453,9 @@ namespace XBMCAddon
           else if (key == "title")
             item->GetMusicInfoTag()->SetTitle(value);
           else if (key == "rating")
-            item->GetMusicInfoTag()->SetUserrating(value[0]);
+            item->GetMusicInfoTag()->SetRating((float)strtod(value.c_str(), NULL));
+          else if (key == "userrating")
+            item->GetMusicInfoTag()->SetUserrating(strtol(value.c_str(), NULL, 10));
           else if (key == "lyrics")
             item->GetMusicInfoTag()->SetLyrics(value);
           else if (key == "lastplayed")
@@ -464,8 +468,6 @@ namespace XBMCAddon
             item->GetMusicInfoTag()->SetMusicBrainzAlbumID(value);
           else if (key == "musicbrainzalbumartistid")
             item->GetMusicInfoTag()->SetMusicBrainzAlbumArtistID(StringUtils::Split(value, g_advancedSettings.m_musicItemSeparator));
-          else if (key == "musicbrainztrmid")
-            item->GetMusicInfoTag()->SetMusicBrainzTRMID(value);
           else if (key == "comment")
             item->GetMusicInfoTag()->SetComment(value);
           else if (key == "date")
@@ -549,6 +551,8 @@ namespace XBMCAddon
             video->m_iDuration = strtol(value.c_str(), NULL, 10);
           else if (key == "stereomode")
             video->m_strStereoMode = value;
+          else if (key == "language")
+            video->m_strLanguage = value;
         }
         item->GetVideoInfoTag()->m_streamDetails.AddStream(video);
       }

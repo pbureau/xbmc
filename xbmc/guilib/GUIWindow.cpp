@@ -124,7 +124,7 @@ bool CGUIWindow::Load(const std::string& strFileName, bool bContainsPath)
     strPath = g_SkinInfo->GetSkinPath(strFileName, &m_coordsRes);
   }
 
-  bool ret = LoadXML(strPath.c_str(), strLowerPath.c_str());
+  bool ret = LoadXML(strPath, strLowerPath);
 
 #ifdef _DEBUG
   int64_t end, freq;
@@ -779,8 +779,10 @@ void CGUIWindow::AllocResources(bool forceLoad /*= FALSE */)
     }
   }
 
+#ifdef _DEBUG
   int64_t slend;
   slend = CurrentHostCounter();
+#endif
 
   // and now allocate resources
   CGUIControlGroup::AllocResources();

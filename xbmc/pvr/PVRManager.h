@@ -20,7 +20,7 @@
  */
 
 #include "FileItem.h"
-#include "addons/include/xbmc_pvr_types.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
 #include "interfaces/IAnnouncer.h"
 #include "settings/lib/ISettingCallback.h"
 #include "threads/Event.h"
@@ -31,6 +31,7 @@
 #include "pvr/recordings/PVRRecording.h"
 
 #include <map>
+#include <memory>
 
 class CGUIDialogProgressBarHandle;
 class CStopWatch;
@@ -94,17 +95,25 @@ namespace PVR
   {
     friend class CPVRClients;
 
-  private:
+public:
     /*!
      * @brief Create a new CPVRManager instance, which handles all PVR related operations in XBMC.
      */
     CPVRManager(void);
+
+private:
 
     /*!
      * @brief Updates the last watched timestamps of the channel and group which are currently playing.
      * @param channel The channel which is updated
      */
     void UpdateLastWatched(const CPVRChannelPtr &channel);
+
+    /*!
+     * @brief Set the playing group to the first group the channel is in if the given channel is not part of the current playing group
+     * @param channel The channel
+     */
+    void SetPlayingGroup(const CPVRChannelPtr &channel);
 
   public:
     /*!
@@ -127,31 +136,30 @@ namespace PVR
      * @brief Get the channel groups container.
      * @return The groups container.
      */
-    CPVRChannelGroupsContainer *ChannelGroups(void) const { return m_channelGroups; }
+    CPVRChannelGroupsContainer *ChannelGroups(void) const { return m_channelGroups.get(); }
 
     /*!
      * @brief Get the recordings container.
      * @return The recordings container.
      */
-    CPVRRecordings *Recordings(void) const { return m_recordings; }
+    CPVRRecordings *Recordings(void) const { return m_recordings.get(); }
 
     /*!
      * @brief Get the timers container.
      * @return The timers container.
      */
-    CPVRTimers *Timers(void) const { return m_timers; }
+    CPVRTimers *Timers(void) const { return m_timers.get(); }
 
     /*!
      * @brief Get the timers container.
      * @return The timers container.
      */
-    CPVRClients *Clients(void) const { return m_addons; }
+    CPVRClients *Clients(void) const { return m_addons.get(); }
 
     /*!
-     * @brief Start the PVRManager, which loads all PVR data and starts some threads to update the PVR data.
-     * @param bAsync True to (re)start the manager from another thread
+     * @brief Init PVRManager.
      */
-    void Start(bool bAsync = false);
+    void Init(void);
 
     /*!
      * @brief Stop the PVRManager and destroy all objects it created.
@@ -260,11 +268,6 @@ namespace PVR
       return GetState() == ManagerStateStarted;
     }
 
-    /**
-     * Called by OnEnable() and OnDisable() to check if the manager should be restarted
-     * @return True if it should be restarted, false otherwise
-     */
-    bool RestartManagerOnAddonDisabled(void) const;
 
     /*!
      * @brief Check whether the PVRManager is stopping
@@ -328,10 +331,10 @@ namespace PVR
 
     /*!
      * @brief Open a stream from the given channel.
-     * @param channel The channel to open.
+     * @param fileItem The file item with the channel to open.
      * @return True if the stream was opened, false otherwise.
      */
-    bool OpenLiveStream(const CFileItem &channel);
+    bool OpenLiveStream(const CFileItem &fileItem);
 
     /*!
      * @brief Open a stream from the given recording.
@@ -442,11 +445,11 @@ namespace PVR
     bool UpdateItem(CFileItem& item);
 
     /*!
-     * @brief Switch to a channel given it's channel number.
-     * @param iChannelNumber The channel number to switch to.
+     * @brief Switch to a channel given it's channel id.
+     * @param iChannelId The channel id to switch to.
      * @return True if the channel was switched, false otherwise.
      */
-    bool ChannelSwitch(unsigned int iChannelNumber);
+    bool ChannelSwitchById(unsigned int iChannelId);
 
     /*!
      * @brief Switch to the next channel in this group.
@@ -580,7 +583,17 @@ namespace PVR
     */
     std::string GetPlayingTVGroupName();
 
+    /*!
+     * @brief Signal a connection change of a client
+     */
+    void ConnectionStateChange(int clientId, std::string connectString, PVR_CONNECTION_STATE state, std::string message);
+
   protected:
+    /*!
+     * @brief Start the PVRManager, which loads all PVR data and starts some threads to update the PVR data.
+     */
+    void Start();
+    
     /*!
      * @brief PVR update and control thread.
      */
@@ -590,9 +603,10 @@ namespace PVR
     /*!
      * @brief Load at least one client and load all other PVR data after loading the client.
      * If some clients failed to load here, the pvrmanager will retry to load them every second.
+     * @param bShowProgress True, to show a progress dialog for the different load stages.
      * @return If at least one client and all pvr data was loaded, false otherwise.
      */
-    bool Load(void);
+    bool Load(bool bShowProgress);
 
     /*!
      * @brief Reset all properties.
@@ -607,16 +621,6 @@ namespace PVR
      * @return True if the switch was successful, false otherwise.
      */
     bool ChannelUpDown(unsigned int *iNewChannelNumber, bool bPreview, bool bUp);
-
-    /*!
-     * @brief Stop the EPG and PVR threads but do not remove their data.
-     */
-    void StopUpdateThreads(void);
-
-    /*!
-     * @brief Restart the EPG and PVR threads after they've been stopped by StopUpdateThreads()
-     */
-    bool StartUpdateThreads(void);
 
     /*!
      * @brief Continue playback on the last channel if it was stored in the database.
@@ -657,11 +661,11 @@ namespace PVR
 
     /** @name containers */
     //@{
-    CPVRChannelGroupsContainer *    m_channelGroups;               /*!< pointer to the channel groups container */
-    CPVRRecordings *                m_recordings;                  /*!< pointer to the recordings container */
-    CPVRTimers *                    m_timers;                      /*!< pointer to the timers container */
-    CPVRClients *                   m_addons;                      /*!< pointer to the pvr addon container */
-    CPVRGUIInfo *                   m_guiInfo;                     /*!< pointer to the guiinfo data */
+    std::unique_ptr<CPVRChannelGroupsContainer>    m_channelGroups;               /*!< pointer to the channel groups container */
+    std::unique_ptr<CPVRRecordings>                m_recordings;                  /*!< pointer to the recordings container */
+    std::unique_ptr<CPVRTimers>                    m_timers;                      /*!< pointer to the timers container */
+    std::unique_ptr<CPVRClients>                   m_addons;                      /*!< pointer to the pvr addon container */
+    std::unique_ptr<CPVRGUIInfo>                   m_guiInfo;                     /*!< pointer to the guiinfo data */
     //@}
 
     CCriticalSection                m_critSectionTriggers;         /*!< critical section for triggered updates */
@@ -678,9 +682,9 @@ namespace PVR
 
     CCriticalSection                m_managerStateMutex;
     ManagerState                    m_managerState;
-    CStopWatch                     *m_parentalTimer;
+    std::unique_ptr<CStopWatch>     m_parentalTimer;
     std::vector<std::string>        m_outdatedAddons;
-    static int                      m_pvrWindowIds[10];
+    static const int                m_pvrWindowIds[12];
   };
 
   class CPVREpgsCreateJob : public CJob
@@ -754,5 +758,21 @@ namespace PVR
     virtual const char *GetType() const { return "pvr-search-missing-channel-icons"; }
 
     bool DoWork();
+  };
+
+  class CPVRClientConnectionJob : public CJob
+  {
+  public:
+    CPVRClientConnectionJob(int clientId, std::string connectString, PVR_CONNECTION_STATE state, std::string message) :
+    m_clientId(clientId), m_connectString(connectString), m_state(state), m_message(message) {}
+    virtual ~CPVRClientConnectionJob() {}
+    virtual const char *GetType() const { return "pvr-client-connection"; }
+
+    virtual bool DoWork();
+  private:
+    int m_clientId;
+    std::string m_connectString;
+    PVR_CONNECTION_STATE m_state;
+    std::string m_message;
   };
 }

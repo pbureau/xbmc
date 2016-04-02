@@ -18,9 +18,10 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+#include "InfoScanner.h"
+#include "NfoFile.h"
 #include "VideoDatabase.h"
 #include "addons/Scraper.h"
-#include "NfoFile.h"
 
 class CRegExp;
 class CFileItem;
@@ -47,7 +48,7 @@ namespace VIDEO
                   INFO_NOT_FOUND,
                   INFO_ADDED };
 
-  class CVideoInfoScanner
+  class CVideoInfoScanner : public CInfoScanner
   {
   public:
     CVideoInfoScanner();
@@ -122,9 +123,8 @@ namespace VIDEO
 
   protected:
     virtual void Process();
-    bool DoScan(const std::string& strDirectory);
+    bool DoScan(const std::string& strDirectory) override;
     bool DoCount(const std::string& pathCurrent);
-    bool IsExcluded(const std::string& strDirectory) const;
 
     INFO_RET RetrieveInfoForTvShow(CFileItem *pItem, bool bDirNames, ADDON::ScraperPtr &scraper, bool useLocal, CScraperUrl* pURL, bool fetchEpisodes, CGUIDialogProgress* pDlgProgress);
     INFO_RET RetrieveInfoForMovie(CFileItem *pItem, bool bDirNames, ADDON::ScraperPtr &scraper, bool useLocal, CScraperUrl* pURL, CGUIDialogProgress* pDlgProgress);

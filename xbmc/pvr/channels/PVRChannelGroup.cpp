@@ -458,7 +458,7 @@ CFileItemPtr CPVRChannelGroup::GetLastPlayedChannel(int iCurrentChannel /* = -1 
   {
     channel = it->second.channel;
     if (channel->ChannelID() != iCurrentChannel &&
-        g_PVRClients->IsConnectedClient(channel->ClientID()) &&
+        g_PVRClients->IsCreatedClient(channel->ClientID()) &&
         channel->LastWatched() > 0 &&
         (!returnChannel || channel->LastWatched() > returnChannel->LastWatched()))
     {
@@ -890,9 +890,13 @@ bool CPVRChannelGroup::Persist(void)
   bool bReturn(true);
   CSingleLock lock(m_critSection);
 
-  /* don't persist until the group is fully loaded and has changes */
-  if (!HasChanges() || !m_bLoaded)
+  /* only persist if the group has changes and is fully loaded or never has been saved before */
+  if (!HasChanges() || (!m_bLoaded && m_iGroupId != -1))
     return bReturn;
+
+  // Mark newly created groups as loaded so future updates will also be persisted...
+  if (m_iGroupId == -1)
+    m_bLoaded = true;
 
   if (CPVRDatabase *database = GetPVRDatabase())
   {

@@ -20,8 +20,9 @@
 
 
 #include "WinSystemWin32DX.h"
-#include "settings/Settings.h"
 #include "guilib/gui3d.h"
+#include "settings/Settings.h"
+#include "threads/SingleLock.h"
 #include "utils/CharsetConverter.h"
 
 #ifdef HAS_DX
@@ -35,6 +36,18 @@ CWinSystemWin32DX::CWinSystemWin32DX()
 CWinSystemWin32DX::~CWinSystemWin32DX()
 {
 
+}
+
+void CWinSystemWin32DX::PresentRender(bool rendered)
+{
+  if (rendered)
+    PresentRenderImpl(rendered);
+
+  if (m_delayDispReset && m_dispResetTimer.IsTimePast())
+  {
+    m_delayDispReset = false;
+    CWinSystemWin32::OnDisplayReset();
+  }
 }
 
 bool CWinSystemWin32DX::UseWindowedDX(bool fullScreen)
@@ -168,11 +181,12 @@ void CWinSystemWin32DX::NotifyAppFocusChange(bool bGaining)
   {
     CRenderSystemDX::m_useWindowedDX = !bGaining;
     CRenderSystemDX::SetFullScreenInternal();
-    CRenderSystemDX::CreateWindowSizeDependentResources();
+    if (bGaining)
+      CRenderSystemDX::CreateWindowSizeDependentResources();
 
     // minimize window on lost focus
     if (!bGaining)
-      ShowWindow(m_hWnd, SW_SHOWMINIMIZED);
+      ShowWindow(m_hWnd, SW_FORCEMINIMIZE);
   }
 }
 

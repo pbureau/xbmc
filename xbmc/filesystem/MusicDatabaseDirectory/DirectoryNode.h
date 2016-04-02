@@ -76,7 +76,9 @@ namespace XFILE
       virtual std::string GetLocalizedName() const;
 
       CDirectoryNode* GetParent() const;
-      bool CanCache() const;
+      virtual bool CanCache() const;
+
+      std::string BuildPath() const;
 
     protected:
       CDirectoryNode(NODE_TYPE Type, const std::string& strName, CDirectoryNode* pParent);
@@ -90,11 +92,6 @@ namespace XFILE
       void RemoveParent();
 
       virtual bool GetContent(CFileItemList& items) const;
-
-      std::string BuildPath() const;
-
-    private:
-      void AddQueuingFolder(CFileItemList& items) const;
 
     private:
       NODE_TYPE m_Type;

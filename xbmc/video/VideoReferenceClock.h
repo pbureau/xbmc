@@ -31,30 +31,30 @@ class CVideoReferenceClock : public CThread
     virtual ~CVideoReferenceClock();
 
     int64_t GetTime(bool interpolated = true);
-    int64_t GetFrequency();
+    int64_t GetFrequency() const;
     void    SetSpeed(double Speed);
     double  GetSpeed();
-    double  GetRefreshRate(double* interval = NULL);
+    double  GetRefreshRate(double* interval = nullptr);
     int64_t Wait(int64_t Target);
-    bool    GetClockInfo(int& MissedVblanks, double& ClockSpeed, double& RefreshRate);
+    bool    GetClockInfo(int& MissedVblanks, double& ClockSpeed, double& RefreshRate) const;
     void    SetFineAdjust(double fineadjust);
     void    RefreshChanged();
     void    Start();
     void    Stop();
 
   private:
-    void    Process();
+    void    Process() override;
     void    UpdateRefreshrate();
     void    SendVblankSignal();
     void    UpdateClock(int NrVBlanks, bool CheckMissed);
-    double  UpdateInterval();
-    int64_t TimeOfNextVblank();
+    double  UpdateInterval() const;
+    int64_t TimeOfNextVblank() const;
     static void CBUpdateClock(int NrVBlanks, uint64_t time);
 
     int64_t m_CurrTime;          //the current time of the clock when using vblank as clock source
     int64_t m_LastIntTime;       //last interpolated clock value, to make sure the clock doesn't go backwards
     double  m_CurrTimeFract;     //fractional part that is lost due to rounding when updating the clock
-    double  m_ClockSpeed;        //the frequency of the clock set by dvdplayer
+    double  m_ClockSpeed;        //the frequency of the clock set by VideoPlayer
     int64_t m_ClockOffset;       //the difference between the vblank clock and systemclock, set when vblank clock is stopped
     int64_t m_SystemFrequency;   //frequency of the systemclock
     double  m_fineadjust;

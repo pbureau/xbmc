@@ -23,6 +23,7 @@
 #include "guilib/GUIKeyboardFactory.h"
 #include "GUIDialogFileBrowser.h"
 #include "video/windows/GUIWindowVideoBase.h"
+#include "music/windows/GUIWindowMusicBase.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
 #include "Util.h"
@@ -38,15 +39,9 @@
 #include "guilib/LocalizeStrings.h"
 #include "PasswordManager.h"
 #include "URL.h"
-#include "utils/log.h"
-#include "Application.h"
-#include "video/VideoInfoScanner.h"
-#include "addons/AddonManager.h"
-#include "addons/Addon.h"
-#include "addons/Scraper.h"
 
 #if defined(TARGET_ANDROID)
-#include "android/activity/XBMCApp.h"
+#include "platform/android/activity/XBMCApp.h"
 #include "filesystem/File.h"
 #endif
 
@@ -387,7 +382,6 @@ void CGUIDialogMediaSource::OnPathBrowse(int item)
   if (m_name != CUtil::GetTitleFromPath(m_paths->Get(item)->GetPath()))
     m_bNameChanged=true;
 
-  std::string strStreams = g_localizeStrings.Get(33039); //"% Streams"
   std::string strDevices = g_localizeStrings.Get(33040); //"% Devices"
 
   if (m_type == "music")
@@ -411,9 +405,19 @@ void CGUIDialogMediaSource::OnPathBrowse(int item)
     share1.m_ignore = true;
     extraShares.push_back(share1);
 
-    share1.strPath = "sap://";
-    share1.strName = StringUtils::Format(strStreams.c_str(), "SAP"); //"SAP Streams"
+    // add the recordings dir as needed
+    if (CPVRDirectory::HasRadioRecordings())
+    {
+      share1.strPath = PVR::CPVRRecordingsPath::PATH_ACTIVE_RADIO_RECORDINGS;
+      share1.strName = g_localizeStrings.Get(19017); // Recordings
     extraShares.push_back(share1);
+    }
+    if (CPVRDirectory::HasDeletedRadioRecordings())
+    {
+      share1.strPath = PVR::CPVRRecordingsPath::PATH_DELETED_RADIO_RECORDINGS;
+      share1.strName = g_localizeStrings.Get(19184); // Deleted recordings
+      extraShares.push_back(share1);
+    }
 
     if (CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH) != "")
     {
@@ -443,21 +447,17 @@ void CGUIDialogMediaSource::OnPathBrowse(int item)
     share1.strName = g_localizeStrings.Get(20012);
     extraShares.push_back(share1);
 
-    share1.strPath = "sap://";
-    share1.strName = StringUtils::Format(strStreams.c_str(), "SAP"); //"SAP Streams"
-    extraShares.push_back(share1);
-
     // add the recordings dir as needed
-    if (CPVRDirectory::HasRecordings())
+    if (CPVRDirectory::HasTVRecordings())
     {
-      share1.strPath = "pvr://recordings/active/";
-      share1.strName = g_localizeStrings.Get(19017); // TV Recordings
+      share1.strPath = PVR::CPVRRecordingsPath::PATH_ACTIVE_TV_RECORDINGS;
+      share1.strName = g_localizeStrings.Get(19017); // Recordings
       extraShares.push_back(share1);
     }
-    if (CPVRDirectory::HasDeletedRecordings())
+    if (CPVRDirectory::HasDeletedTVRecordings())
     {
-      share1.strPath = "pvr://recordings/deleted/";
-      share1.strName = g_localizeStrings.Get(19108); // Deleted TV Recordings
+      share1.strPath = PVR::CPVRRecordingsPath::PATH_DELETED_TV_RECORDINGS;
+      share1.strName = g_localizeStrings.Get(19184); // Deleted recordings
       extraShares.push_back(share1);
     }
   }
@@ -548,44 +548,47 @@ void CGUIDialogMediaSource::OnOK()
   {
     m_confirmed = true;
     Close();
-    if (m_type == "video" && !URIUtils::IsLiveTV(share.strPath) && 
-        !StringUtils::StartsWithNoCase(share.strPath, "rss://") &&
+    if (!StringUtils::StartsWithNoCase(share.strPath, "rss://") &&
         !StringUtils::StartsWithNoCase(share.strPath, "upnp://"))
     {
-      CLog::Log(LOGDEBUG,"%s::%s Assign content video", __FILE__, __FUNCTION__);
-      //CGUIWindowVideoBase::OnAssignContent(share.strPath);
-
-      // Get scrapper from settings
-      ADDON::ScraperPtr scraper = NULL;
-      ADDON::AddonPtr scraperAddon;
-      ADDON::CAddonMgr::GetInstance().GetDefault(ADDON::ScraperTypeFromContent(CONTENT_MOVIES), scraperAddon);
-      scraper = std::dynamic_pointer_cast<ADDON::CScraper>(scraperAddon);
-      // Create a scan settings
-      VIDEO::SScanSettings settings;
-      settings.exclude          = false;
-      settings.parent_name      = false;
-      settings.parent_name_root = false;
-      settings.recurse          = INT_MAX;
-      settings.noupdate         = false;
-      // Save path settings to db
-      CVideoDatabase db;
-      db.Open();
-      db.SetScraperForPath(share.strPath, scraper, settings);
-      // Start video scan
-      g_application.StartVideoScan(share.strPath, true, true);
-    }
-    if (m_type == "music")
-    {
-      CLog::Log(LOGDEBUG,"%s::%s Assign content music", __FILE__, __FUNCTION__);
-/*
-      if (g_application.IsMusicScanning())
+      if (m_type == "video" && !URIUtils::IsLiveTV(share.strPath))
       {
-        g_application.StopMusicScan();
-        return;
+	      CLog::Log(LOGDEBUG,"%s::%s Assign content video", __FILE__, __FUNCTION__);
+	      //CGUIWindowVideoBase::OnAssignContent(share.strPath);
+
+	      // Get scrapper from settings
+	      ADDON::ScraperPtr scraper = NULL;
+	      ADDON::AddonPtr scraperAddon;
+	      ADDON::CAddonMgr::GetInstance().GetDefault(ADDON::ScraperTypeFromContent(CONTENT_MOVIES), scraperAddon);
+	      scraper = std::dynamic_pointer_cast<ADDON::CScraper>(scraperAddon);
+	      // Create a scan settings
+	      VIDEO::SScanSettings settings;
+	      settings.exclude          = false;
+	      settings.parent_name      = false;
+	      settings.parent_name_root = false;
+	      settings.recurse          = INT_MAX;
+	      settings.noupdate         = false;
+	      // Save path settings to db
+	      CVideoDatabase db;
+	      db.Open();
+	      db.SetScraperForPath(share.strPath, scraper, settings);
+	      // Start video scan
+	      g_application.StartVideoScan(share.strPath, true, true);
+    }
+    else if (m_type == "music")
+      {
+        CLog::Log(LOGDEBUG,"%s::%s Assign content music", __FILE__, __FUNCTION__);
+        //CGUIWindowMusicBase::OnAssignContent(share.strPath);
+  /*
+        if (g_application.IsMusicScanning())
+        {
+          g_application.StopMusicScan();
+          return;
+        }
+  */
+        // Start background loader
+        g_application.StartMusicScan(share.strPath);
       }
-*/
-      // Start background loader
-      g_application.StartMusicScan(share.strPath);
     }
   }
 
