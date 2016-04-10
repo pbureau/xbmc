@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<keymap>
+  <global>
+    <keyboard>
+      <F4>Notification(Testing 123,Hello World)</F4>
+      <F5>XBMC.ReloadSkin()</F5>
+      <F6>Skin.ToggleSetting(DebugGrid)</F6>
+      <F7>Skin.ToggleSetting(DebugInfo)</F7>
+      <space>RunScript(special://masterprofile/script/resumeFullscreen.py)</space>
+      <p>RunScript(special://masterprofile/script/playFullscreen.py)</p>
+      <tab>RunScript(special://masterprofile/script/fullscreenCloseAll.py)</tab>
+    </keyboard>
+  </global>
+  <MyMusicLibrary>
+    <keyboard> 
+      <return>RunScript(special://masterprofile/script/playMusicFullscreen.py)</return>
+      <enter>RunScript(special://masterprofile/script/playMusicFullscreen.py)</enter>
+    </keyboard> 
+  </MyMusicLibrary> 
+</keymap> 
