@@ -13,7 +13,7 @@
                 <!-- Dialog Overlay - Chapters -->
 		<control type="group">
 			<visible>player.chaptercount + Window.IsVisible(FullScreenVideo)</visible>
-			<left>705r</left>
+			<left>860</left>
 			<top>-6</top>
 			<include>VisibleFadeEffect</include>
 			<control type="image">

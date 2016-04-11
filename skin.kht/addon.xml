@@ -5,7 +5,7 @@
   name="Skin KHT"
   provider-name="pbureau">
   <requires>
-    <import addon="xbmc.gui" version="5.9.0"/>
+    <import addon="xbmc.gui" version="5.11.0"/>
   </requires>
   <extension
     point="xbmc.gui.skin"

@@ -365,8 +365,8 @@
 				<shadowcolor>FF000000</shadowcolor>
 				<font>font13</font>
 				<align>left</align>
-				<label>DialogKaiToast.xml</label>
-				<visible>Window.IsVisible(DialogKaiToast.xml)</visible>
+				<label>DialogNotification.xml</label>
+				<visible>Window.IsVisible(DialogNotification.xml)</visible>
 			</control>
 
 			<control type="label">
@@ -431,8 +431,8 @@
 				<shadowcolor>FF000000</shadowcolor>
 				<font>font13</font>
 				<align>left</align>
-				<label>DialogMuteBug.xml</label>
-				<visible>Window.IsVisible(DialogMuteBug.xml)</visible>
+				<label>DialogVolumeBar.xml</label>
+				<visible>Window.IsVisible(DialogVolumeBar.xml)</visible>
 			</control>
 
 			<control type="label">

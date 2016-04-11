@@ -1,45 +1,52 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
+<!--Titan-->
 <window>
-	<include>dialogeffect</include>
-	<controls>
-		<control type="group">
-			<posx>390</posx>
-			<posy>0</posy>
-			<width>500</width>
-			<height>78</height>
-			<include>16x9_xPos_Relocation</include>
-			<control type="image" id="400">
-				<description>Icon</description>
-				<posx>20</posx>
-				<posy>10</posy>
-				<width>58</width>
-				<height>58</height>
-				<aspectratio>keep</aspectratio>
-			</control>
-			<control type="fadelabel" id="401">
-				<description>Line 1 Label</description>
-				<posx>78</posx>
-				<posy>20</posy>
-				<width>422</width>
-				<height>15</height>
-				<font>font18_title</font>
-				<align>center</align>
-				<aligny>center</aligny>
-				<scrollout>false</scrollout>
-				<pauseatend>2000</pauseatend>
-			</control>
-			<control type="fadelabel" id="402">
-				<description>Line 2 Label</description>
-				<posx>78</posx>
-				<posy>42</posy>
-				<width>422</width>
-				<height>20</height>
-				<font>font20</font>
-				<align>center</align>
-				<aligny>center</aligny>
-				<scrollout>false</scrollout>
-				<pauseatend>2000</pauseatend>
-			</control>
-		</control>
-	</controls>
+  <defaultcontrol>-</defaultcontrol>
+  <!--Normal "1" over movieinformation and selectdialog-->
+  <animation effect="slide" start="0,790" end="0,0" time="1000" tween="quadratic" easing="out">WindowOpen</animation>
+  <animation effect="slide" start="0,0" end="0,790" time="1000" tween="quadratic" easing="in">WindowClose</animation>
+  <controls>
+    <!-- Default notification -->
+    <control type="group">
+      <left>50</left>
+      <top>660</top>
+      <control type="image">
+        <left>0</left>
+        <top>0</top>
+        <width>438</width>
+        <height>70</height>
+        <colordiffuse>EEFFFFFF</colordiffuse>
+        <texture border="12">OverlayDialogBackground.png</texture>
+      </control>
+      <control type="image" id="400">
+        <description>Icon</description>
+        <posx>15</posx>
+        <posy>20</posy>
+        <width>32</width>
+        <height>32</height>
+        <aspectratio>keep</aspectratio>
+        <texture>DefaultIconInfo.png</texture>
+      </control>
+      <control type="label" id="401">
+        <description>Line 1</description>
+        <posx>60</posx>
+        <posy>10</posy>
+        <width>350</width>
+        <height>30</height>
+        <textcolor>grey2</textcolor>
+        <font>font11_title</font>
+        <scroll>false</scroll>
+      </control>
+      <control type="label" id="402">
+        <description>Line 2</description>
+        <posx>60</posx>
+        <posy>30</posy>
+        <width>350</width>
+        <height>30</height>
+        <textcolor>grey2</textcolor>
+        <font>font11_title</font>
+        <scroll>false</scroll>
+      </control>
+    </control>
+  </controls>
 </window>
