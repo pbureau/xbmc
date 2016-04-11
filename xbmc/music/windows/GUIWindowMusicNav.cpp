@@ -94,7 +94,7 @@ bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message)
     break;
   case GUI_MSG_WINDOW_INIT:
     {
-/* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
+      /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
       m_rootDir.AllowNonLocalSources(false);
 
       // is this the first time the window is opened?
@@ -233,7 +233,7 @@ std::string CGUIWindowMusicNav::GetQuickpathName(const std::string& strPath) con
   }
 }
 
-bool CGUIWindowMusicNav::OnClick(int iItem)
+bool CGUIWindowMusicNav::OnClick(int iItem, const std::string &player)
 {
   if (iItem < 0 || iItem >= m_vecItems->Size()) return false;
 
@@ -267,7 +267,7 @@ bool CGUIWindowMusicNav::OnClick(int iItem)
     return true;
   }
 
-  return CGUIWindowMusicBase::OnClick(iItem);
+  return CGUIWindowMusicBase::OnClick(iItem, player);
 }
 
 bool CGUIWindowMusicNav::Update(const std::string &strDirectory, bool updateFilterPath /* = true */)

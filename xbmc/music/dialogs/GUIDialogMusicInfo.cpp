@@ -164,7 +164,7 @@ bool CGUIDialogMusicInfo::OnMessage(CGUIMessage& message)
             if( pItem->GetMusicInfoTag()->GetDatabaseId() > 0 )
             {
               // when in album view, play the current song
-              bResult = g_application.PlayFile(*pItem) == PLAYBACK_OK;
+              bResult = g_application.PlayFile(*pItem,"") == PLAYBACK_OK;
 
               if (pItem->m_lStartOffset == STARTOFFSET_RESUME)
                 pItem->m_lStartOffset = 0;
@@ -403,7 +403,6 @@ void CGUIDialogMusicInfo::Update()
     SET_CONTROL_VISIBLE(CONTROL_BTN_GET_FANART);
     SET_CONTROL_HIDDEN(CONTROL_USERRATING);
 
-    SetLabel(CONTROL_TEXTAREA, m_artist.strBiography);
 #if 1
     // Manage the discography list with extra content
     CGUIMessage messageExtraContent(GUI_MSG_EXTRA_CONTENT_GET, GetID(), CONTROL_LIST_DISCO, 0, 0);
@@ -531,7 +530,6 @@ void CGUIDialogMusicInfo::Update()
     SET_CONTROL_VISIBLE(CONTROL_USERRATING);
     SET_CONTROL_HIDDEN(CONTROL_BTN_GET_FANART);
 
-    SetLabel(CONTROL_TEXTAREA, m_album.strReview);
     if(!m_album.strReview.empty())
     {
     CGUIMessage message(GUI_MSG_LABEL_BIND, GetID(), CONTROL_LIST, 0, 0, m_albumSongs);

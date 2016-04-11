@@ -527,7 +527,8 @@ void CGUIDialogVideoInfo::Update()
     pImageControl->SetFileName(m_movieItem->GetArt("thumb"));
   }
   // Update the Audio Stream and Subtitles spinners
-  PLAYERCOREID eNewCore   = EPC_NONE;
+  //PLAYERCOREID eNewCore   = EPC_NONE;
+  std::string eNewCore    = "";
   int audioStream         = 0;
   int subtitleStream      = 0;
   int audioStreamCount    = 0;
@@ -550,7 +551,7 @@ void CGUIDialogVideoInfo::Update()
   if(g_application.m_pPlayer->HasPlayer() && g_application.m_pPlayer->IsPlayingVideo() && m_isPlaying)
   {
     m_pPlayer = g_application.m_pPlayer;
-    // Set stream and subtitle
+    // Set stream and subtitle from current player
     audioStream     = m_pPlayer->GetAudioStream();
     subtitleStream  = m_pPlayer->GetSubtitle();
     subtitlesOnFlag = m_pPlayer->GetSubtitleVisible();
@@ -571,10 +572,11 @@ void CGUIDialogVideoInfo::Update()
     subtitlesOnFlag = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_SubtitleOn;
   }
 
-  if( m_pPlayer->GetCurrentPlayer() == EPC_NONE )
+  if( m_pPlayer->GetCurrentPlayer() == "" )
     CLog::Log(LOGDEBUG, "CGUIDialogVideoInfo: no current player");
   else
   {
+    // Get audio and sub count from player
     audioStreamCount    = m_pPlayer->GetAudioStreamCount();
     subtitleStreamCount = m_pPlayer->GetSubtitleCount();
 
@@ -595,8 +597,6 @@ void CGUIDialogVideoInfo::Update()
 
       SPlayerAudioStreamInfo info;
       m_pPlayer->GetAudioStreamInfo(i, info);
-
-      //if (!g_LangCodeExpander.Lookup(strLanguage, info.language))
       if (!g_LangCodeExpander.Lookup(info.language, strLanguage))
         strLanguage = g_localizeStrings.Get(13205); // Unknown
 

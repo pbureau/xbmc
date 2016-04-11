@@ -360,6 +360,7 @@ protected:
 
   virtual void OnStartup();
   virtual void OnExit();
+  virtual int PreloadFileInfo(const CFileItem& file, const CPlayerOptions &options);
   virtual void Process();
   virtual void VideoParamsChange() override;
   virtual void GetDebugInfo(std::string &audio, std::string &video, std::string &general) override;

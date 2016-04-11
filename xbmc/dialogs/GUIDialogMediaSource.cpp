@@ -39,11 +39,16 @@
 #include "guilib/LocalizeStrings.h"
 #include "PasswordManager.h"
 #include "URL.h"
+#include "pvr/recordings/PVRRecordingsPath.h"
 
 #if defined(TARGET_ANDROID)
 #include "platform/android/activity/XBMCApp.h"
 #include "filesystem/File.h"
 #endif
+
+#include "Application.h"
+#include "utils/log.h"
+#include "video/VideoInfoScanner.h"
 
 using namespace XFILE;
 
@@ -302,13 +307,13 @@ void CGUIDialogMediaSource::OnPathBrowseUSB(int item)
     extraShares.push_back(share1);
 
     // add the recordings dir as needed
-    if (CPVRDirectory::HasRecordings())
+    if (CPVRDirectory::HasRadioRecordings())
     {
       share1.strPath = "pvr://recordings/active/";
       share1.strName = g_localizeStrings.Get(19017); // TV Recordings
       extraShares.push_back(share1);
     }
-    if (CPVRDirectory::HasDeletedRecordings())
+    if (CPVRDirectory::HasDeletedRadioRecordings())
     {
       share1.strPath = "pvr://recordings/deleted/";
       share1.strName = g_localizeStrings.Get(19108); // Deleted TV Recordings

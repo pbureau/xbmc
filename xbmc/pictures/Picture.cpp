@@ -315,7 +315,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
           // drop into the texture
           unsigned int posX = x*tile_width;
           unsigned int posY = y*tile_height;
-          uint32_t *dest = buffer + posX + posY*g_advancedSettings.GetThumbSize();
+          uint32_t *dest = buffer + posX + posY*g_advancedSettings.m_imageRes;
           uint32_t *src = scaled;
 
           if(width > height)
@@ -326,7 +326,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
           for (unsigned int y = 0; y < height_out; ++y)
           {
             memcpy(dest, src, width_out*4);
-            dest += g_advancedSettings.GetThumbSize();
+            dest += g_advancedSettings.m_imageRes;
             src += width;
           }
 

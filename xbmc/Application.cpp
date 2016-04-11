@@ -2447,7 +2447,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     break;
 
   case TMSG_RENDERER_FLUSH:
-    g_renderManager.Flush();
+    m_pPlayer->FlushRenderer();
     break;
 
   case TMSG_HIBERNATE:

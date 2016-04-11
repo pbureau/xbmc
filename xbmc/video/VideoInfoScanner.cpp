@@ -99,7 +99,7 @@ namespace VIDEO
     if (CUtil::ExcludeFileOrFolder(pathCurrent, regexps))
       return true;
 
-    if (IsExcluded(pathCurrent))
+    if (IsExcluded(pathCurrent, regexps))
     {
       return true;
     }
@@ -235,7 +235,7 @@ namespace VIDEO
       /* Video file counter */
       for (std::set<std::string>::iterator it = m_pathsToScan.begin(); it != m_pathsToScan.end(); ++it)
       {
-        DoCount(pathCurrent);
+        DoCount(*it);
       }
 
       bool bCancelled = false;
