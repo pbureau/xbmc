@@ -4387,7 +4387,7 @@ bool CApplication::OnMessage(CGUIMessage& message)
       if(!m_musicInfoScanner->CheckAlbumAllScraped())
       {
         // Ask if we should start an interactive scan
-        if(CGUIDialogYesNo::ShowAndGetInput(CVariant{185}, CVariant{39000}, CVariant{""}, CVariant{""}, CVariant{222}, CVariant{186}))
+        if(CGUIDialogYesNo::ShowAndGetInput(CVariant{185}, CVariant{40001}, CVariant{""}, CVariant{""}, CVariant{222}, CVariant{186}))
           StartMusicAlbumScan("", false, dlgProgress);
       }
     }

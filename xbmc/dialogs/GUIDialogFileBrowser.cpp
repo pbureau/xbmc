@@ -533,7 +533,7 @@ void CGUIDialogFileBrowser::OnClick(int iItem)
 
   if (pItem->m_bIsFolder)
   {
-    if (pItem->GetPath() == "special-path-ignore")
+    if (pItem->GetPath() == "special://no USB device")
     {
       // special - do nothing
       // FIXME: Rescan USB ??
@@ -863,8 +863,8 @@ bool CGUIDialogFileBrowser::ShowAndGetSource(std::string &path, bool allowNetwor
       {
         CMediaSource share1;
         //share1.strPath = "";
-        share1.strPath = "special-path-ignore";
-        share1.strName = g_localizeStrings.Get(38024);
+        share1.strPath = "special://no USB device";
+        share1.strName = g_localizeStrings.Get(40000);
         shares.push_back(share1);
       }
     }
