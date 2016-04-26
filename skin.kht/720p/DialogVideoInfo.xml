@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">33102</defaultcontrol>
-	<allowoverlay>no</allowoverlay>
-        <zorder>0</zorder>
+  <defaultcontrol always="true">33102</defaultcontrol>
+  <allowoverlay>no</allowoverlay>
+  <zorder>0</zorder>
 <!--
-	<onload condition="Skin.HasSetting(ActivateTvTunes) + System.HasAddon(script.tvtunes)">RunScript(script.tvtunes,backend=True)</onload>
+        <onload condition="Skin.HasSetting(ActivateTvTunes) + System.HasAddon(script.tvtunes)">RunScript(script.tvtunes,backend=True)</onload>
 -->
         <previouswindow>videolibrary</previouswindow>
-	<controls>
-                <include>CommonBackgroundVideoInfo</include>
-		<control type="group">
-			<visible>!Window.IsVisible(FileBrowser)</visible>
+        <controls>
+          <include>CommonBackgroundVideoInfo</include>
+          <control type="group">
+            <visible>!Window.IsVisible(FileBrowser)</visible>
 <!--
-			<animation effect="slide" start="1100,0" end="0,0" time="400" tween="quadratic" easing="out">WindowOpen</animation>
-			<animation effect="slide" start="0,0" end="1100,0" time="400" tween="quadratic" easing="out">WindowClose</animation>
+                        <animation effect="slide" start="1100,0" end="0,0" time="400" tween="quadratic" easing="out">WindowOpen</animation>
+                        <animation effect="slide" start="0,0" end="1100,0" time="400" tween="quadratic" easing="out">WindowClose</animation>
 -->
 <!--
-			<control type="image">
-				<left>0</left>
-				<top>0</top>
-				<width>1280</width>
-				<height>720</height>
-				<texture border="15,0,0,0" flipx="true">MediaBladeSub.png</texture>
-			</control>
+                        <control type="image">
+                                <left>0</left>
+                                <top>0</top>
+                                <width>1280</width>
+                                <height>720</height>
+                                <texture border="15,0,0,0" flipx="true">MediaBladeSub.png</texture>
+                        </control>
 -->
 
                         <!--- Subtitles Selection Panel 
@@ -78,51 +78,51 @@
                         </control> -->
                         <!--- Movie Tech Back image -->
                         <control type="image">
-                            <left>0</left>
-                            <top>635</top>
-                            <width>323</width>
-                            <height>90</height>
-                            <texture background="false" border="20">RecentAddedBackWide.png</texture>
+                          <left>0</left>
+                          <top>635</top>
+                          <width>323</width>
+                          <height>90</height>
+                          <texture background="false" border="20">RecentAddedBackWide.png</texture>
                         </control>
                         <!--- Movie Tech Info Panel -->
                         <control type="group">
-                                <description>Movie Technical Information Panel</description>
-                                <left>20</left>
-                                <top>662</top>
-                                <control type="grouplist" id="33301">
-                                    <left>0</left>
-                                    <top>0</top>
-                                    <orientation>horizontal</orientation>
-                                    <control type="image">
-                                            <colordiffuse>grey</colordiffuse>
-                                            <include>MediaFlagVars</include>
-                                            <texture>$INFO[ListItem.VideoAspect,flagging/aspectratio/,.png]</texture>
-                                            <visible>!IsEmpty(ListItem.VideoAspect)</visible>
-                                    </control>
-                                    <control type="image">
-                                            <colordiffuse>grey</colordiffuse>
-                                            <include>MediaFlagVars</include>
-                                            <texture>$INFO[ListItem.VideoResolution,flagging/video/,.png]</texture>
-                                            <visible>!IsEmpty(ListItem.VideoResolution)</visible>
-                                    </control>
-                                    <control type="image">
-                                            <colordiffuse>grey</colordiffuse>
-                                            <include>MediaFlagVars</include>
-                                            <texture>$INFO[ListItem.AudioCodec,flagging/audio/,.png]</texture>
-                                            <visible>!IsEmpty(ListItem.AudioCodec)</visible>
-                                    </control>
-                                    <control type="image">
-                                            <colordiffuse>grey</colordiffuse>
-                                            <include>MediaFlagVars</include>
-                                            <texture>$INFO[ListItem.AudioChannels,flagging/audio/,.png]</texture>
-                                            <visible>!IsEmpty(ListItem.AudioChannels)</visible>
-                                    </control>
-                                    <control type="image">
-                                            <colordiffuse>grey</colordiffuse>
-                                            <include>MediaFlagVars</include>
-                                            <texture>$VAR[SourceFlagVar,flagging/video/,.png]</texture>
-                                    </control>
-                                    <!--
+                          <description>Movie Technical Information Panel</description>
+                          <left>20</left>
+                          <top>662</top>
+                          <control type="grouplist" id="33301">
+                            <left>0</left>
+                            <top>0</top>
+                            <orientation>horizontal</orientation>
+                            <control type="image">
+                              <colordiffuse>grey</colordiffuse>
+                              <include>MediaFlagVars</include>
+                              <texture>$INFO[ListItem.VideoAspect,flagging/aspectratio/,.png]</texture>
+                              <visible>!IsEmpty(ListItem.VideoAspect)</visible>
+                            </control>
+                            <control type="image">
+                              <colordiffuse>grey</colordiffuse>
+                              <include>MediaFlagVars</include>
+                              <texture>$INFO[ListItem.VideoResolution,flagging/video/,.png]</texture>
+                              <visible>!IsEmpty(ListItem.VideoResolution)</visible>
+                            </control>
+                            <control type="image">
+                              <colordiffuse>grey</colordiffuse>
+                              <include>MediaFlagVars</include>
+                              <texture>$INFO[ListItem.AudioCodec,flagging/audio/,.png]</texture>
+                              <visible>!IsEmpty(ListItem.AudioCodec)</visible>
+                            </control>
+                            <control type="image">
+                              <colordiffuse>grey</colordiffuse>
+                              <include>MediaFlagVars</include>
+                              <texture>$INFO[ListItem.AudioChannels,flagging/audio/,.png]</texture>
+                              <visible>!IsEmpty(ListItem.AudioChannels)</visible>
+                            </control>
+                            <control type="image">
+                              <colordiffuse>grey</colordiffuse>
+                              <include>MediaFlagVars</include>
+                              <texture>$VAR[SourceFlagVar,flagging/video/,.png]</texture>
+                            </control>
+                            <!--
                                     <control type="label">
                                             <width>200</width>
                                             <label>$VAR[SourceFlagVar]</label>
@@ -131,15 +131,15 @@
                                     </control>
                                     -->
                             </control>
-                        </control>
-                        <!--- Audio Stream selection list -->
-                        <control type="group">
+                          </control>
+                          <!--- Audio Stream selection list -->
+                          <control type="group">
                             <description>audiostream selection list</description>
                             <visible>Control.HasFocus(33203) | Control.HasFocus(52)</visible>
                             <left>80</left>
                             <top>160</top>
                             <include name="AdaptativeDialogBackground">
-                                <param name="id" value="52"/>
+                              <param name="id" value="52"/>
                             </include>
                             <!--
                             <control type="image">
@@ -151,87 +151,87 @@
                             </control>
                             -->
                             <control type="list" id="52">
-                                <left>20</left>
-                                <top>15</top>
-                                <height>240</height>
-                                <pagecontrol>61</pagecontrol>
-                                <scrolltime tween="quadratic" easing="out">300</scrolltime>
-                                <onleft>33203</onleft>
-                                <onright>-</onright>
-                                <onup>33205</onup>
-                                <ondown>33204</ondown>
-                                <itemlayout height="40" width="300">
-                                    <control type="image">
+                              <left>20</left>
+                              <top>15</top>
+                              <height>240</height>
+                              <pagecontrol>61</pagecontrol>
+                              <scrolltime tween="quadratic" easing="out">300</scrolltime>
+                              <onleft>33203</onleft>
+                              <onright>-</onright>
+                              <onup>33205</onup>
+                              <ondown>33204</ondown>
+                              <itemlayout height="40" width="300">
+                                <control type="image">
 
-                                        <left>0</left>
-                                        <top>0</top>
-                                        <width>400</width>
-                                        <height>40</height>
-                                        <texture border="5">MenuItemNF.png</texture>
-                                    </control>
-                                    <control type="image">
-                                        <left>5</left>
-                                        <top>5</top>
-                                        <width>30</width>
-                                        <height>30</height>
-                                        <texture border="5">icon_search.png</texture>
-                                        <visible>ListItem.IsSelected</visible>
-                                    </control>
-                                    <control type="label">
-                                        <left>40</left>
-                                        <top>0</top>
-                                        <width>360</width>
-                                        <height>40</height>
-                                        <align>left</align>
-                                        <aligny>center</aligny>
-                                        <font>font12</font>
-                                        <textcolor>grey</textcolor>
-                                        <shadowcolor>shadow</shadowcolor>
-                                        <selectedcolor>selected</selectedcolor>
-                                        <label>$INFO[ListItem.Label]</label>
-                                    </control>
-                                </itemlayout>
-                                <focusedlayout height="40" width="300">
-                                    <control type="image">
-                                        <left>0</left>
-                                        <top>0</top>
-                                        <width>400</width>
-                                        <height>40</height>
-                                        <texture border="5">MenuItemFO.png</texture>
-                                        <visible>Control.HasFocus(52)</visible>
-                                    </control>
-                                    <control type="image">
-                                        <left>5</left>
-                                        <top>5</top>
-                                        <width>30</width>
-                                        <height>30</height>
-                                        <visible>ListItem.IsSelected</visible>
-                                        <texture border="5">icon_search.png</texture>
-                                    </control>
-                                    <control type="label">
-                                        <left>40</left>
-                                        <top>0</top>
-                                        <width>360</width>
-                                        <height>40</height>
-                                        <align>left</align>
-                                        <aligny>center</aligny>
-                                        <font>font12</font>
-                                        <textcolor>grey</textcolor>
-                                        <shadowcolor>shadow</shadowcolor>
-                                        <selectedcolor>selected</selectedcolor>
-                                        <label>$INFO[ListItem.Label]</label>
-                                    </control>
-                                </focusedlayout>
+                                  <left>0</left>
+                                  <top>0</top>
+                                  <width>400</width>
+                                  <height>40</height>
+                                  <texture border="5">MenuItemNF.png</texture>
+                                </control>
+                                <control type="image">
+                                  <left>5</left>
+                                  <top>5</top>
+                                  <width>30</width>
+                                  <height>30</height>
+                                  <texture border="5">icon_search.png</texture>
+                                  <visible>ListItem.IsSelected</visible>
+                                </control>
+                                <control type="label">
+                                  <left>40</left>
+                                  <top>0</top>
+                                  <width>360</width>
+                                  <height>40</height>
+                                  <align>left</align>
+                                  <aligny>center</aligny>
+                                  <font>font12</font>
+                                  <textcolor>grey</textcolor>
+                                  <shadowcolor>shadow</shadowcolor>
+                                  <selectedcolor>selected</selectedcolor>
+                                  <label>$INFO[ListItem.Label]</label>
+                                </control>
+                              </itemlayout>
+                              <focusedlayout height="40" width="300">
+                                <control type="image">
+                                  <left>0</left>
+                                  <top>0</top>
+                                  <width>400</width>
+                                  <height>40</height>
+                                  <texture border="5">MenuItemFO.png</texture>
+                                  <visible>Control.HasFocus(52)</visible>
+                                </control>
+                                <control type="image">
+                                  <left>5</left>
+                                  <top>5</top>
+                                  <width>30</width>
+                                  <height>30</height>
+                                  <visible>ListItem.IsSelected</visible>
+                                  <texture border="5">icon_search.png</texture>
+                                </control>
+                                <control type="label">
+                                  <left>40</left>
+                                  <top>0</top>
+                                  <width>360</width>
+                                  <height>40</height>
+                                  <align>left</align>
+                                  <aligny>center</aligny>
+                                  <font>font12</font>
+                                  <textcolor>grey</textcolor>
+                                  <shadowcolor>shadow</shadowcolor>
+                                  <selectedcolor>selected</selectedcolor>
+                                  <label>$INFO[ListItem.Label]</label>
+                                </control>
+                              </focusedlayout>
                             </control>
-                        </control>
-                        <!--- Subtitles selection list -->
-                        <control type="group">
+                          </control>
+                          <!--- Subtitles selection list -->
+                          <control type="group">
                             <description>subtitles selection list</description>
                             <left>80</left>
                             <top>210</top>
                             <visible>Control.HasFocus(33204) | Control.HasFocus(51)</visible>
                             <include name="AdaptativeDialogBackground">
-                                <param name="id" value="51"/>
+                              <param name="id" value="51"/>
                             </include>
                             <!--
                             <control type="image">
@@ -260,135 +260,135 @@
                             </control>
                             -->
                             <control type="list" id="51">
-                                <left>20</left>
-                                <top>15</top>
-                                <height>240</height>
-                                <onleft>33204</onleft>
-                                <onright>-</onright>
-                                <onup>-</onup>
-                                <ondown>-</ondown>
-                                <pagecontrol>61</pagecontrol>
-                                <scrolltime tween="quadratic" easing="out">300</scrolltime>
-                                <itemlayout height="40" width="300">
-                                    <control type="image">
-                                        <left>0</left>
-                                        <top>0</top>
-                                        <width>400</width>
-                                        <height>40</height>
-                                        <texture border="5">MenuItemNF.png</texture>
-                                    </control>
-                                    <control type="image">
-                                        <left>5</left>
-                                        <top>5</top>
-                                        <width>30</width>
-                                        <height>30</height>
-                                        <texture border="5">icon_search.png</texture>
-                                        <visible>ListItem.IsSelected</visible>
-                                    </control>
-                                    <control type="label">
-                                        <left>40</left>
-                                        <top>0</top>
-                                        <width>360</width>
-                                        <height>40</height>
-                                        <align>left</align>
-                                        <aligny>center</aligny>
-                                        <font>font12</font>
-                                        <textcolor>grey</textcolor>
-                                        <shadowcolor>shadow</shadowcolor>
-                                        <selectedcolor>selected</selectedcolor>
-                                        <label>$INFO[ListItem.Label]</label>
-                                    </control>
-                                </itemlayout>
-                                <focusedlayout height="40" width="300">
-                                    <control type="image">
-                                        <left>0</left>
-                                        <top>0</top>
-                                        <width>400</width>
-                                        <height>40</height>
-                                        <texture border="5">MenuItemFO.png</texture>
-                                        <visible>Control.HasFocus(51)</visible>
-                                    </control>
-                                    <control type="image">
-                                        <left>5</left>
-                                        <top>5</top>
-                                        <width>30</width>
-                                        <height>30</height>
-                                        <visible>ListItem.IsSelected</visible>
-                                        <texture border="5">icon_search.png</texture>
-                                    </control>
-                                    <control type="label">
-                                        <left>40</left>
-                                        <top>0</top>
-                                        <width>360</width>
-                                        <height>40</height>
-                                        <align>left</align>
-                                        <aligny>center</aligny>
-                                        <font>font12</font>
-                                        <textcolor>grey</textcolor>
-                                        <shadowcolor>shadow</shadowcolor>
-                                        <selectedcolor>selected</selectedcolor>
-                                        <label>$INFO[ListItem.Label]</label>
-                                    </control>
-                                </focusedlayout>
+                              <left>20</left>
+                              <top>15</top>
+                              <height>240</height>
+                              <onleft>33204</onleft>
+                              <onright>-</onright>
+                              <onup>-</onup>
+                              <ondown>-</ondown>
+                              <pagecontrol>61</pagecontrol>
+                              <scrolltime tween="quadratic" easing="out">300</scrolltime>
+                              <itemlayout height="40" width="300">
+                                <control type="image">
+                                  <left>0</left>
+                                  <top>0</top>
+                                  <width>400</width>
+                                  <height>40</height>
+                                  <texture border="5">MenuItemNF.png</texture>
+                                </control>
+                                <control type="image">
+                                  <left>5</left>
+                                  <top>5</top>
+                                  <width>30</width>
+                                  <height>30</height>
+                                  <texture border="5">icon_search.png</texture>
+                                  <visible>ListItem.IsSelected</visible>
+                                </control>
+                                <control type="label">
+                                  <left>40</left>
+                                  <top>0</top>
+                                  <width>360</width>
+                                  <height>40</height>
+                                  <align>left</align>
+                                  <aligny>center</aligny>
+                                  <font>font12</font>
+                                  <textcolor>grey</textcolor>
+                                  <shadowcolor>shadow</shadowcolor>
+                                  <selectedcolor>selected</selectedcolor>
+                                  <label>$INFO[ListItem.Label]</label>
+                                </control>
+                              </itemlayout>
+                              <focusedlayout height="40" width="300">
+                                <control type="image">
+                                  <left>0</left>
+                                  <top>0</top>
+                                  <width>400</width>
+                                  <height>40</height>
+                                  <texture border="5">MenuItemFO.png</texture>
+                                  <visible>Control.HasFocus(51)</visible>
+                                </control>
+                                <control type="image">
+                                  <left>5</left>
+                                  <top>5</top>
+                                  <width>30</width>
+                                  <height>30</height>
+                                  <visible>ListItem.IsSelected</visible>
+                                  <texture border="5">icon_search.png</texture>
+                                </control>
+                                <control type="label">
+                                  <left>40</left>
+                                  <top>0</top>
+                                  <width>360</width>
+                                  <height>40</height>
+                                  <align>left</align>
+                                  <aligny>center</aligny>
+                                  <font>font12</font>
+                                  <textcolor>grey</textcolor>
+                                  <shadowcolor>shadow</shadowcolor>
+                                  <selectedcolor>selected</selectedcolor>
+                                  <label>$INFO[ListItem.Label]</label>
+                                </control>
+                              </focusedlayout>
                             </control>
                             <control type="scrollbar" id="61">
-                                <left>400</left>
-                                <top>20</top>
-                                <width>25</width>
-                                <height>230</height>
-                                <visible>IntegerGreaterThan(Container(51).NumItems,4)</visible>
-                                <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
-                                <texturesliderbar border="0,14,0,14">ScrollBarV_bar.png</texturesliderbar>
-                                <texturesliderbarfocus border="0,14,0,14">ScrollBarV_bar_focus.png</texturesliderbarfocus>
-                                <textureslidernib>ScrollBarNib.png</textureslidernib>
-                                <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
-                                <onleft>-</onleft>
-                                <onright>-</onright>
-                                <ondown>-</ondown>
-                                <onup>-</onup>
-                                <showonepage>false</showonepage>
-                                <orientation>vertical</orientation>
-                                <animation effect="slide" end="120,0" time="0" condition="!Control.IsVisible(51)">Conditional</animation>
+                              <left>400</left>
+                              <top>20</top>
+                              <width>25</width>
+                              <height>230</height>
+                              <visible>IntegerGreaterThan(Container(51).NumItems,4)</visible>
+                              <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
+                              <texturesliderbar border="0,14,0,14">ScrollBarV_bar.png</texturesliderbar>
+                              <texturesliderbarfocus border="0,14,0,14">ScrollBarV_bar_focus.png</texturesliderbarfocus>
+                              <textureslidernib>ScrollBarNib.png</textureslidernib>
+                              <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
+                              <onleft>-</onleft>
+                              <onright>-</onright>
+                              <ondown>-</ondown>
+                              <onup>-</onup>
+                              <showonepage>false</showonepage>
+                              <orientation>vertical</orientation>
+                              <animation effect="slide" end="120,0" time="0" condition="!Control.IsVisible(51)">Conditional</animation>
                             </control>
-                        </control>
-                        <!--- Cast Information Panel -->
-                        <control type="group">
+                          </control>
+                          <!--- Cast Information Panel -->
+                          <control type="group">
                             <description>Cast information Panel</description>
                             <visible>Control.HasFocus(33202) | Control.HasFocus(50)</visible>
                             <left>80</left>
                             <top>60</top>
                             <control type="image">
-                                <left>0</left>
-                                <top>0</top>
-                                <width>580</width>
-                                <height>260</height>
-                                <texture background="false" border="10">RecentAddedBack.png</texture>
+                              <left>0</left>
+                              <top>0</top>
+                              <width>580</width>
+                              <height>260</height>
+                              <texture background="false" border="10">RecentAddedBack.png</texture>
                             </control>
                             <control type="panel" id="50">
-                                <left>30</left>
-                                <top>25</top>
-                                <width>500</width>
-                                <height>200</height>
-                                <onleft>50</onleft>
-                                <onright>50</onright>
-                                <onup condition="!ListItem.IsPlaying">8</onup>
-                                <onup condition="ListItem.IsPlaying">33201</onup>
-                                <ondown>33205</ondown>
-                                <onclick>RunScript(script.extendedinfo,info=extendedactorinfo,name=$INFO[Container(50).ListItem.Label])</onclick>
-                                <viewtype label="">list</viewtype>
-                                <pagecontrol>61</pagecontrol>
-                                <scrolltime tween="quadratic" easing="out">300</scrolltime>
-                                <orientation>horizontal</orientation>
-                                <itemlayout height="200" width="100">
-                                    <control type="image">
-                                        <width>100</width>
-                                        <height>150</height>
-                                        <aspectratio aligny="top">scale</aspectratio>
-                                        <texture background="true">$INFO[ListItem.Icon]</texture>
-                                        <bordertexture border="2">thumbs/panel_border3.png</bordertexture>
-                                        <bordersize>2</bordersize>
-                                    </control>
-                                    <!--
+                              <left>30</left>
+                              <top>25</top>
+                              <width>500</width>
+                              <height>200</height>
+                              <onleft>50</onleft>
+                              <onright>50</onright>
+                              <onup condition="!ListItem.IsPlaying">8</onup>
+                              <onup condition="ListItem.IsPlaying">33201</onup>
+                              <ondown>33205</ondown>
+                              <onclick>RunScript(script.extendedinfo,info=extendedactorinfo,name=$INFO[Container(50).ListItem.Label])</onclick>
+                              <viewtype label="">list</viewtype>
+                              <pagecontrol>61</pagecontrol>
+                              <scrolltime tween="quadratic" easing="out">300</scrolltime>
+                              <orientation>horizontal</orientation>
+                              <itemlayout height="200" width="100">
+                                <control type="image">
+                                  <width>100</width>
+                                  <height>150</height>
+                                  <aspectratio aligny="top">scale</aspectratio>
+                                  <texture background="true">$INFO[ListItem.Icon]</texture>
+                                  <bordertexture border="2">thumbs/panel_border3.png</bordertexture>
+                                  <bordersize>2</bordersize>
+                                </control>
+                                <!--
                                     <control type="image">
                                         <top>150</top>
                                         <width>100</width>
@@ -399,45 +399,45 @@
                                     </control>
                                     -->
                                     <control type="textbox">
-                                        <left>0</left>
-                                        <top>152</top>
-                                        <width>100</width>
-                                        <height>30</height>
-                                        <align>center</align>
-                                        <font>font10</font>
-                                        <textcolor>grey</textcolor>
-                                        <shadowcolor>shadow</shadowcolor>
-                                        <selectedcolor>selected</selectedcolor>
-                                        <label>$INFO[ListItem.Label]</label>
+                                      <left>0</left>
+                                      <top>152</top>
+                                      <width>100</width>
+                                      <height>30</height>
+                                      <align>center</align>
+                                      <font>font10</font>
+                                      <textcolor>grey</textcolor>
+                                      <shadowcolor>shadow</shadowcolor>
+                                      <selectedcolor>selected</selectedcolor>
+                                      <label>$INFO[ListItem.Label]</label>
                                     </control>
                                     <control type="textbox">
-                                        <left>0</left>
-                                        <top>170</top>
-                                        <width>100</width>
-                                        <height>50</height>
-                                        <align>center</align>
-                                        <font>font10</font>
-                                        <textcolor>grey</textcolor>
-                                        <shadowcolor>shadow</shadowcolor>
-                                        <selectedcolor>selected</selectedcolor>
-                                        <label>$INFO[ListItem.Label2]</label>
+                                      <left>0</left>
+                                      <top>170</top>
+                                      <width>100</width>
+                                      <height>50</height>
+                                      <align>center</align>
+                                      <font>font10</font>
+                                      <textcolor>grey</textcolor>
+                                      <shadowcolor>shadow</shadowcolor>
+                                      <selectedcolor>selected</selectedcolor>
+                                      <label>$INFO[ListItem.Label2]</label>
                                     </control>
-                                </itemlayout>
-                                <focusedlayout height="200" width="100">
+                                  </itemlayout>
+                                  <focusedlayout height="200" width="100">
                                     <control type="group">
-                                        <animation type="Focus" reversible="false">
-                                            <effect type="zoom" start="95" end="100" time="300" tween="sine" easing="inout" center="auto" />
-                                            <effect type="fade" start="80" end="100" time="300" />
-                                        </animation>
-                                        <control type="image">
-                                            <width>100</width>
-                                            <height>150</height>
-                                            <aspectratio aligny="top">scale</aspectratio>
-                                            <texture background="true">$INFO[ListItem.Icon]</texture>
-                                            <bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
-                                            <bordersize>3</bordersize>
-                                        </control>
-                                        <!--
+                                      <animation type="Focus" reversible="false">
+                                        <effect type="zoom" start="95" end="100" time="300" tween="sine" easing="inout" center="auto" />
+                                        <effect type="fade" start="80" end="100" time="300" />
+                                      </animation>
+                                      <control type="image">
+                                        <width>100</width>
+                                        <height>150</height>
+                                        <aspectratio aligny="top">scale</aspectratio>
+                                        <texture background="true">$INFO[ListItem.Icon]</texture>
+                                        <bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
+                                        <bordersize>3</bordersize>
+                                      </control>
+                                      <!--
                                         <control type="image">
                                             <top>150</top>
                                             <width>100</width>
@@ -448,58 +448,58 @@
                                         </control>
                                         -->
                                         <control type="textbox">
-                                            <left>0</left>
-                                            <top>150</top>
-                                            <width>100</width>
-                                            <height>50</height>
-                                            <align>center</align>
-                                            <font>font10</font>
-                                            <selectedcolor>selected</selectedcolor>
-                                            <shadowcolor>shadow</shadowcolor>
-                                            <label>$INFO[ListItem.Label]</label>
-                                            <autoscroll time="2000" delay="400" repeat="3000">true</autoscroll>
-                                            <animation effect="fade" start="100" end="40" time="300" tween="sine" easing="inout" condition="!Control.HasFocus(50)">Conditional</animation>
+                                          <left>0</left>
+                                          <top>150</top>
+                                          <width>100</width>
+                                          <height>50</height>
+                                          <align>center</align>
+                                          <font>font10</font>
+                                          <selectedcolor>selected</selectedcolor>
+                                          <shadowcolor>shadow</shadowcolor>
+                                          <label>$INFO[ListItem.Label]</label>
+                                          <autoscroll time="2000" delay="400" repeat="3000">true</autoscroll>
+                                          <animation effect="fade" start="100" end="40" time="300" tween="sine" easing="inout" condition="!Control.HasFocus(50)">Conditional</animation>
                                         </control>
-                                    </control>
-                                </focusedlayout>
-                            </control>
-                        </control>
-                        <!--- Director Information Panel -->
-                        <control type="group">
-                                <description>Director information Panel</description>
-                                <visible>Control.HasFocus(33205) | Control.HasFocus(53)</visible>
-                                <left>80</left>
-                                <top>110</top>
-                                <control type="image">
+                                      </control>
+                                    </focusedlayout>
+                                  </control>
+                                </control>
+                                <!--- Director Information Panel -->
+                                <control type="group">
+                                  <description>Director information Panel</description>
+                                  <visible>Control.HasFocus(33205) | Control.HasFocus(53)</visible>
+                                  <left>80</left>
+                                  <top>110</top>
+                                  <control type="image">
                                     <left>0</left>
                                     <top>0</top>
                                     <width>580</width>
                                     <height>260</height>
                                     <texture background="false" border="10">RecentAddedBack.png</texture>
-                                </control>
-				<control type="panel" id="53">
-					<left>30</left>
-					<top>25</top>
-					<width>500</width>
-					<height>200</height>
-					<onleft>53</onleft>
-					<onright>53</onright>
-					<onup>33202</onup>
-                                        <ondown>33203</ondown>
-					<viewtype label="">list</viewtype>
-					<pagecontrol>61</pagecontrol>
-					<scrolltime tween="quadratic" easing="out">300</scrolltime>
-					<orientation>horizontal</orientation>
-					<itemlayout height="200" width="100">
-						<control type="image">
-							<width>100</width>
-                                                        <height>150</height>
-                                                        <aspectratio aligny="top">scale</aspectratio>
-							<texture fallback="DefaultVideoCover.png" background="true">$INFO[ListItem.Icon]</texture>
-							<bordertexture border="2">thumbs/panel_border3.png</bordertexture>
-							<bordersize>2</bordersize>
-						</control>
-                                                <!--
+                                  </control>
+                                  <control type="panel" id="53">
+                                    <left>30</left>
+                                    <top>25</top>
+                                    <width>500</width>
+                                    <height>200</height>
+                                    <onleft>53</onleft>
+                                    <onright>53</onright>
+                                    <onup>33202</onup>
+                                    <ondown>33203</ondown>
+                                    <viewtype label="">list</viewtype>
+                                    <pagecontrol>61</pagecontrol>
+                                    <scrolltime tween="quadratic" easing="out">300</scrolltime>
+                                    <orientation>horizontal</orientation>
+                                    <itemlayout height="200" width="100">
+                                      <control type="image">
+                                        <width>100</width>
+                                        <height>150</height>
+                                        <aspectratio aligny="top">scale</aspectratio>
+                                        <texture fallback="DefaultVideoCover.png" background="true">$INFO[ListItem.Icon]</texture>
+                                        <bordertexture border="2">thumbs/panel_border3.png</bordertexture>
+                                        <bordersize>2</bordersize>
+                                      </control>
+                                      <!--
                                                 <control type="image">
                                                     <top>150</top>
                                                     <width>100</width>
@@ -509,34 +509,34 @@
                                                     <bordersize>0</bordersize>
                                                 </control>
                                                 -->
-						<control type="textbox">
-							<left>0</left>
-							<top>150</top>
-							<width>100</width>
-							<height>50</height>
-							<align>center</align>
-							<font>font10</font>
-							<textcolor>grey</textcolor>
-							<shadowcolor>shadow</shadowcolor>
-							<selectedcolor>selected</selectedcolor>
-							<label>$INFO[ListItem.Year] - $INFO[ListItem.Label]</label>
-						</control>
-					</itemlayout>
-					<focusedlayout height="200" width="100">
-						<control type="group">
-							<animation type="Focus" reversible="false">
-								<effect type="zoom" start="95" end="100" time="300" tween="sine" easing="inout" center="auto" />
-								<effect type="fade" start="80" end="100" time="300" />
-							</animation>
-							<control type="image">
-								<width>100</width>
-                                                                <height>150</height>
-								<aspectratio aligny="top">scale</aspectratio>
-								<texture fallback="DefaultVideoCover.png" background="true">$INFO[ListItem.Icon]</texture>
-								<bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
-								<bordersize>3</bordersize>
-							</control>
-                                                        <!--
+                                                <control type="textbox">
+                                                  <left>0</left>
+                                                  <top>150</top>
+                                                  <width>100</width>
+                                                  <height>50</height>
+                                                  <align>center</align>
+                                                  <font>font10</font>
+                                                  <textcolor>grey</textcolor>
+                                                  <shadowcolor>shadow</shadowcolor>
+                                                  <selectedcolor>selected</selectedcolor>
+                                                  <label>$INFO[ListItem.Year] - $INFO[ListItem.Label]</label>
+                                                </control>
+                                              </itemlayout>
+                                              <focusedlayout height="200" width="100">
+                                                <control type="group">
+                                                  <animation type="Focus" reversible="false">
+                                                    <effect type="zoom" start="95" end="100" time="300" tween="sine" easing="inout" center="auto" />
+                                                    <effect type="fade" start="80" end="100" time="300" />
+                                                  </animation>
+                                                  <control type="image">
+                                                    <width>100</width>
+                                                    <height>150</height>
+                                                    <aspectratio aligny="top">scale</aspectratio>
+                                                    <texture fallback="DefaultVideoCover.png" background="true">$INFO[ListItem.Icon]</texture>
+                                                    <bordertexture border="3">thumbs/thumbnail_focused.png</bordertexture>
+                                                    <bordersize>3</bordersize>
+                                                  </control>
+                                                  <!--
                                                         <control type="image">
                                                             <top>150</top>
                                                             <width>100</width>
@@ -546,208 +546,208 @@
                                                             <bordersize>0</bordersize>
                                                         </control>
                                                         -->
-							<control type="textbox">
-                                                            <left>0</left>
-                                                            <top>150</top>
-                                                            <width>100</width>
-                                                            <height>50</height>
-                                                            <align>center</align>
-                                                            <font>font10</font>
-                                                            <selectedcolor>selected</selectedcolor>
-                                                            <shadowcolor>shadow</shadowcolor>
-                                                            <label>$INFO[ListItem.Year] - $INFO[ListItem.Label]</label>
-                                                            <autoscroll time="2000" delay="400" repeat="3000">true</autoscroll>
-                                                            <animation effect="fade" start="100" end="40" time="300" tween="sine" easing="inout" condition="!Control.HasFocus(50)">Conditional</animation>
-							</control>
-						</control>
-					</focusedlayout>
-                                        <!--<content>plugin://script.extendedinfo?info=similarmovies&amp;&amp;id=$INFO[ListItem.DBID]</content>-->
-                                        <content target="video">plugin://script.extendedinfo?info=directormovies&amp;&amp;director=$INFO[ListItem.Director]</content>
-				</control>
-                        </control>
+                                                        <control type="textbox">
+                                                          <left>0</left>
+                                                          <top>150</top>
+                                                          <width>100</width>
+                                                          <height>50</height>
+                                                          <align>center</align>
+                                                          <font>font10</font>
+                                                          <selectedcolor>selected</selectedcolor>
+                                                          <shadowcolor>shadow</shadowcolor>
+                                                          <label>$INFO[ListItem.Year] - $INFO[ListItem.Label]</label>
+                                                          <autoscroll time="2000" delay="400" repeat="3000">true</autoscroll>
+                                                          <animation effect="fade" start="100" end="40" time="300" tween="sine" easing="inout" condition="!Control.HasFocus(50)">Conditional</animation>
+                                                        </control>
+                                                      </control>
+                                                    </focusedlayout>
+                                                    <!--<content>plugin://script.extendedinfo?info=similarmovies&amp;&amp;id=$INFO[ListItem.DBID]</content>-->
+                                                    <content target="video">plugin://script.extendedinfo?info=personmovies&amp;&amp;director=$INFO[ListItem.Director]</content>
+                                                  </control>
+                                                </control>
 <!--
-			<control type="togglebutton" id="401">
-				<description>Download with Subtitles script</description>
-				<height>40</height>
-				<width>256</width>
-				<font>font13</font>
-				<label>33003</label>
-				<font>-</font>
-				<textoffsetx>30</textoffsetx>
-				<aligny>center</aligny>
-				<texturefocus border="25,5,25,5">SubMenuBack-MiddleFO.png</texturefocus>
-				<texturenofocus border="25,5,25,5">SubMenuBack-MiddleNF.png</texturenofocus>
-				<alttexturefocus border="25,5,25,5">SubMenuBack-MiddleFO.png</alttexturefocus>
-				<alttexturenofocus border="25,5,25,5">SubMenuBack-MiddleNF.png</alttexturenofocus>
-				<onleft>402</onleft>
-				<onright>402</onright>
-				<onup>402</onup>
-				<ondown>402</ondown>
-				<onclick>Close</onclick>
-				<onclick>Dialog.Close(VideoOSD)</onclick>
-				<onclick>ActivateWindow(SubtitleSearch)</onclick>
-			</control>
+                        <control type="togglebutton" id="401">
+                                <description>Download with Subtitles script</description>
+                                <height>40</height>
+                                <width>256</width>
+                                <font>font13</font>
+                                <label>33003</label>
+                                <font>-</font>
+                                <textoffsetx>30</textoffsetx>
+                                <aligny>center</aligny>
+                                <texturefocus border="25,5,25,5">SubMenuBack-MiddleFO.png</texturefocus>
+                                <texturenofocus border="25,5,25,5">SubMenuBack-MiddleNF.png</texturenofocus>
+                                <alttexturefocus border="25,5,25,5">SubMenuBack-MiddleFO.png</alttexturefocus>
+                                <alttexturenofocus border="25,5,25,5">SubMenuBack-MiddleNF.png</alttexturenofocus>
+                                <onleft>402</onleft>
+                                <onright>402</onright>
+                                <onup>402</onup>
+                                <ondown>402</ondown>
+                                <onclick>Close</onclick>
+                                <onclick>Dialog.Close(VideoOSD)</onclick>
+                                <onclick>ActivateWindow(SubtitleSearch)</onclick>
+                        </control>
 -->
                         <!--- Control Panel Back image -->
                         <control type="image">
-                            <left>0</left>
-                            <top>0</top>
-                            <width>100</width>
-                            <height>320</height>
-                            <texture border="10" background="false">RecentAddedBackTall.png</texture>
+                          <left>0</left>
+                          <top>0</top>
+                          <width>100</width>
+                          <height>320</height>
+                          <texture border="10" background="false">RecentAddedBackTall.png</texture>
                         </control>
                         <!--- Control Panel -->
                         <control type="group">
-                            <description>Movie Control Panel</description>
+                          <description>Movie Control Panel</description>
+                          <left>10</left>
+                          <top>10</top>
+                          <control type="grouplist" id="33102">
                             <left>10</left>
                             <top>10</top>
-                            <control type="grouplist" id="33102">
-                                <left>10</left>
-                                <top>10</top>
-                                <onleft>-</onleft>
-                                <onright>-</onright>
-                                <onup>-</onup>
-                                <ondown>-</ondown>
-                                <control type="button" id="8">
-                                    <description>Play button</description>
-                                    <width>50</width>
-                                    <visible>!ListItem.IsPlaying</visible>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
-                                    <texturenofocus border="2">icon_player.png</texturenofocus>
-                                    <onclick>noop</onclick>
-                                </control>
-                                <control type="button" id="33201">
-                                    <description>Resume button</description>
-                                    <width>50</width>
-                                    <visible>ListItem.IsPlaying</visible>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
-                                    <texturenofocus border="2">icon_player.png</texturenofocus>
-                                    <onclick>RunScript(special://masterprofile/resumeFullscreen.py)</onclick>
-                                </control>
-                                <control type="button" id="33202">
-                                    <width>50</width>
-                                    <onright>50</onright>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
-                                    <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
-                                    <onclick>noop</onclick>
-                                </control>
-                                <control type="button" id="33205">
-                                    <width>50</width>
-                                    <onright>53</onright>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
-                                    <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
-                                    <onclick>noop</onclick>
-                                </control>
-                                <control type="button" id="33203">
-                                    <width>50</width>
-                                    <onright>52</onright>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texturefocus border="2" colordiffuse="bluefocus">icon_favourites.png</texturefocus>
-                                    <texturenofocus border="2">icon_favourites.png</texturenofocus>
-                                </control>
-                                <control type="button" id="33204">
-                                    <width>50</width>
-                                    <onright>51</onright>
-                                    <aspectratio aligny="top">keep</aspectratio>
-                                    <texturefocus border="2" colordiffuse="bluefocus">OSDSubtitlesNF.png</texturefocus>
-                                    <texturenofocus border="2">OSDSubtitlesNF.png</texturenofocus>
-                                    <onclick>noop</onclick>
-                                </control>
+                            <onleft>-</onleft>
+                            <onright>-</onright>
+                            <onup>-</onup>
+                            <ondown>-</ondown>
+                            <control type="button" id="8">
+                              <description>Play button</description>
+                              <width>50</width>
+                              <visible>!ListItem.IsPlaying</visible>
+                              <aspectratio aligny="top">keep</aspectratio>
+                              <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
+                              <texturenofocus border="2">icon_player.png</texturenofocus>
+                              <onclick>noop</onclick>
                             </control>
+                            <control type="button" id="33201">
+                              <description>Resume button</description>
+                              <width>50</width>
+                              <visible>ListItem.IsPlaying</visible>
+                              <aspectratio aligny="top">keep</aspectratio>
+                              <texturefocus colordiffuse="bluefocus" border="2">icon_player.png</texturefocus>
+                              <texturenofocus border="2">icon_player.png</texturenofocus>
+                              <onclick>RunScript(special://masterprofile/resumeFullscreen.py)</onclick>
+                            </control>
+                            <control type="button" id="33202">
+                              <width>50</width>
+                              <onright>50</onright>
+                              <aspectratio aligny="top">keep</aspectratio>
+                              <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
+                              <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
+                              <onclick>noop</onclick>
+                            </control>
+                            <control type="button" id="33205">
+                              <width>50</width>
+                              <onright>53</onright>
+                              <aspectratio aligny="top">keep</aspectratio>
+                              <texturenofocus border="2">DefaultArtistWhite.png</texturenofocus>
+                              <texturefocus border="2" colordiffuse="bluefocus">DefaultArtistWhite.png</texturefocus>
+                              <onclick>noop</onclick>
+                            </control>
+                            <control type="button" id="33203">
+                              <width>50</width>
+                              <onright>52</onright>
+                              <aspectratio aligny="top">keep</aspectratio>
+                              <texturefocus border="2" colordiffuse="bluefocus">icon_favourites.png</texturefocus>
+                              <texturenofocus border="2">icon_favourites.png</texturenofocus>
+                            </control>
+                            <control type="button" id="33204">
+                              <width>50</width>
+                              <onright>51</onright>
+                              <aspectratio aligny="top">keep</aspectratio>
+                              <texturefocus border="2" colordiffuse="bluefocus">OSDSubtitlesNF.png</texturefocus>
+                              <texturenofocus border="2">OSDSubtitlesNF.png</texturenofocus>
+                              <onclick>noop</onclick>
+                            </control>
+                          </control>
                         </control>
                         <!--- Movie Plot back image -->
                         <control type="image">
-                            <left>795</left>
-                            <top>390</top>
-                            <width>505</width>
-                            <height>350</height>
-                            <texture background="false" border="10">RecentAddedBack.png</texture>
+                          <left>795</left>
+                          <top>390</top>
+                          <width>505</width>
+                          <height>350</height>
+                          <texture background="false" border="10">RecentAddedBack.png</texture>
                         </control>
                         <!--- Movie Plot and Details -->
                         <control type="group">
-                            <description>Movie Plot Panel</description>
-                            <left>802</left>
-                            <top>397</top>
-                            <control type="image">
-                                <left>20</left>
-                                <top>15</top>
-                                <width>100</width>
-                                <aspectratio aligny="top">keep</aspectratio>
-                                <texture background="false">$VAR[PosterThumb]</texture>
-                                <bordertexture border="7">thumbs/thumb_shadow_white.png</bordertexture>
-                                <bordersize>3</bordersize>
+                          <description>Movie Plot Panel</description>
+                          <left>802</left>
+                          <top>397</top>
+                          <control type="image">
+                            <left>20</left>
+                            <top>15</top>
+                            <width>100</width>
+                            <aspectratio aligny="top">keep</aspectratio>
+                            <texture background="false">$VAR[PosterThumb]</texture>
+                            <bordertexture border="7">thumbs/thumb_shadow_white.png</bordertexture>
+                            <bordersize>3</bordersize>
+                          </control>
+                          <control type="group">
+                            <description>Movie Info Details</description>
+                            <left>120</left>
+                            <top>10</top>
+                            <control type="label">
+                              <width>340</width>
+                              <height>30</height>
+                              <top>0</top>
+                              <left>0</left>
+                              <font>font16_title_bold</font>
+                              <textcolor>grey</textcolor>
+                              <scroll>true</scroll>
+                              <label>$VAR[FloorLabelVar]</label>
+                              <!--<label>$INFO[Window(movieinformation).Property(AudioLanguage)]</label>-->
+                              <textoffsetx>6</textoffsetx>
                             </control>
-                            <control type="group">
-                                <description>Movie Info Details</description>
-                                <left>120</left>
-                                <top>10</top>
-                                <control type="label">
-                                    <width>340</width>
-                                    <height>30</height>
-                                    <top>0</top>
-                                    <left>0</left>
-                                    <font>font16_title_bold</font>
-                                    <textcolor>grey</textcolor>
-                                    <scroll>true</scroll>
-                                    <label>$VAR[FloorLabelVar]</label>
-                                    <!--<label>$INFO[Window(movieinformation).Property(AudioLanguage)]</label>-->
-                                    <textoffsetx>6</textoffsetx>
-                                </control>
-                                <control type="label">
-                                    <width>314</width>
-                                    <height>30</height>
-                                    <top>30</top>
-                                    <left>0</left>
-                                    <font>font12</font>
-                                    <textcolor>labelheader</textcolor>
-                                    <scroll>true</scroll>
-                                    <label>$INFO[ListItem.Tagline]</label>
-                                    <visible>!IsEmpty(ListItem.Tagline)</visible>
-                                    <textoffsetx>6</textoffsetx>
-                                </control>
-                                <control type="label">
-                                    <width>314</width>
-                                    <height>30</height>
-                                    <top>60</top>
-                                    <left>0</left>
-                                    <font>font12</font>
-                                    <textcolor>grey2</textcolor>
-                                    <scroll>false</scroll>
-                                    <label>$LOCALIZE[20339]: $INFO[ListItem.Director]</label>
-                                    <visible>!IsEmpty(ListItem.Director)</visible>
-                                    <textoffsetx>6</textoffsetx>
-                                </control>
-                                <control type="button">
-                                    <top>90</top>
-                                    <left>0</left>
-                                    <width>340</width>
-                                    <height>50</height>
-                                    <font>font12</font>
-                                    <aligny>top</aligny>
-                                    <textcolor>grey2</textcolor>
-                                    <label>$INFO[ListItem.Genre,,[CR]]$VAR[VideoSubLabelVar]</label>
-                                    <texturefocus border="2">separator5.png</texturefocus>
-                                    <texturenofocus border="2">separator5.png</texturenofocus>
-                                    <onclick>noop</onclick>
-                                </control>
+                            <control type="label">
+                              <width>314</width>
+                              <height>30</height>
+                              <top>30</top>
+                              <left>0</left>
+                              <font>font12</font>
+                              <textcolor>labelheader</textcolor>
+                              <scroll>true</scroll>
+                              <label>$INFO[ListItem.Tagline]</label>
+                              <visible>!IsEmpty(ListItem.Tagline)</visible>
+                              <textoffsetx>6</textoffsetx>
                             </control>
-                            <control type="textbox">
-                                <label>$INFO[ListItem.Plot]</label>
-                                <top>170</top>
-                                <left>20</left>
-                                <width>440</width>
-                                <height>135</height>
-                                <font>font12</font>
-                                <textcolor>grey2</textcolor>
-                                <focusedcolor>grey2</focusedcolor>
-                                <autoscroll time="3000" delay="2000" repeat="3000">true</autoscroll>
+                            <control type="label">
+                              <width>314</width>
+                              <height>30</height>
+                              <top>60</top>
+                              <left>0</left>
+                              <font>font12</font>
+                              <textcolor>grey2</textcolor>
+                              <scroll>false</scroll>
+                              <label>$LOCALIZE[20339]: $INFO[ListItem.Director]</label>
+                              <visible>!IsEmpty(ListItem.Director)</visible>
+                              <textoffsetx>6</textoffsetx>
                             </control>
+                            <control type="button">
+                              <top>90</top>
+                              <left>0</left>
+                              <width>340</width>
+                              <height>50</height>
+                              <font>font12</font>
+                              <aligny>top</aligny>
+                              <textcolor>grey2</textcolor>
+                              <label>$INFO[ListItem.Genre,,[CR]]$VAR[VideoSubLabelVar]</label>
+                              <texturefocus border="2">separator5.png</texturefocus>
+                              <texturenofocus border="2">separator5.png</texturenofocus>
+                              <onclick>noop</onclick>
+                            </control>
+                          </control>
+                          <control type="textbox">
+                            <label>$INFO[ListItem.Plot]</label>
+                            <top>170</top>
+                            <left>20</left>
+                            <width>440</width>
+                            <height>135</height>
+                            <font>font12</font>
+                            <textcolor>grey2</textcolor>
+                            <focusedcolor>grey2</focusedcolor>
+                            <autoscroll time="3000" delay="2000" repeat="3000">true</autoscroll>
+                          </control>
                         </control>
-                    </control>
-		<include>Clock</include>
-	</controls>
-</window>
+                      </control>
+                      <include>Clock</include>
+                    </controls>
+                  </window>
