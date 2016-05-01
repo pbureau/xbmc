@@ -38,6 +38,7 @@
 #include "guilib/GUIWindowManager.h"
 #include "dialogs/GUIDialogOK.h"
 #include "guilib/GUIKeyboardFactory.h"
+#include "view/GUIViewState.h"
 #include "input/Key.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "guilib/GUIEditControl.h"
@@ -94,7 +95,7 @@ bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message)
     break;
   case GUI_MSG_WINDOW_INIT:
     {
-      /* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
+/* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
       m_rootDir.AllowNonLocalSources(false);
 
       // is this the first time the window is opened?
@@ -349,6 +350,8 @@ bool CGUIWindowMusicNav::GetDirectory(const std::string &strDirectory, CFileItem
       items.SetContent("songs");
     else if (node == NODE_TYPE_GENRE)
       items.SetContent("genres");
+    else if (node == NODE_TYPE_ROLE)
+      items.SetContent("roles");
     else if (node == NODE_TYPE_YEAR)
       items.SetContent("years");
     else
@@ -478,10 +481,7 @@ void CGUIWindowMusicNav::GetContextButtons(int itemNumber, CContextButtons &butt
         }
       }
 #endif
-      // Add the scan button(s)
-      if (g_application.IsMusicScanning())
-        buttons.Add(CONTEXT_BUTTON_STOP_SCANNING, 13353); // Stop Scanning
-      else if (!inPlaylists && !m_vecItems->IsInternetStream() &&
+      if (!inPlaylists && !m_vecItems->IsInternetStream() &&
         !item->IsPath("add") && !item->IsParentFolder() &&
         !item->IsPlugin() &&
         !StringUtils::StartsWithNoCase(item->GetPath(), "addons://") &&
@@ -512,9 +512,9 @@ void CGUIWindowMusicNav::GetContextButtons(int itemNumber, CContextButtons &butt
         ADDON::ScraperPtr info;
         if(m_musicdatabase.GetScraperForPath(item->GetPath(), info, ADDON::ADDON_SCRAPER_ARTISTS))
         {
-        if (info && info->Supports(CONTENT_ARTISTS))
-          buttons.Add(CONTEXT_BUTTON_INFO_ALL, 21884);
-      }
+          if (info && info->Supports(CONTENT_ARTISTS))
+            buttons.Add(CONTEXT_BUTTON_INFO_ALL, 21884);
+        }
       }
 
       //Set default or clear default
@@ -635,8 +635,8 @@ bool CGUIWindowMusicNav::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
       if (item->HasVideoInfoTag() && !item->GetVideoInfoTag()->m_strTitle.empty())
       {
         CGUIDialogVideoInfo::ShowFor(*item);
-          Refresh();
-        }
+        Refresh();
+      }
       return true;
     }
 

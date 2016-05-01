@@ -3837,11 +3837,6 @@ msgid "Enter the username"
 msgstr ""
 
 #: xbmc/dialogs/GUIDialogMediaSource.cpp
-msgctxt "#1020"
-msgid "Add %s source"
-msgstr ""
-
-#: xbmc/dialogs/GUIDialogMediaSource.cpp
 #: addons/skin.estuary/1080i/DialogMediaSource.xml
 msgctxt "#1021"
 msgid "Enter the paths or browse for the media locations."
@@ -3881,10 +3876,6 @@ msgctxt "#1027"
 msgid "Edit source"
 msgstr ""
 
-#: xbmc/dialogs/GUIDialogMediaSource.cpp
-msgctxt "#1028"
-msgid "Edit %s source"
-msgstr ""
 
 msgctxt "#1029"
 msgid "Enter the new label"
@@ -4221,7 +4212,12 @@ msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr ""
 
-#empty strings from id 1302 to 1374
+#: system/settings/settings.xml
+msgctxt "#1302"
+msgid "Volume control steps"
+msgstr ""
+
+#empty strings from id 1303 to 1374
 #strings from 1350 to 1449 are reserved for weather translation
 
 #. Weather token
@@ -4845,7 +4841,57 @@ msgctxt "#10047"
 msgid "Try changing the setting level to see additional categories and settings."
 msgstr ""
 
-#empty strings from id 10048 to 10099
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10048"
+msgid "Add video source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10049"
+msgid "Add music source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10050"
+msgid "Add picture source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10051"
+msgid "Add program source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10052"
+msgid "Add file source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10053"
+msgid "Edit video source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10054"
+msgid "Edit music source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10055"
+msgid "Edit picture source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10056"
+msgid "Edit program source"
+msgstr ""
+
+#: xbmc/dialogs/GUIDialogMediaSource.cpp
+msgctxt "#10057"
+msgid "Edit file source"
+msgstr ""
+
+#empty strings from id 10058 to 10099
 
 #: xbmc/guilib/WindowIDs.h
 msgctxt "#10100"
@@ -5690,12 +5736,7 @@ msgctxt "#13101"
 msgid "Let driver choose (requires restart)"
 msgstr ""
 
-#empty strings from id 13102 to 13104
-
-#: system/settings/settings.xml
-msgctxt "#13105"
-msgid "Vertical blank sync"
-msgstr ""
+#empty strings from id 13102 to 13105
 
 #: xbmc/peripherals/bus/PeripheralBus.cpp
 #: system/settings/settings.xml
@@ -7633,15 +7674,7 @@ msgctxt "#15047"
 msgid "Audio DSP settings"
 msgstr ""
 
-#: xbmc/cores/AudioEngine/DSPAddons/ActiveAEDSP.cpp
-msgctxt "#15048"
-msgid "No audio DSP add-on enabled"
-msgstr ""
-
-#: xbmc/cores/AudioEngine/DSPAddons/ActiveAEDSP.cpp
-msgctxt "#15049"
-msgid "The audio DSP manager has been enabled without any enabled DSP add-on. Enable at least one add-on in order to use the DSP functionality."
-msgstr ""
+#empty strings from id 15048 to 15049
 
 #. Name of a list with amount of entries behind on GUI
 msgctxt "#15050"
@@ -9765,17 +9798,7 @@ msgctxt "#19272"
 msgid "You need a tuner, backend software, and an add-on for the backend to be able to use PVR. Please visit http://kodi.wiki/view/PVR to learn more."
 msgstr ""
 
-#. Header on DialogOK
-#: xbmc/cores/AudioEngine/DSPAddons/ActiveAEDSP.cpp
-msgctxt "#19273"
-msgid "No audio DSP add-ons could be found"
-msgstr ""
-
-#. DialogOK for no installed ADSP add-on available
-#: xbmc/cores/AudioEngine/DSPAddons/ActiveAEDSP.cpp
-msgctxt "#19274"
-msgid "You need an add-on installed to be able to use audio digital signal processing (DSP)."
-msgstr ""
+#empty strings from id 19273 to 19274
 
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
 msgctxt "#19275"
@@ -10959,12 +10982,7 @@ msgctxt "#20126"
 msgid "Log off"
 msgstr ""
 
-#empty string with id 20127
-
-#: xbmc/windows/GUIWindowFileManager.cpp
-msgctxt "#20128"
-msgid "Go to root"
-msgstr ""
+#empty string from id 20127 to 20128
 
 #: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
 msgctxt "#20129"
@@ -11600,7 +11618,7 @@ msgstr ""
 #. Label for showing media rating and votes (combined), for example: "9.1 (87 votes)"
 #: xbmc/GUIInfoManager.cpp
 msgctxt "#20350"
-msgid "%.1f (%i votes)"
+msgid "%s (%s votes)"
 msgstr ""
 
 #: xbmc/video/jobs/VideoLibraryRefreshingJob.cpp
@@ -12695,11 +12713,11 @@ msgid "Root filesystem"
 msgstr ""
 
 msgctxt "#21454"
-msgid "Cache full"
+msgid "Source too slow"
 msgstr ""
 
 msgctxt "#21455"
-msgid "Cache filled before reaching required amount for continuous playback"
+msgid "Read rate too low for continuous playback"
 msgstr ""
 
 #: xbmc/playlists/SmartPlaylist.cpp
@@ -17367,11 +17385,7 @@ msgctxt "#36355"
 msgid "In a multi-screen configuration, the screens not displaying this application are blacked out."
 msgstr ""
 
-#. Description of setting "System -> Video output -> Vertical blank sync" with label #13105
-#: system/settings/settings.xml
-msgctxt "#36356"
-msgid "Eliminates tearing."
-msgstr ""
+#empty strings from id 36356 to 36356
 
 #. Description of setting "System -> Video output -> Video calibration..." with label #214
 #: system/settings/settings.xml
@@ -17870,7 +17884,13 @@ msgctxt "#36441"
 msgid "Enable audio DSP processing"
 msgstr ""
 
-#empty strings from id 36442 to 36459
+#. Description of setting "System -> Audio output -> Volume control steps" with label #1302
+#: system/settings/settings.xml
+msgctxt "#36442"
+msgid "Set the number of volume control steps."
+msgstr ""
+
+#empty strings from id 36443 to 36459
 
 #. Description of settings "System -> Logging -> Enable event logging" with label #14112
 #: system/settings/settings.xml

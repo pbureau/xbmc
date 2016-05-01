@@ -12,7 +12,7 @@
 				<onclick>noop</onclick>
 				<visible>Control.IsVisible(51)</visible>
 			</control>
-			<include name="LeftRightArrows">
+			<include content="LeftRightArrows">
 				<param name="list_id" value="51" />
 				<param name="left_posx" value="45" />
 				<param name="right_posx" value="1849" />
@@ -97,7 +97,7 @@
 					<left>635</left>
 					<top>475</top>
 					<visible>ListItem.IsCollection</visible>
-					<include name="InfoList">
+					<include content="InfoList">
 						<param name="sortby" value="year" />
 						<param name="sortorder" value="descending" />
 						<param name="font" value="font12" />
@@ -143,7 +143,7 @@
 						<shadowcolor>text_shadow</shadowcolor>
 						<visible>!String.IsEmpty(ListItem.Duration)</visible>
 					</control>
-					<control type="label">>
+					<control type="label">
 						<font>font12</font>
 						<width>1160</width>
 						<height>38</height>
@@ -159,7 +159,7 @@
 						<shadowcolor>text_shadow</shadowcolor>
 						<visible>[String.IsEmpty(ListItem.Director) | String.IsEmpty(ListItem.Duration)] + !String.IsEmpty(ListItem.Genre)</visible>
 					</control>
-					<control type="label">>
+					<control type="label">
 						<font>font12</font>
 						<width>1160</width>
 						<height>38</height>

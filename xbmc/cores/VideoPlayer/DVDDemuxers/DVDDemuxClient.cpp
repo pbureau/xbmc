@@ -52,7 +52,7 @@ public:
     }
     if (m_context)
     {
-      avcodec_close(m_context);
+      avcodec_free_context(&m_context);
       m_context = nullptr;
     }
   }
@@ -615,5 +615,13 @@ void CDVDDemuxClient::EnableStreamAtPTS(int id, uint64_t pts)
   if (m_IDemux)
   {
     m_IDemux->EnableStreamAtPTS(id, pts);
+  }
+}
+
+void CDVDDemuxClient::SetVideoResolution(int width, int height)
+{
+  if (m_IDemux)
+  {
+    m_IDemux->SetVideoResolution(width, height);
   }
 }

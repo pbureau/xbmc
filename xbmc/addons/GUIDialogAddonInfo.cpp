@@ -96,7 +96,7 @@ bool CGUIDialogAddonInfo::OnMessage(CGUIMessage& message)
       {
         if (m_localAddon)
         {
-          if (m_localAddon->Type() == ADDON_ADSPDLL && ActiveAE::CActiveAEDSP::GetInstance().IsProcessing())
+          if (m_localAddon->Type() == ADDON_ADSPDLL && CServiceBroker::GetADSP().IsProcessing())
           {
             CGUIDialogOK::ShowAndGetInput(24137, 0, 24138, 0);
             return true;
@@ -124,7 +124,7 @@ bool CGUIDialogAddonInfo::OnMessage(CGUIMessage& message)
         //FIXME: should be moved to somewhere appropriate (e.g CAddonMgs::CanAddonBeDisabled or IsInUse) and button should be disabled
         if (m_localAddon)
         {
-          if (m_localAddon->Type() == ADDON_ADSPDLL && ActiveAE::CActiveAEDSP::GetInstance().IsProcessing())
+          if (m_localAddon->Type() == ADDON_ADSPDLL && CServiceBroker::GetADSP().IsProcessing())
           {
             CGUIDialogOK::ShowAndGetInput(24137, 0, 24138, 0);
             return true;
@@ -283,13 +283,13 @@ void CGUIDialogAddonInfo::OnUpdate()
     AddonPtr repo;
     if (versionInfo.second == LOCAL_CACHE)
     {
-      item.SetProperty("Addon.Summary", g_localizeStrings.Get(24095));
+      item.SetLabel2(g_localizeStrings.Get(24095));
       item.SetIconImage("DefaultAddonRepository.png");
       dialog->Add(item);
     }
     else if (CAddonMgr::GetInstance().GetAddon(versionInfo.second, repo, ADDON_REPOSITORY))
     {
-      item.SetProperty("Addon.Summary", repo->Name());
+      item.SetLabel2(repo->Name());
       item.SetIconImage(repo->Icon());
       dialog->Add(item);
     }
@@ -300,7 +300,11 @@ void CGUIDialogAddonInfo::OnUpdate()
   {
     Close();
 
-    auto selected = versions.at(dialog->GetSelectedItem());
+    int selectedItem = dialog->GetSelectedItem();
+    if (selectedItem < 0 )
+      return;
+
+    auto selected = versions.at(selectedItem);
 
     //turn auto updating off if downgrading
     if (selected.first < m_localAddon->Version())

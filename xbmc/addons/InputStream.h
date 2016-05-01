@@ -47,6 +47,7 @@ namespace ADDON
 
     virtual void SaveSettings() override;
 
+    bool UseParent();
     bool Supports(const CFileItem &fileitem);
     bool Open(CFileItem &fileitem);
     void Close();
@@ -76,6 +77,7 @@ namespace ADDON
     void SetSpeed(int iSpeed);
     void EnableStream(int iStreamId, bool enable);
     void EnableStreamAtPTS(int iStreamId, uint64_t pts);
+    void SetVideoResolution(int width, int height);
 
     // stream
     int ReadStream(uint8_t* buf, unsigned int size);
@@ -96,8 +98,13 @@ namespace ADDON
     std::map<int, CDemuxStream*> m_streams;
 
     static CCriticalSection m_parentSection;
-    static bool m_hasConfig;
-    static std::vector<std::string> m_pathList;
+
+    struct Config
+    {
+      std::vector<std::string> m_pathList;
+      bool m_parentBusy;
+    };
+    static std::map<std::string, Config> m_configMap;
   };
 
 } /*namespace ADDON*/

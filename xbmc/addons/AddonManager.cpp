@@ -20,6 +20,7 @@
 
 #include "AddonManager.h"
 
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -54,17 +55,6 @@
 #include "utils/StringUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "ServiceBroker.h"
-
-#ifdef HAS_VISUALISATION
-#include "Visualisation.h"
-#endif
-#ifdef HAS_SCREENSAVER
-#include "ScreenSaver.h"
-#endif
-
-#include "addons/PVRClient.h"
-#include "games/controllers/Controller.h"
-#include "peripherals/addons/PeripheralAddon.h"
 
 using namespace XFILE;
 
@@ -382,21 +372,21 @@ void CAddonMgr::RemoveFromUpdateableAddons(AddonPtr &pAddon)
 {
   CSingleLock lock(m_critSection);
   VECADDONS::iterator it = std::find(m_updateableAddons.begin(), m_updateableAddons.end(), pAddon);
-  
+
   if(it != m_updateableAddons.end())
   {
     m_updateableAddons.erase(it);
   }
 }
 
-struct AddonIdFinder 
-{ 
+struct AddonIdFinder
+{
     AddonIdFinder(const std::string& id)
       : m_id(id)
     {}
-    
-    bool operator()(const AddonPtr& addon) 
-    { 
+
+    bool operator()(const AddonPtr& addon)
+    {
       return m_id == addon->ID();
     }
     private:
@@ -407,7 +397,7 @@ bool CAddonMgr::ReloadSettings(const std::string &id)
 {
   CSingleLock lock(m_critSection);
   VECADDONS::iterator it = std::find_if(m_updateableAddons.begin(), m_updateableAddons.end(), AddonIdFinder(id));
-  
+
   if( it != m_updateableAddons.end())
   {
     return (*it)->ReloadSettings();
@@ -544,7 +534,7 @@ bool CAddonMgr::GetAddonsInternal(const TYPE &type, VECADDONS &addons, bool enab
         AddonPtr runningAddon = addon->GetRunningInstance();
         if (runningAddon)
           addon = runningAddon;
-        addons.push_back(addon);
+        addons.emplace_back(std::move(addon));
       }
     }
   }
@@ -1094,7 +1084,7 @@ bool CAddonMgr::AddonsFromRepoXML(const TiXmlElement *root, VECADDONS &addons)
     {
       AddonPtr addon = Factory(info, ADDON_UNKNOWN);
       if (addon.get())
-        addons.push_back(addon);
+        addons.push_back(std::move(addon));
       m_cpluff->release_info(context, info);
     }
     element = element->NextSiblingElement("addon");

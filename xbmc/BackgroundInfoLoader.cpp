@@ -103,7 +103,7 @@ void CBackgroundInfoLoader::Load(CFileItemList& items)
 {
   StopThread();
 
-  if (items.Size() == 0)
+  if (items.IsEmpty())
     return;
 
   CSingleLock lock(m_lock);

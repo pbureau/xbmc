@@ -5,6 +5,16 @@
 	<onunload>ClearProperty(infobackground,home)</onunload>
 	<controls>
 		<control type="image">
+			<texture fallback="special://skin/extras/backgrounds/SKINDEFAULT.jpg">$VAR[GlobalFanartVar]</texture>
+			<width>1920</width>
+			<height>1080</height>
+			<aspectratio align="center">scale</aspectratio>
+			<animation effect="fade" start="0" end="100" time="100">WindowOpen</animation>
+			<animation effect="fade" start="100" end="0" time="100">WindowClose</animation>
+			<animation effect="fade" start="100" end="75" time="0" condition="true">Conditional</animation>
+			<visible>Window.isActive(fullscreenvideo)</visible>
+		</control>
+		<control type="image">
 			<include>OpenClose_Left</include>
 			<left>114</left>
 			<top>236</top>
@@ -56,30 +66,30 @@
 				<onright>9000</onright>
 				<onup>49</onup>
 				<ondown>49</ondown>
-				<include name="InfoDialogButton">
+				<include content="InfoDialogButton">
 					<param name="id" value="5" />
 					<param name="icon" value="icons/infodialogs/launch.png" />
 					<param name="label" value="$LOCALIZE[19165]" />
 					<param name="visible" value="Window.IsActive(PVRGuideInfo)" />
 				</include>
-				<include name="InfoDialogButton">
+				<include content="InfoDialogButton">
 					<param name="id" value="4" />
 					<param name="icon" value="icons/infodialogs/similar.png" />
 					<param name="label" value="$LOCALIZE[19003]" />
 					<param name="visible" value="Window.IsActive(PVRGuideInfo)" />
 				</include>
-				<include name="InfoDialogButton">
+				<include content="InfoDialogButton">
 					<param name="id" value="8" />
 					<param name="icon" value="icons/infodialogs/play_record.png" />
 					<param name="label" value="$LOCALIZE[19687]" />
 					<param name="visible" value="Window.IsActive(PVRGuideInfo)" />
 				</include>
-				<include name="InfoDialogButton">
+				<include content="InfoDialogButton">
 					<param name="id" value="6" />
 					<param name="icon" value="icons/infodialogs/record.png" />
 					<param name="visible" value="Window.IsActive(PVRGuideInfo)" />
 				</include>
-				<include name="InfoDialogButton">
+				<include content="InfoDialogButton">
 					<param name="id" value="5010" />
 					<param name="icon" value="icons/infodialogs/play_record.png" />
 					<param name="label" value="$LOCALIZE[19687]" />
@@ -87,7 +97,7 @@
 					<param name="onclick_2" value="Action(select)" />
 					<param name="visible" value="Window.IsActive(PVRRecordingInfo)" />
 				</include>
-				<include name="InfoDialogButton">
+				<include content="InfoDialogButton">
 					<param name="id" value="440" />
 					<param name="icon" value="icons/infodialogs/trailer.png" />
 					<param name="label" value="$LOCALIZE[31114]" />
@@ -97,7 +107,7 @@
 				</include>
 			</control>
 		</control>
-		<include name="InfoDialogTopBarInfo">
+		<include content="InfoDialogTopBarInfo">
 			<param name="main_label" value="$INFO[ListItem.Title]$INFO[ListItem.Season, ]$INFO[ListItem.Episode,[COLOR grey]x[/COLOR]]" />
 			<param name="sub_label" value="$INFO[ListItem.ChannelName]" />
 			<param name="posy" value="40" />

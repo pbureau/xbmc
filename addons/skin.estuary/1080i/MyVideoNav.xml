@@ -6,9 +6,9 @@
 	<menucontrol>9000</menucontrol>
 	<controls>
 		<include>DefaultBackground</include>
-		<include>CommonScrollbars</include>
 		<control type="group">
 			<animation effect="fade" start="100" end="0" time="200" tween="sine" condition="$EXP[infodialog_active]">Conditional</animation>
+			<include>CommonScrollbars</include>
 			<include>View_50_List</include>
 			<include>View_51_Poster</include>
 			<include>View_52_IconWall</include>
@@ -26,13 +26,14 @@
 			<control type="group">
 				<include>OpenClose_Left</include>
 				<visible>Control.IsVisible(55)</visible>
-				<visible>Container.Content(artists) | Container.Content(albums) | Container.Content(addons) | Container.Content(files) | Container.Content(mixed) | Container.Content(musicvideos)</visible>
+				<visible>Container.Content(artists) | Container.Content(albums) | Container.Content(addons) | Container.Content(files) | Container.Content(mixed) | Container.Content(musicvideos) | Container.Content(videos)</visible>
 				<include>Visible_Left</include>
 				<include>ListThumbInfoPanel</include>
 			</control>
 			<control type="group">
 				<include>OpenClose_Right</include>
-				<visible>[Control.IsVisible(50) | Control.Isvisible(54)] + !String.IsEmpty(ListItem.DBID)</visible>
+				<visible>[Control.IsVisible(50) | Control.Isvisible(54)]</visible>
+				<visible>!ListItem.IsParentFolder</visible>
 				<include>Visible_Right</include>
 				<visible>Container.Content(sets) | Container.Content(movies) | Container.Content(tvshows) | Container.Content(seasons) | Container.Content(episodes) | Container.Content(musicvideos)</visible>
 				<control type="image">
@@ -83,7 +84,7 @@
 					<left>1350</left>
 					<top>244</top>
 					<visible>ListItem.IsCollection</visible>
-					<include name="InfoList">
+					<include content="InfoList">
 						<param name="height" value="322" />
 						<param name="width" value="429" />
 						<param name="sortby" value="year" />
@@ -111,26 +112,26 @@
 					</control>
 					<control type="grouplist">
 						<top>845</top>
-						<right>140</right>
+						<right>150</right>
 						<orientation>horizontal</orientation>
-						<width>380</width>
+						<width>360</width>
 						<align>center</align>
-						<include name="InfoFlag">
+						<include content="InfoFlag">
 							<param name="visible" value="!String.IsEmpty(ListItem.duration)" />
 							<param name="icon" value="frame/clock.png" />
 							<param name="label" value="$INFO[ListItem.Duration,, $LOCALIZE[31132]]" />
 						</include>
-						<include name="InfoFlag">
+						<include content="InfoFlag">
 							<param name="visible" value="!String.IsEmpty(ListItem.Property(TotalEpisodes))" />
 							<param name="icon" value="lists/played-total.png" />
 							<param name="label" value="$INFO[ListItem.Property(WatchedEpisodes)]$INFO[ListItem.Property(TotalEpisodes), / ,]" />
 						</include>
-						<include name="InfoFlag">
+						<include content="InfoFlag">
 							<param name="visible" value="!String.IsEmpty(ListItem.Year) + String.IsEmpty(ListItem.Premiered)" />
 							<param name="icon" value="lists/year.png" />
 							<param name="label" value="$INFO[ListItem.Year]" />
 						</include>
-						<include name="InfoFlag">
+						<include content="InfoFlag">
 							<param name="visible" value="!String.IsEmpty(ListItem.Premiered) + String.IsEmpty(ListItem.Property(TotalEpisodes))" />
 							<param name="icon" value="lists/year.png" />
 							<param name="label" value="$INFO[ListItem.Premiered]" />
@@ -142,7 +143,6 @@
 				<top>180</top>
 				<left>106</left>
 				<visible>Container.Content(movies) | Container.Content(tvshows) | Container.Content(seasons) | Container.Content(episodes) | Container.Content(sets) | Container.Content(actors) | Container.Content(directors)</visible>
-				<visible>!Control.IsVisible(502)</visible>
 				<visible>Control.IsVisible(50) | Control.IsVisible(51) | Control.IsVisible(55)</visible>
 				<include>OpenClose_Left</include>
 				<include>Visible_Left</include>
@@ -176,7 +176,7 @@
 				<control type="group">
 					<left>415</left>
 					<top>10</top>
-					<include name="UserRatingCircle">
+					<include content="UserRatingCircle">
 						<param name="animation" value="True" />
 					</include>
 					<visible>Control.IsVisible(51) | Control.IsVisible(50) | Control.IsVisible(55)</visible>
@@ -250,14 +250,20 @@
 						<onclick>InstallAddon(resource.images.studios.white)</onclick>
 						<visible>Container.Content(studios) + !System.HasAddon(resource.images.studios.white)</visible>
 					</control>
+					<control type="button" id="624">
+						<include>MediaMenuItemsCommon</include>
+						<label>$LOCALIZE[10140]</label>
+						<onclick>Addon.OpenSettings($INFO[Container.PluginName])</onclick>
+						<visible>!String.IsEmpty(Container.PluginName)</visible>
+					</control>
 					<include>MediaMenuNowPlaying</include>
 				</control>
 			</control>
-			<include name="TopBar">
+			<include content="TopBar">
 				<param name="breadcrumbs_label" value="$VAR[BreadcrumbsVideoVar]" />
 				<param name="breadcrumbs_icon" value="icons/settings/video.png" />
 			</include>
-			<include name="BottomBar">
+			<include content="BottomBar">
 				<param name="info_visible" value="true" />
 			</include>
 		</control>

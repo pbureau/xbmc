@@ -2399,17 +2399,6 @@
         </setting>
       </group>
       <group id="3">
-        <setting id="videoscreen.vsync" type="integer" label="13105" help="36356">
-          <level>2</level>
-          <default>2</default> <!-- VSYNC_ALWAYS -->
-          <constraints>
-            <options>verticalsyncs</options>
-          </constraints>
-          <updates>
-            <update type="change" />
-          </updates>
-          <control type="list" format="string" />
-        </setting>
         <setting id="videoscreen.guicalibration" type="action" label="214" help="36357">
           <level>1</level>
           <control type="button" format="action" />
@@ -2609,6 +2598,16 @@
             </options>
           </constraints>
           <control type="list" format="string" />
+        </setting>
+        <setting id="audiooutput.volumesteps" type="integer" label="1302" help="36442">
+          <level>1</level>
+          <default>90</default>
+          <constraints>
+            <minimum>10</minimum>
+            <step>5</step>
+            <maximum>90</maximum>
+          </constraints>
+          <control type="list" format="integer" />
         </setting>
       </group>
       <group id="3">
