@@ -43,7 +43,8 @@
                     <top>80</top>
                     <width>520</width>
                     <height>362</height>
-                    <onright>413</onright>
+                    <onright condition="Control.IsVisible(413)">413</onright>
+                    <onright condition="!Control.IsVisible(413)">414</onright>
                     <pagecontrol>60</pagecontrol>
                     <scrolltime>200</scrolltime>
                     <itemlayout height="40" width="520">
@@ -191,7 +192,7 @@
                 </control>
                 <control type="button" id="413">
                     <left>580</left>
-                    <top>80</top>
+                    <top>330</top>
                     <onleft>450</onleft>
                     <onup>414</onup>
                     <ondown>414</ondown>
@@ -202,7 +203,7 @@
                 </control>
                 <control type="button" id="414">
                     <left>580</left>
-                    <top>130</top>
+                    <top>380</top>
                     <onleft>450</onleft>
                     <onup>413</onup>
                     <ondown>413</ondown>

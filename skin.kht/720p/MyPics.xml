@@ -159,6 +159,12 @@
                                     <include>ButtonCommonValues</include>
                                     <label>Add Source</label>
                                 </control>
+                                <control type="togglebutton" id="2211">
+                                    <description>Remove Source</description>
+                                    <textwidth>235</textwidth>
+                                    <include>ButtonCommonValues</include>
+                                    <label>Remove Source</label>
+                                </control>
 				<include>CommonNowPlaying_Controls</include>
 			</control>
 		</control>

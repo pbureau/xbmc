@@ -138,7 +138,7 @@
                             <visible>Control.HasFocus(33203) | Control.HasFocus(52)</visible>
                             <left>80</left>
                             <top>160</top>
-                            <include name="AdaptativeDialogBackground">
+                            <include content="AdaptativeDialogBackground">
                               <param name="id" value="52"/>
                             </include>
                             <!--
@@ -230,7 +230,7 @@
                             <left>80</left>
                             <top>210</top>
                             <visible>Control.HasFocus(33204) | Control.HasFocus(51)</visible>
-                            <include name="AdaptativeDialogBackground">
+                            <include content="AdaptativeDialogBackground">
                               <param name="id" value="51"/>
                             </include>
                             <!--
