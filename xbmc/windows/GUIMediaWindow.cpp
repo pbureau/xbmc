@@ -282,8 +282,15 @@ bool CGUIMediaWindow::OnMessage(CGUIMessage& message)
       }
       else if (iControl == CONTROL_BTN_ADDSRC) // add source
       {
-        OnContextButton(0, CONTEXT_BUTTON_ADD_SOURCE);
-        return true;
+        if (CProfilesManager::GetInstance().IsMasterProfile())
+        {
+          if (!g_passwordManager.IsMasterLockUnlocked(true))
+            return false;
+        }
+        else if (!CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() && !g_passwordManager.IsProfileLockUnlocked())
+          return false;
+
+        return OnAddMediaSource();
       }
       else if (iControl == CONTROL_BTNSORTASC) // sort asc
       {

@@ -1339,8 +1339,6 @@ bool CGUIWindowVideoBase::Update(const std::string &strDirectory, bool updateFil
 
 bool CGUIWindowVideoBase::GetDirectory(const std::string &strDirectory, CFileItemList &items)
 {
-  CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::GetDirectory (%s)",
-            CURL::GetRedacted(strDirectory).c_str());
   bool bResult = CGUIMediaWindow::GetDirectory(strDirectory, items);
 
   // add in the "New Playlist" item if we're in the playlists folder
@@ -1362,17 +1360,6 @@ bool CGUIWindowVideoBase::GetDirectory(const std::string &strDirectory, CFileIte
     newPlaylist->SetLabelPreformated(true);
     items.Add(newPlaylist);
   }
-
-  int i;
-  for (i=0; i < items.Size(); i++)
-  {
-    //items[i]->SetLabel("toto");
-    CLog::Log(LOGDEBUG,"CGUIWindowVideoBase::GetDirectory : file listed (%s), has thumb %d, label is %s", 
-            CURL::GetRedacted(items[i]->GetPath()).c_str(),
-            items[i]->HasArt("thumb"),
-            items[i]->GetLabel().c_str());
-  }
-  items.Remove(i-1);
 
   m_stackingAvailable = StackingAvailable(items);
   // we may also be in a tvshow files listing
@@ -1680,12 +1667,12 @@ void CGUIWindowVideoBase::AppendAndClearSearchItems(CFileItemList &searchItems, 
   searchItems.Clear();
 }
 
-bool CGUIWindowVideoBase::OnUnAssignContent(const std::string &path, int header, int text)
+bool CGUIWindowVideoBase::OnUnAssignContent(const std::string &path, int header, int text, bool flagForceClean)
 {
   bool bCanceled;
   CVideoDatabase db;
   db.Open();
-  if (CGUIDialogYesNo::ShowAndGetInput(CVariant{header}, CVariant{text}, bCanceled, CVariant{ "" }, CVariant{ "" }, CGUIDialogYesNo::NO_TIMEOUT))
+  if (flagForceClean || CGUIDialogYesNo::ShowAndGetInput(CVariant{header}, CVariant{text}, bCanceled, CVariant{ "" }, CVariant{ "" }, CGUIDialogYesNo::NO_TIMEOUT))
   {
     CGUIDialogProgress *progress = (CGUIDialogProgress *)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
     db.RemoveContentForPath(path, progress);
