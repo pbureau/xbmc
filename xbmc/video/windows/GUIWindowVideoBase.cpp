@@ -65,12 +65,19 @@
 #include "utils/GroupUtils.h"
 #include "TextureDatabase.h"
 
+#include "dialogs/GUIDialogFileBrowser.h"
+#include "settings/MediaSourceSettings.h"
+
+using namespace std;
 using namespace XFILE;
 using namespace PLAYLIST;
 using namespace VIDEODATABASEDIRECTORY;
 using namespace VIDEO;
 using namespace ADDON;
 using namespace PVR;
+
+#define CONTROL_BTN_ADDSRC         2210 
+#define CONTROL_BTN_REMSRC         2211 
 
 #define CONTROL_BTNVIEWASICONS     2
 #define CONTROL_BTNSORTBY          3
@@ -132,6 +139,21 @@ bool CGUIWindowVideoBase::OnMessage(CGUIMessage& message)
   case GUI_MSG_CLICKED:
     {
       int iControl = message.GetSenderId();
+      if(iControl == CONTROL_BTN_REMSRC)
+      {
+        /* Remove one source */
+        CMediaSource share;
+        if(!RemoveOneSource(share, g_localizeStrings.Get(39001), "video"))
+          return false;
+
+        /* Remove items for the video db */
+        if(OnUnAssignContent(share.strPath, 20375, 20340, true))
+          m_vecItems->RemoveDiscCache(GetID());
+        Refresh();
+
+        return true;
+      }
+      else
 #if defined(HAS_DVD_DRIVE)
       if (iControl == CONTROL_PLAY_DVD)
       {
@@ -1108,63 +1130,63 @@ bool CGUIWindowVideoBase::OnPlayMedia(int iItem, const std::string &player)
   {
     CPVRRecordingsPath path(item.GetPath());
     if (path.IsValid() && path.IsActive())
+  {
+    if (!g_PVRManager.IsStarted())
+      return false;
+
+    /* For recordings we check here for a available stream URL */
+    CFileItemPtr tag = g_PVRRecordings->GetByPath(item.GetPath());
+    if (tag && tag->HasPVRRecordingInfoTag() && !tag->GetPVRRecordingInfoTag()->m_strStreamURL.empty())
     {
-      if (!g_PVRManager.IsStarted())
-        return false;
+      std::string stream = tag->GetPVRRecordingInfoTag()->m_strStreamURL;
 
-      /* For recordings we check here for a available stream URL */
-      CFileItemPtr tag = g_PVRRecordings->GetByPath(item.GetPath());
-      if (tag && tag->HasPVRRecordingInfoTag() && !tag->GetPVRRecordingInfoTag()->m_strStreamURL.empty())
+      /* Isolate the folder from the filename */
+      size_t found = stream.find_last_of("/");
+      if (found == std::string::npos)
+        found = stream.find_last_of("\\");
+
+      if (found != std::string::npos)
       {
-        std::string stream = tag->GetPVRRecordingInfoTag()->m_strStreamURL;
-
-        /* Isolate the folder from the filename */
-        size_t found = stream.find_last_of("/");
-        if (found == std::string::npos)
-          found = stream.find_last_of("\\");
-
-        if (found != std::string::npos)
+        /* Check here for asterix at the begin of the filename */
+        if (stream[found+1] == '*')
         {
-          /* Check here for asterix at the begin of the filename */
-          if (stream[found+1] == '*')
+          /* Create a "stack://" url with all files matching the extension */
+          std::string ext = URIUtils::GetExtension(stream);
+          std::string dir = stream.substr(0, found).c_str();
+
+          CFileItemList items;
+          CDirectory::GetDirectory(dir, items);
+          items.Sort(SortByFile, SortOrderAscending);
+
+          std::vector<int> stack;
+          for (int i = 0; i < items.Size(); ++i)
           {
-            /* Create a "stack://" url with all files matching the extension */
-            std::string ext = URIUtils::GetExtension(stream);
-            std::string dir = stream.substr(0, found).c_str();
-
-            CFileItemList items;
-            CDirectory::GetDirectory(dir, items);
-            items.Sort(SortByFile, SortOrderAscending);
-
-            std::vector<int> stack;
-            for (int i = 0; i < items.Size(); ++i)
-            {
-              if (URIUtils::HasExtension(items[i]->GetPath(), ext))
-                stack.push_back(i);
-            }
-
-            if (stack.size() > 0)
-            {
-              /* If we have a stack change the path of the item to it */
-              CStackDirectory dir;
-              std::string stackPath = dir.ConstructStackPath(items, stack);
-              item.SetPath(stackPath);
-            }
+            if (URIUtils::HasExtension(items[i]->GetPath(), ext))
+              stack.push_back(i);
           }
-          else
+
+          if (stack.size() > 0)
           {
-            /* If no asterix is present play only the given stream URL */
-            item.SetPath(stream);
+            /* If we have a stack change the path of the item to it */
+            CStackDirectory dir;
+            std::string stackPath = dir.ConstructStackPath(items, stack);
+            item.SetPath(stackPath);
           }
         }
         else
         {
-          CLog::Log(LOGERROR, "CGUIWindowTV: Can't open recording, no valid filename!");
-          CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19036});
-          return false;
+          /* If no asterix is present play only the given stream URL */
+          item.SetPath(stream);
         }
       }
+      else
+      {
+        CLog::Log(LOGERROR, "CGUIWindowTV: Can't open recording, no valid filename!");
+        CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19036});
+        return false;
+      }
     }
+  }
   }
 
   PlayMovie(&item, player);

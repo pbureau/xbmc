@@ -69,6 +69,13 @@
 #include "utils/Variant.h"
 #include "video/VideoLibraryQueue.h"
 
+#include "dialogs/GUIDialogFileBrowser.h"
+#include "settings/MediaSourceSettings.h"
+#include "dialogs/GUIDialogYesNo.h"
+
+#define CONTROL_BTN_ADDSRC          2210 
+#define CONTROL_BTN_REMSRC          2211 
+
 #define CONTROL_BTNVIEWASICONS       2
 #define CONTROL_BTNSORTBY            3
 #define CONTROL_BTNSORTASC           4
@@ -78,7 +85,6 @@
 
 #define CONTROL_VIEW_START          50
 #define CONTROL_VIEW_END            59
-#define CONTROL_BTN_ADDSRC          2210 
 
 #define PROPERTY_PATH_DB            "path.db"
 #define PROPERTY_SORT_ORDER         "sort.order"
@@ -1517,6 +1523,47 @@ CGUIControl *CGUIMediaWindow::GetFirstFocusableControl(int id)
   if (m_viewControl.HasControl(id))
     id = m_viewControl.GetCurrentControl();
   return CGUIWindow::GetFirstFocusableControl(id);
+}
+
+bool CGUIMediaWindow::RemoveOneSource(CMediaSource & share, const std::string & heading, const std::string & type)
+{
+  /* Check current permissions */
+  if (CProfilesManager::GetInstance().IsMasterProfile())
+  {
+    if (!g_passwordManager.IsMasterLockUnlocked(true))
+      return false;
+  }
+  else
+  {
+    if (!CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() && !g_passwordManager.IsMasterLockUnlocked(false))
+      return false;
+    if (CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() && !g_passwordManager.IsProfileLockUnlocked())
+      return false;
+  }
+  /* Select a video source */
+  //CMediaSource share;
+  if(CGUIDialogFileBrowser::ShowAndSelectSource("sources://" + type + "/", "", heading, share))
+  {
+    /* prompt user if they want to really delete the source */
+    if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{751}, CVariant{750}))
+      return false;
+    /* Delete source from xml file in user profile */
+    //std::string type = "music";
+    VECSOURCES *shares = CMediaSourceSettings::GetInstance().GetSources(type);
+    if (!shares) 
+      return false;
+
+    for (unsigned int i = 0; i < shares->size(); i++)
+    {
+      CMediaSource &testShare = shares->at(i);
+      if (!URIUtils::CompareWithoutSlashAtEnd(testShare.strPath, share.strPath))
+        continue;
+      if (StringUtils::StartsWithNoCase(share.strName, testShare.strName))
+        CMediaSourceSettings::GetInstance().DeleteSource(type, share.strName, share.strPath);
+    }
+  }
+
+  return true;
 }
 
 void CGUIMediaWindow::SetupShares()

@@ -65,6 +65,8 @@
 #include "CueDocument.h"
 #include "Autorun.h"
 
+#include "pictures/PictureContentCheck.h"
+#include "dialogs/GUIDialogFileBrowser.h"
 
 using namespace XFILE;
 using namespace MUSICDATABASEDIRECTORY;
@@ -80,6 +82,10 @@ using namespace MUSIC_INFO;
 #define CONTROL_BTNSCAN         9
 #define CONTROL_BTNREC          10
 #define CONTROL_BTNRIP          11
+
+#define CONTROL_BTN_ADDSRC      2210 
+#define CONTROL_BTN_REMSRC      2211 
+#define CONTROL_BTN_TEST        2212
 
 CGUIWindowMusicBase::CGUIWindowMusicBase(int id, const std::string &xmlFile)
     : CGUIMediaWindow(id, xmlFile.c_str())
@@ -210,6 +216,131 @@ bool CGUIWindowMusicBase::OnMessage(CGUIMessage& message)
       {
         if (!m_vecItems->IsPath("special://musicplaylists/"))
           Update("special://musicplaylists/");
+      }
+      else if (iControl == CONTROL_BTN_REMSRC)
+      {
+        /* Remove one source */
+        CMediaSource share;
+        if(!RemoveOneSource(share, g_localizeStrings.Get(39002), "music"))
+          return false;
+
+        /* Remove items for the music db */
+        OnRemoveSource(0, share.strPath);
+        Update(m_vecItems->GetPath());
+
+        return true;
+      }
+      else if (iControl == CONTROL_BTN_TEST)
+      {
+        std::string path;
+        CMediaSource share;
+        CGUIDialogFileBrowser::ShowAndSelectSource("sources://video/", "", g_localizeStrings.Get(39001), share);
+
+        if (CProfilesManager::GetInstance().IsMasterProfile())
+        {
+          if (!g_passwordManager.IsMasterLockUnlocked(true))
+            return false;
+        }
+        else
+        {
+          if (!CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() && !g_passwordManager.IsMasterLockUnlocked(false))
+            return false;
+          if (CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() && !g_passwordManager.IsProfileLockUnlocked())
+            return false;
+        }
+        // prompt user if they want to really delete the source
+        if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{751}, CVariant{750}))
+          return false;
+
+        // check default before we delete, as deletion will kill the share object
+#if 0
+        std::string defaultSource(GetDefaultShareNameByType(type));
+        if (!defaultSource.empty())
+        {
+          if (share->strName == defaultSource)
+            ClearDefault(type);
+        }
+#endif
+        std::string type = "video";
+        VECSOURCES *shares = CMediaSourceSettings::GetInstance().GetSources(type);
+        if (!shares) 
+          return false;
+
+        for (unsigned int i = 0; i < shares->size(); i++)
+        {
+          CMediaSource &testShare = shares->at(i);
+          //if (URIUtils::IsDVD(testShare.strPath))
+          //{
+            //if (!item->IsDVD())
+              //continue;
+          //}
+          //else
+          //{
+            if (!URIUtils::CompareWithoutSlashAtEnd(testShare.strPath, share.strPath))
+              continue;
+          //}
+          // paths match, what about share name - only match the leftmost
+          // characters as the label may contain other info (status for instance)
+          if (StringUtils::StartsWithNoCase(share.strName, testShare.strName))
+          {
+            //share = &testShare;
+            CLog::Log(LOGDEBUG,"%s:::%s Source is %s from db", __FILE__, __FUNCTION__, share.strPath.c_str());
+            CLog::Log(LOGDEBUG,"%s:::%s Source name is %s from db", __FILE__, __FUNCTION__, share.strName.c_str());
+            CMediaSourceSettings::GetInstance().DeleteSource(type, share.strName, share.strPath);
+          }
+        }
+
+        // Check for permission to write the DB
+        // Check if the music scanner is already active
+        //CGUIDialogOK::ShowAndGetInput(CVariant{189}, CVariant{14057});
+
+#if 0
+        CPictureContentCheck * checkpics = new CPictureContentCheck();
+        checkpics->Start(CMediaSourceSettings::GetInstance().GetSources("pictures"), false, 0);
+#endif
+
+#if 0
+        CFileItemPtr pItem = m_vecItems->Get(10);
+        if(CGUIDialogYesNo::ShowAndGetInput(CVariant{185}, CVariant{39000}, NULL, NULL, CVariant{222}, CVariant{186}))
+          g_application.StartMusicAlbumScan(pItem->GetPath(), false, m_dlgProgress);
+        //g_application.StartMusicAlbumScan("", false, m_dlgProgress);
+#endif
+
+#if 0
+        // Get the album details
+        CQueryParams params;
+        CDirectoryNode::GetDatabaseInfo(pItem->GetPath(), params);
+        CAlbum album;
+        if (!m_musicdatabase.GetAlbum(params.GetAlbumId(), album))
+          return false;
+        // Get scraper for the item
+        ADDON::ScraperPtr scraper;
+        if (!m_musicdatabase.GetScraperForPath(pItem->GetPath(), scraper, ADDON::ADDON_SCRAPER_ALBUMS))
+          return false;
+        // show dialog box indicating we're searching the album
+        // FIXME: Verifier que la progress bar fonctionne bien
+        if (m_dlgProgress)
+        {
+          m_dlgProgress->ShowProgressBar(false);
+          m_dlgProgress->SetHeading(CVariant{185});
+          m_dlgProgress->SetLine(0, CVariant{pItem->GetMusicInfoTag()->GetAlbum()});
+          m_dlgProgress->SetLine(1, CVariant{pItem->GetMusicInfoTag()->GetAlbumArtistString()});
+          m_dlgProgress->SetLine(2, CVariant{""});
+          m_dlgProgress->Open();
+        }
+        // Update the item info
+        CMusicInfoScanner scanner;
+        if (scanner.UpdateDatabaseAlbumInfo(album, scraper, true, m_dlgProgress) != INFO_ADDED)
+        {
+          CGUIDialogOK::ShowAndGetInput(CVariant{185}, CVariant{500});
+          if (m_dlgProgress)
+            m_dlgProgress->Close();
+          return false;
+        }
+        // Close the progress dialog
+        if (m_dlgProgress)
+          m_dlgProgress->Close();
+#endif
       }
       else if (iControl == CONTROL_BTNSCAN)
       {
@@ -476,6 +607,9 @@ bool CGUIWindowMusicBase::ShowAlbumInfo(const CFileItem *pItem, bool bShowInfo /
   if (!m_musicdatabase.GetScraperForPath(pItem->GetPath(), scraper, ADDON::ADDON_SCRAPER_ALBUMS))
     return false;
 
+  CLog::Log(LOGDEBUG,"%s:::%s Fetch Album %d from db", __FILE__, __FUNCTION__,
+      params.GetAlbumId());
+
   CAlbum album;
   if (!m_musicdatabase.GetAlbum(params.GetAlbumId(), album))
     return false;
@@ -529,6 +663,8 @@ bool CGUIWindowMusicBase::ShowAlbumInfo(const CFileItem *pItem, bool bShowInfo /
     CGUIDialogMusicInfo *pDlgAlbumInfo = (CGUIDialogMusicInfo*)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_INFO);
     if (pDlgAlbumInfo)
     {
+      CLog::Log(LOGDEBUG,"%s:::%s Set Album %d (%d songs)", __FILE__, __FUNCTION__,
+      album.idAlbum, album.infoSongs.size());
       m_last_artist = NULL;
       pDlgAlbumInfo->SetAlbum(album, album.strPath);
       pDlgAlbumInfo->Open();
@@ -1431,15 +1567,18 @@ void CGUIWindowMusicBase::DoScan(const std::string &strPath)
   UpdateButtons();
 }
 
-void CGUIWindowMusicBase::OnRemoveSource(int iItem)
+void CGUIWindowMusicBase::OnRemoveSource(int iItem, std::string pathForce)
 {
   bool bCanceled;
-  if (CGUIDialogYesNo::ShowAndGetInput(CVariant{522}, CVariant{20340}, bCanceled, CVariant{""}, CVariant{""}, CGUIDialogYesNo::NO_TIMEOUT))
+  if (!pathForce.empty() || CGUIDialogYesNo::ShowAndGetInput(CVariant{522}, CVariant{20340}, bCanceled, CVariant{""}, CVariant{""}, CGUIDialogYesNo::NO_TIMEOUT))
   {
     MAPSONGS songs;
     CMusicDatabase database;
     database.Open();
-    database.RemoveSongsFromPath(m_vecItems->Get(iItem)->GetPath(), songs, false);
+    if(!pathForce.empty())
+      database.RemoveSongsFromPath(pathForce, songs, false);
+    else
+      database.RemoveSongsFromPath(m_vecItems->Get(iItem)->GetPath(), songs, false);
     database.CleanupOrphanedItems();
     g_infoManager.ResetLibraryBools();
     m_vecItems->RemoveDiscCache(GetID());

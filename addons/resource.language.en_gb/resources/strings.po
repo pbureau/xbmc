@@ -3855,7 +3855,7 @@ msgstr ""
 
 #: xbmc/dialogs/GUIDialogFileBrowser.cpp
 msgctxt "#1023"
-msgid "Browse for new share"
+msgid "Select Source Directory"
 msgstr ""
 
 #: addons/skin.estuary/1080i/DialogNetworkSetup.xml
@@ -18760,4 +18760,19 @@ msgstr ""
 #: xbmc/music/windows/GUIWindowMusicBase.cpp
 msgctxt "#40001"
 msgid "Some album information was not found, do you want to start an interactive scan?"
+msgstr ""
+
+#: xbmc/music/windows/xxx.cpp
+msgctxt "#39001"
+msgid "Select a Video source"
+msgstr ""
+
+#: xbmc/music/windows/xxx.cpp
+msgctxt "#39002"
+msgid "Select a Music source"
+msgstr ""
+
+#: xbmc/music/windows/xxx.cpp
+msgctxt "#39003"
+msgid "Select a Photo source"
 msgstr ""

@@ -46,6 +46,7 @@ public:
   static bool ShowAndGetDirectory(const VECSOURCES &shares, const std::string &heading, std::string &path, bool bWriteOnly=false);
   static bool ShowAndGetFile(const VECSOURCES &shares, const std::string &mask, const std::string &heading, std::string &path, bool useThumbs = false, bool useFileDirectories = false);
   static bool ShowAndGetFile(const std::string &directory, const std::string &mask, const std::string &heading, std::string &path, bool useThumbs = false, bool useFileDirectories = false, bool singleList = false);
+  static bool ShowAndSelectSource(const std::string &directory, const std::string &mask, const std::string &heading, CMediaSource &share);
   static bool ShowAndGetSource(std::string &path, bool allowNetworkShares, VECSOURCES* additionalShare = NULL, const std::string& strType="");
   static bool ShowAndGetFileList(const VECSOURCES &shares, const std::string &mask, const std::string &heading, std::vector<std::string> &path, bool useThumbs = false, bool useFileDirectories = false);
   static bool ShowAndGetImage(const VECSOURCES &shares, const std::string &heading, std::string &path);
@@ -79,17 +80,20 @@ protected:
   CFileItem* m_Directory;
   std::string m_strParentPath;
   std::string m_selectedPath;
+  CMediaSource m_selectedShare;
   CDirectoryHistory m_history;
   int m_browsingForFolders; // 0 - no, 1 - yes, 2 - yes, only writable
   bool m_bConfirmed;
   int m_bFlip;
   bool m_addNetworkShareEnabled;
   bool m_flipEnabled;
+  bool m_okEnabled;
   std::string m_addSourceType;
   bool m_browsingForImages;
   bool m_useFileDirectories;
   bool m_singleList;              // if true, we have no shares or anything
   bool m_multipleSelection;
+  bool m_flagSelectSource;
   std::vector<std::string> m_markedPath;
 
   CPictureThumbLoader m_thumbLoader;

@@ -45,6 +45,9 @@
 #include "utils/StringUtils.h"
 #include "GUIWindowSlideShow.h"
 
+#define CONTROL_BTN_ADDSRC          2210 
+#define CONTROL_BTN_REMSRC          2211 
+
 #define CONTROL_BTNVIEWASICONS      2
 #define CONTROL_BTNSORTBY           3
 #define CONTROL_BTNSORTASC          4
@@ -118,6 +121,19 @@ bool CGUIWindowPictures::OnMessage(CGUIMessage& message)
   case GUI_MSG_CLICKED:
     {
       int iControl = message.GetSenderId();
+      if (iControl == CONTROL_BTN_REMSRC) // Remove source
+      {
+        CMediaSource share;
+        if(RemoveOneSource(share, g_localizeStrings.Get(39003), "pictures"))
+        {
+          g_application.StartPictureContentCheck(true);
+          Refresh();
+          return true;
+        }
+        else
+          return false;
+      }
+      else
       if (iControl == CONTROL_BTNSLIDESHOW) // Slide Show
       {
         OnSlideShow();
