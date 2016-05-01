@@ -61,6 +61,7 @@ USB Add Src complet + Start scan pour:
     music - ok
     video - ok
     photo - ok 
+Verifier que le dialog 'add source' montre bien les partages reseau ajoute a la main (cas du NAS de Pierre Danzas)
 custom dialog pour le choix d'un album dans le interactive scan
 custom dialog pour le choix des noms artists/album pendant le interactive scan
 fonction cancel all pendant le interactive scan 
@@ -74,3 +75,4 @@ NETWORK Add:
 	Il faut simplifier les 12'000 dialogues
 	pb sur le share quand on ne rentre pas de mot de passe en mode anonyme, ça marche si on met des trucs bidon
 
+JE PENSE QUE J'AI PERDU LES NOTES SUITE AU MERGE SUR MASTER, REGARDER LE COMMIT POUR VOIR CE QU'IL FAUT TESTER.

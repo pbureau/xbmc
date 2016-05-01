@@ -69,6 +69,7 @@ CGUIDialogFileBrowser::CGUIDialogFileBrowser()
   m_browsingForFolders = 0;
   m_browsingForImages = false;
   m_useFileDirectories = false;
+  m_flagSelectSource   = false;
   m_addNetworkShareEnabled = false;
   m_singleList = false;
   m_thumbLoader.SetObserver(this);
@@ -76,6 +77,7 @@ CGUIDialogFileBrowser::CGUIDialogFileBrowser()
   m_bFlip = false;
   m_multipleSelection = false;
   m_loadType = KEEP_IN_MEMORY;
+  m_okEnabled = true;
 }
 
 CGUIDialogFileBrowser::~CGUIDialogFileBrowser()
@@ -521,6 +523,11 @@ void CGUIDialogFileBrowser::FrameMove()
     {
       CONTROL_DISABLE(CONTROL_FLIP);
     }
+    /* Set ok button visibility */
+    if(m_okEnabled)
+      SET_CONTROL_VISIBLE(CONTROL_OK);
+    else
+      SET_CONTROL_HIDDEN(CONTROL_OK);
   }
   CGUIDialog::FrameMove();
 }
@@ -530,6 +537,16 @@ void CGUIDialogFileBrowser::OnClick(int iItem)
   if ( iItem < 0 || iItem >= (int)m_vecItems->Size() ) return ;
   CFileItemPtr pItem = (*m_vecItems)[iItem];
   std::string strPath = pItem->GetPath();
+
+  /* If force select flag is set, select the current item and close dialog */
+  if(m_flagSelectSource)
+  {
+    m_selectedShare.strPath = pItem->GetPath();
+    m_selectedShare.strName = pItem->GetLabel();
+    m_bConfirmed = true;
+    Close();
+    return;
+  }
 
   if (pItem->m_bIsFolder)
   {
@@ -717,6 +734,49 @@ bool CGUIDialogFileBrowser::ShowAndGetFile(const VECSOURCES &shares, const std::
   bool confirmed(browser->IsConfirmed());
   if (confirmed)
     path = browser->m_selectedPath;
+  g_windowManager.Remove(browser->GetID());
+  delete browser;
+  return confirmed;
+}
+
+// start the file selection, for source selection only
+bool CGUIDialogFileBrowser::ShowAndSelectSource(const std::string &directory, const std::string &mask, const std::string &heading, CMediaSource &share)
+{
+  CGUIDialogFileBrowser *browser = new CGUIDialogFileBrowser();
+  if (!browser)
+    return false;
+  g_windowManager.AddUniqueInstance(browser);
+
+  browser->m_useFileDirectories = false;
+  browser->m_browsingForImages  = false;
+  browser->m_flagSelectSource   = true;
+  browser->m_okEnabled          = false;
+  browser->SetHeading(heading);
+
+  browser->m_vecItems->Clear();
+  CDirectory::GetDirectory(directory,*browser->m_vecItems);
+  browser->m_singleList = true;
+
+  std::string strMask = mask;
+  if (mask == "/")
+    browser->m_browsingForFolders=1;
+  else
+  if (mask == "/w")
+  {
+    browser->m_browsingForFolders=2;
+    strMask = "/";
+  }
+  else
+    browser->m_browsingForFolders = 0;
+
+  browser->m_rootDir.SetMask(strMask);
+  browser->m_selectedPath = directory;
+  browser->m_addNetworkShareEnabled = false;
+  browser->Open();
+  bool confirmed(browser->IsConfirmed());
+  if (confirmed)
+    share = browser->m_selectedShare;
+
   g_windowManager.Remove(browser->GetID());
   delete browser;
   return confirmed;

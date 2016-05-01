@@ -104,7 +104,7 @@ protected:
   void OnRipTrack(int iItem);
   void OnSearch();
   virtual void LoadPlayList(const std::string& strPlayList) override;
-  virtual void OnRemoveSource(int iItem);
+  virtual void OnRemoveSource(int iItem, std::string pathForce = "");
 
   typedef std::vector <CFileItem*>::iterator ivecItems; ///< CFileItem* vector Iterator
   CGUIDialogProgress* m_dlgProgress; ///< Progress dialog

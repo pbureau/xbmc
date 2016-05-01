@@ -70,6 +70,7 @@ protected:
   virtual void LoadAdditionalTags(TiXmlElement *root);
 
   // custom methods
+  virtual bool RemoveOneSource(CMediaSource & share, const std::string & heading, const std::string & type);
   virtual void SetupShares();
   virtual bool GoParentFolder();
   virtual bool OnClick(int iItem, const std::string &player = "");
