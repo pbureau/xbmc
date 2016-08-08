@@ -3,14 +3,12 @@ set(SOURCES DDSImage.cpp
             DirtyRegionSolvers.cpp
             DirtyRegionTracker.cpp
             FFmpegImage.cpp
-            FrameBufferObject.cpp
             GraphicContext.cpp
             GUIAction.cpp
             GUIAudioManager.cpp
             GUIBaseContainer.cpp
             GUIBorderedImage.cpp
             GUIButtonControl.cpp
-            GUICheckMarkControl.cpp
             GUIColorManager.cpp
             GUIControl.cpp
             GUIControlFactory.cpp
@@ -39,7 +37,6 @@ set(SOURCES DDSImage.cpp
             GUIMessage.cpp
             GUIMoverControl.cpp
             GUIMultiImage.cpp
-            GUIMultiSelectText.cpp
             GUIPanelContainer.cpp
             GUIProgressControl.cpp
             GUIRadioButtonControl.cpp
@@ -47,7 +44,6 @@ set(SOURCES DDSImage.cpp
             GUIResizeControl.cpp
             GUIRSSControl.cpp
             GUIScrollBarControl.cpp
-            GUISelectButtonControl.cpp
             GUISettingsSliderControl.cpp
             GUISliderControl.cpp
             GUISpinControl.cpp
@@ -83,7 +79,6 @@ set(HEADERS DDSImage.h
             DirtyRegionTracker.h
             DispResource.h
             FFmpegImage.h
-            FrameBufferObject.h
             Geometry.h
             GraphicContext.h
             gui3d.h
@@ -93,7 +88,6 @@ set(HEADERS DDSImage.h
             GUIBorderedImage.h
             GUIButtonControl.h
             GUICallback.h
-            GUICheckMarkControl.h
             GUIColorManager.h
             GUIControl.h
             GUIControlFactory.h
@@ -123,7 +117,6 @@ set(HEADERS DDSImage.h
             GUIMessage.h
             GUIMoverControl.h
             GUIMultiImage.h
-            GUIMultiSelectText.h
             GUIPanelContainer.h
             GUIProgressControl.h
             GUIRadioButtonControl.h
@@ -131,7 +124,6 @@ set(HEADERS DDSImage.h
             GUIResizeControl.h
             GUIRSSControl.h
             GUIScrollBarControl.h
-            GUISelectButtonControl.h
             GUISettingsSliderControl.h
             GUISliderControl.h
             GUISpinControl.h

@@ -327,7 +327,9 @@ namespace XBMCAddon
         break;
 
       case GUI_MSG_NOTIFY_ALL:
-        // GUI_MSG_NOTIFY_ALL breaks container content, so intercept it.
+        // most messages from GUI_MSG_NOTIFY_ALL break container content, whitelist working ones.
+        if (message.GetParam1() == GUI_MSG_PAGE_CHANGE || message.GetParam1() == GUI_MSG_WINDOW_RESIZE)
+          return A(CGUIMediaWindow::OnMessage(message));
         return true;
 
       case GUI_MSG_CLICKED:
@@ -356,7 +358,7 @@ namespace XBMCAddon
             CGUIControl* controlClicked = (CGUIControl*)interceptor->GetControl(iControl);
 
             // The old python way used to check list AND SELECITEM method 
-            //   or if its a button, checkmark.
+            //   or if its a button, radiobutton.
             // Its done this way for now to allow other controls without a 
             //  python version like togglebutton to still raise a onAction event
             if (controlClicked) // Will get problems if we the id is not on the window 

@@ -174,7 +174,7 @@ bool CGUIWindowAddonBrowser::OnClick(int iItem, const std::string &player)
     if (!CSettings::GetInstance().GetBool(CSettings::SETTING_ADDONS_ALLOW_UNKNOWN_SOURCES))
     {
       if (ShowYesNoDialogText(13106, 36617, 186, 10004) == DialogResponse::YES)
-        g_windowManager.ActivateWindow(WINDOW_SETTINGS_SYSTEM, "addons");
+        g_windowManager.ActivateWindow(WINDOW_SETTINGS_SYSTEM, CSettings::SETTING_ADDONS_ALLOW_UNKNOWN_SOURCES);
     }
     else
     {
@@ -184,14 +184,17 @@ bool CGUIWindowAddonBrowser::OnClick(int iItem, const std::string &player)
       g_mediaManager.GetNetworkLocations(shares);
       std::string path;
       if (CGUIDialogFileBrowser::ShowAndGetFile(shares, "*.zip", g_localizeStrings.Get(24041), path))
+      {
         CAddonInstaller::GetInstance().InstallFromZip(path);
+      }
     }
     return true;
   }
   if (item->GetPath() == "addons://update_all/")
   {
     UpdateAddons updater;
-    return CGUIDialogBusy::Wait(&updater);
+    CGUIDialogBusy::Wait(&updater);
+    return true;
   }
   if (!item->m_bIsFolder)
   {
@@ -210,7 +213,10 @@ bool CGUIWindowAddonBrowser::OnClick(int iItem, const std::string &player)
     return true;
   }
   if (item->IsPath("addons://search/"))
-    return Update(item->GetPath());
+  {
+    Update(item->GetPath());
+    return true;
+  }
 
   return CGUIMediaWindow::OnClick(iItem, player);
 }

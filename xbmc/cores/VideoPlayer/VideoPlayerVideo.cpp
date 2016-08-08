@@ -152,11 +152,15 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
 
   //reported fps is usually not completely correct
   if (hint.fpsrate && hint.fpsscale)
+  {
     m_fFrameRate = DVD_TIME_BASE / CDVDCodecUtils::NormalizeFrameduration((double)DVD_TIME_BASE * hint.fpsscale / hint.fpsrate);
+    m_bFpsInvalid = false;
+  }
   else
+  {
     m_fFrameRate = 25;
-
-  m_bFpsInvalid = (hint.fpsrate == 0 || hint.fpsscale == 0);
+    m_bFpsInvalid = true;
+  }
 
   m_pullupCorrection.ResetVFRDetection();
   m_bCalcFrameRate = CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) ||
@@ -179,8 +183,10 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
     m_fForcedAspectRatio = 0.0;
 
   if (m_pVideoCodec)
+  {
+    m_pVideoCodec->ClearPicture(&m_picture);
     delete m_pVideoCodec;
-
+  }
   m_pVideoCodec = codec;
   m_hints   = hint;
   m_stalled = m_messageQueue.GetPacketCount(CDVDMsg::DEMUXER_PACKET) == 0;
@@ -210,7 +216,7 @@ void CVideoPlayerVideo::CloseStream(bool bWaitForBuffers)
   CLog::Log(LOGNOTICE, "deleting video codec");
   if (m_pVideoCodec)
   {
-    m_pVideoCodec->Dispose();
+    m_pVideoCodec->ClearPicture(&m_picture);
     delete m_pVideoCodec;
     m_pVideoCodec = NULL;
   }
@@ -853,7 +859,7 @@ int CVideoPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
 
   int timeToDisplay = DVD_TIME_TO_MSEC(pts - iPlayingClock);
   // make sure waiting time is not negative
-  int maxWaitTime = std::max(timeToDisplay + 500, 50);
+  int maxWaitTime = std::min(std::max(timeToDisplay + 500, 50), 500);
   // don't wait when going ff
   if (m_speed > DVD_PLAYSPEED_NORMAL)
     maxWaitTime = std::max(timeToDisplay, 0);

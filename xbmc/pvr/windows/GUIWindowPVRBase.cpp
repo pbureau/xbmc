@@ -96,13 +96,6 @@ void CGUIWindowPVRBase::ResetObservers(void)
 
 void CGUIWindowPVRBase::Notify(const Observable &obs, const ObservableMessage msg)
 {
-  if (IsActive())
-  {
-    // Only the active window must set the selected item path which is shared
-    // between all PVR windows, not the last notified window (observer).
-    UpdateSelectedItemPath();
-  }
-
   CGUIMessage m(GUI_MSG_REFRESH_LIST, GetID(), 0, msg);
   CApplicationMessenger::GetInstance().SendGUIMessage(m);
 }
@@ -141,37 +134,7 @@ void CGUIWindowPVRBase::OnInitWindow(void)
 {
   if (!g_PVRManager.IsStarted() || !g_PVRClients->HasCreatedClients())
   {
-    // wait until the PVR manager has been started
-    CGUIDialogProgress* dialog = static_cast<CGUIDialogProgress*>(g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS));
-    if (dialog)
-    {
-      dialog->SetHeading(CVariant{19235});
-      dialog->SetText(CVariant{19045});
-      dialog->ShowProgressBar(false);
-      dialog->Open();
-
-      // do not block the gfx context while waiting
-      CSingleExit exit(g_graphicsContext);
-
-      CEvent event(true);
-      while(!event.WaitMSec(1))
-      {
-        if (g_PVRManager.IsStarted() && g_PVRClients->HasCreatedClients())
-          event.Set();
-
-        if (dialog->IsCanceled())
-        {
-          // return to previous window if canceled
-          dialog->Close();
-          g_windowManager.PreviousWindow();
-          return;
-        }
-
-        g_windowManager.ProcessRenderLoop(false);
-      }
-
-      dialog->Close();
-    }
+    return;
   }
 
   {
@@ -203,6 +166,7 @@ void CGUIWindowPVRBase::OnDeinitWindow(int nextWindowID)
 
 bool CGUIWindowPVRBase::OnMessage(CGUIMessage& message)
 {
+  bool bReturn = false;
   switch (message.GetMessage())
   {
     case GUI_MSG_CLICKED:
@@ -214,9 +178,21 @@ bool CGUIWindowPVRBase::OnMessage(CGUIMessage& message)
       }
     }
     break;
+
+    case GUI_MSG_REFRESH_LIST:
+    {
+      if (IsActive())
+      {
+        // Only the active window must set the selected item path which is shared
+        // between all PVR windows, not the last notified window (observer).
+        UpdateSelectedItemPath();
+      }
+      bReturn = true;
+    }
+    break;
   }
 
-  return CGUIMediaWindow::OnMessage(message);
+  return bReturn || CGUIMediaWindow::OnMessage(message);
 }
 
 bool CGUIWindowPVRBase::IsValidMessage(CGUIMessage& message)
@@ -639,6 +615,15 @@ bool CGUIWindowPVRBase::DeleteTimer(CFileItem *item, bool bIsRecording, bool bDe
   {
     timer = item->GetEPGInfoTag()->Timer();
   }
+  else if (item->IsPVRChannel())
+  {
+    const CEpgInfoTagPtr epgTag(item->GetPVRChannelInfoTag()->GetEPGNow());
+    if (epgTag)
+      timer = epgTag->Timer(); // cheap method, but not reliable as timers get set at epg tags asychrounously
+
+    if (!timer)
+      timer = g_PVRTimers->GetActiveTimerForChannel(item->GetPVRChannelInfoTag()); // more expensive, but reliable and works even for channels with no epg data
+  }
 
   if (!timer)
   {
@@ -835,7 +820,7 @@ bool CGUIWindowPVRBase::ActionInputChannelNumber(int input)
             m_viewControl.SetSelectedItem(itemIndex);
           return true;
         }
-        itemIndex++;
+        ++itemIndex;
       }
     }
   }

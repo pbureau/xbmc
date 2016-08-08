@@ -92,6 +92,8 @@
 #define PROPERTY_SORT_ORDER         "sort.order"
 #define PROPERTY_SORT_ASCENDING     "sort.ascending"
 
+#define PLUGIN_REFRESH_DELAY 200
+
 using namespace ADDON;
 using namespace KODI::MESSAGING;
 
@@ -228,7 +230,7 @@ bool CGUIMediaWindow::OnBack(int actionID)
      (!URIUtils::PathEquals(m_vecItems->GetPath(), m_startDirectory, true) || (m_canFilterAdvanced && filterUrl.HasOption("filter"))))
   {
     if (GoParentFolder())
-    return true;
+      return true;
   }
   return CGUIWindow::OnBack(actionID);
 }
@@ -301,8 +303,7 @@ bool CGUIMediaWindow::OnMessage(CGUIMessage& message)
       }
       else if (iControl == CONTROL_BTNSORTBY) // sort by
       {
-        if (m_guiState.get())
-          m_guiState->SetNextSortMethod();
+        if (m_guiState.get() && m_guiState->ChooseSortMethod())
         UpdateFileList();
         return true;
       }
@@ -526,6 +527,11 @@ bool CGUIMediaWindow::OnMessage(CGUIMessage& message)
       if (message.GetParam1() != WINDOW_INVALID)
       { // first time to this window - make sure we set the root path
         m_startDirectory = returning ? dir : GetRootPath();
+      }
+      if (message.GetParam2() == PLUGIN_REFRESH_DELAY)
+      {
+        Refresh();
+        return true;
       }
     }
     break;
@@ -756,7 +762,7 @@ bool CGUIMediaWindow::Update(const std::string &strDirectory, bool updateFilterP
   // The path to load. Empty string is used in various places to denote root, so translate to the
   // real root path first
   const std::string path = strDirectory.empty() ? GetRootPath() : strDirectory;
-  
+
   // stores the selected item in history
   SaveSelectedItemInHistory();
 
@@ -919,7 +925,10 @@ bool CGUIMediaWindow::OnClick(int iItem, const std::string &player)
     else if (!CProfilesManager::GetInstance().GetCurrentProfile().canWriteSources() && !g_passwordManager.IsProfileLockUnlocked())
       return false;
 
-    return OnAddMediaSource();
+    if (OnAddMediaSource())
+      Refresh(true);
+
+    return true;
   }
 
   if (!pItem->m_bIsFolder && pItem->IsFileFolder(EFILEFOLDER_MASK_ONCLICK))
@@ -1133,7 +1142,7 @@ bool CGUIMediaWindow::GoParentFolder()
   // dont match anymore.
   while (!parentPath.empty() && URIUtils::PathEquals(parentPath, currentPath, true))
   {
-      m_history.RemoveParentPath();
+    m_history.RemoveParentPath();
     parentPath = m_history.GetParentPath();
   }
 
@@ -1504,9 +1513,23 @@ void CGUIMediaWindow::OnInitWindow()
 
   // the start directory may change during Refresh
   bool updateStartDirectory = URIUtils::PathEquals(m_vecItems->GetPath(), m_startDirectory, true);
+
+  // we have python scripts hooked in everywhere :(
+  // those scripts may open windows and we can't open a window
+  // while opening this one.
+  // for plugin sources delay call to Refresh
+  if (!URIUtils::IsPlugin(m_vecItems->GetPath()))
+  {
   CLog::Log(LOGDEBUG, "------ Refresh start  ------");
   Refresh();
   CLog::Log(LOGDEBUG, "------ Refresh stop ------");
+  }
+  else
+  {
+    CGUIMessage msg(GUI_MSG_WINDOW_INIT, 0, 0, 0, PLUGIN_REFRESH_DELAY);
+    g_windowManager.SendThreadMessage(msg, m_controlID);
+  }
+
   if (updateStartDirectory)
   {
     // reset the start directory to the path of the items
@@ -1640,8 +1663,8 @@ bool CGUIMediaWindow::OnPopupMenu(int itemIdx)
     return true;
 
   int idx = CGUIDialogContextMenu::Show(buttons);
-  if (idx < 0 || idx >= buttons.size())
-  return false;
+  if (idx < 0 || idx >= static_cast<int>(buttons.size()))
+    return false;
 
   if (InRange(idx, pluginMenuRange))
   {
@@ -2065,4 +2088,9 @@ std::string CGUIMediaWindow::RemoveParameterFromPath(const std::string &strDirec
   }
 
   return strDirectory;
+}
+
+void CGUIMediaWindow::ProcessRenderLoop(bool renderOnly)
+{
+  g_windowManager.ProcessRenderLoop(renderOnly);
 }

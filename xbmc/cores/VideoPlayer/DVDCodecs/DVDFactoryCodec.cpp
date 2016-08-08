@@ -27,10 +27,6 @@
 #include "Overlay/DVDOverlayCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDCodecs.h"
 
-#if defined(HAVE_VIDEOTOOLBOXDECODER)
-#include "Video/DVDVideoCodecVideoToolBox.h"
-#include "utils/SystemInfo.h"
-#endif
 #include "Video/DVDVideoCodecFFmpeg.h"
 #include "Video/DVDVideoCodecOpenMax.h"
 #if defined(HAS_IMXVPU)
@@ -71,7 +67,6 @@ CDVDVideoCodec* CDVDFactoryCodec::OpenCodec(CDVDVideoCodec* pCodec, CDVDStreamIn
     }
 
     CLog::Log(LOGDEBUG, "FactoryCodec - Video: %s - Failed", pCodec->GetName());
-    pCodec->Dispose();
     delete pCodec;
   }
   catch(...)
@@ -93,7 +88,6 @@ CDVDAudioCodec* CDVDFactoryCodec::OpenCodec(CDVDAudioCodec* pCodec, CDVDStreamIn
     }
 
     CLog::Log(LOGDEBUG, "FactoryCodec - Audio: %s - Failed", pCodec->GetName());
-    pCodec->Dispose();
     delete pCodec;
   }
   catch(...)
@@ -115,7 +109,6 @@ CDVDOverlayCodec* CDVDFactoryCodec::OpenCodec(CDVDOverlayCodec* pCodec, CDVDStre
     }
 
     CLog::Log(LOGDEBUG, "FactoryCodec - Overlay: %s - Failed", pCodec->GetName());
-    pCodec->Dispose();
     delete pCodec;
   }
   catch(...)
@@ -150,8 +143,6 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, CProces
 
 #if defined(HAS_IMXVPU)
     pCodec = OpenCodec(new CDVDVideoCodecIMX(processInfo), hint, options);
-#elif defined(HAVE_VIDEOTOOLBOXDECODER)
-    pCodec = OpenCodec(new CDVDVideoCodecVideoToolBox(processInfo), hint, options);
 #elif defined(TARGET_ANDROID)
     pCodec = OpenCodec(new CDVDVideoCodecAndroidMediaCodec(processInfo), hint, options);
 #elif defined(HAVE_LIBOPENMAX)

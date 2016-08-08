@@ -148,7 +148,7 @@ bool CGUIAddonWindow::OnMessage(CGUIMessage& message)
       {
         CGUIControl* controlClicked = (CGUIControl*)this->GetControl(iControl);
 
-        // The old python way used to check list AND SELECITEM method or if its a button, checkmark.
+        // The old python way used to check list AND SELECITEM method or if its a button, radiobutton.
         // Its done this way for now to allow other controls without a python version like togglebutton to still raise a onAction event
         if (controlClicked) // Will get problems if we the id is not on the window and we try to do GetControlType on it. So check to make sure it exists
         {
@@ -339,7 +339,7 @@ void CGUIAddonWindowDialog::Show_Internal(bool show /* = true */)
     m_renderOrder = RENDER_ORDER_DIALOG;
     while (m_bRunning && !g_application.m_bStop)
     {
-      g_windowManager.ProcessRenderLoop();
+      ProcessRenderLoop();
     }
   }
   else // hide

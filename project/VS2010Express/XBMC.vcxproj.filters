@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="win32">
@@ -966,9 +966,6 @@
     <ClCompile Include="..\..\xbmc\guilib\GUIButtonControl.cpp">
       <Filter>guilib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\guilib\GUICheckMarkControl.cpp">
-      <Filter>guilib</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\guilib\GUIColorManager.cpp">
       <Filter>guilib</Filter>
     </ClCompile>
@@ -1044,9 +1041,6 @@
     <ClCompile Include="..\..\xbmc\guilib\GUIMultiImage.cpp">
       <Filter>guilib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\guilib\GUIMultiSelectText.cpp">
-      <Filter>guilib</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\guilib\GUIPanelContainer.cpp">
       <Filter>guilib</Filter>
     </ClCompile>
@@ -1066,9 +1060,6 @@
       <Filter>guilib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\guilib\GUIScrollBarControl.cpp">
-      <Filter>guilib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\guilib\GUISelectButtonControl.cpp">
       <Filter>guilib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\guilib\GUISettingsSliderControl.cpp">
@@ -2091,9 +2082,6 @@
     <ClCompile Include="..\..\xbmc\filesystem\FileCache.cpp">
       <Filter>filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\filesystem\MemBufferCache.cpp">
-      <Filter>filesystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\MediaSource.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -2845,6 +2833,11 @@
     <ClCompile Include="..\..\xbmc\cores\FFmpeg.cpp">
       <Filter>cores</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\network\httprequesthandler\HTTPRequestHandlerUtils.cpp">
+      <Filter>network\httprequesthandler</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\..\xbmc\media\MediaType.cpp">
       <Filter>media</Filter>
     </ClCompile>
@@ -3465,6 +3458,12 @@
     <ClCompile Include="..\..\xbmc\addons\PVRClient.cpp">
       <Filter>addons</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\epg\GUIEPGGridContainerModel.cpp">
+      <Filter>epg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\dialogs\GUIDialogKeyboardTouch.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\xbmc\win32\pch.h">
@@ -4075,9 +4074,6 @@
     <ClInclude Include="..\..\xbmc\guilib\GUICallback.h">
       <Filter>guilib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\xbmc\guilib\GUICheckMarkControl.h">
-      <Filter>guilib</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\GUIColorManager.h">
       <Filter>guilib</Filter>
     </ClInclude>
@@ -4153,9 +4149,6 @@
     <ClInclude Include="..\..\xbmc\guilib\GUIMultiImage.h">
       <Filter>guilib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\xbmc\guilib\GUIMultiSelectText.h">
-      <Filter>guilib</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\GUIPanelContainer.h">
       <Filter>guilib</Filter>
     </ClInclude>
@@ -4175,9 +4168,6 @@
       <Filter>guilib</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\GUIScrollBarControl.h">
-      <Filter>guilib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\guilib\GUISelectButtonControl.h">
       <Filter>guilib</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\guilib\GUISettingsSliderControl.h">
@@ -5241,9 +5231,6 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\platform\XbmcContext.h">
       <Filter>platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\filesystem\MemBufferCache.h">
-      <Filter>filesystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\filesystem\CircularCache.h">
       <Filter>filesystem</Filter>
@@ -6722,6 +6709,15 @@
     <ClInclude Include="..\..\xbmc\ServiceManager.h" />
     <ClInclude Include="..\..\xbmc\addons\PVRClient.h">
       <Filter>addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\epg\GUIEPGGridContainerModel.h">
+      <Filter>epg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\dialogs\GUIDialogKeyboardTouch.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\network\httprequesthandler\HTTPRequestHandlerUtils.h">
+      <Filter>network\httprequesthandler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

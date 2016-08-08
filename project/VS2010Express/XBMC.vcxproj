@@ -132,7 +132,7 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
       <OutputFile>$(OutDir)$(ProjectName)-test.exe</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <DelayLoadDLLs>zlib.dll;libmysql.dll;libxslt.dll;dnssd.dll;dwmapi.dll;ssh.dll;sqlite3.dll;avcodec-57.dll;avfilter-6.dll;avformat-57.dll;avutil-55.dll;postproc-54.dll;swresample-2.dll;swscale-4.dll;d3dcompiler_47.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
@@ -334,6 +334,7 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogGamepad.cpp" />
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogKaiToast.cpp" />
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogKeyboardGeneric.cpp" />
+    <ClCompile Include="..\..\xbmc\dialogs\GUIDialogKeyboardTouch.cpp" />
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogMediaFilter.cpp" />
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogMediaSource.cpp" />
     <ClCompile Include="..\..\xbmc\dialogs\GUIDialogNumeric.cpp" />
@@ -358,6 +359,7 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\epg\EpgInfoTag.cpp" />
     <ClCompile Include="..\..\xbmc\epg\EpgSearchFilter.cpp" />
     <ClCompile Include="..\..\xbmc\epg\GUIEPGGridContainer.cpp" />
+    <ClCompile Include="..\..\xbmc\epg\GUIEPGGridContainerModel.cpp" />
     <ClCompile Include="..\..\xbmc\events\AddonEvent.cpp" />
     <ClCompile Include="..\..\xbmc\events\AddonManagementEvent.cpp" />
     <ClCompile Include="..\..\xbmc\events\BaseEvent.cpp" />
@@ -400,7 +402,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\filesystem\ISO9660Directory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\ISOFile.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\LibraryDirectory.cpp" />
-    <ClCompile Include="..\..\xbmc\filesystem\MemBufferCache.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\MultiPathDirectory.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\MultiPathFile.cpp" />
     <ClCompile Include="..\..\xbmc\filesystem\MusicDatabaseDirectory.cpp" />
@@ -514,7 +515,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\guilib\GUIBaseContainer.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIBorderedImage.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIButtonControl.cpp" />
-    <ClCompile Include="..\..\xbmc\guilib\GUICheckMarkControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIColorManager.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIControlFactory.cpp" />
@@ -545,7 +545,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\guilib\GUIMessage.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIMoverControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIMultiImage.cpp" />
-    <ClCompile Include="..\..\xbmc\guilib\GUIMultiSelectText.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIPanelContainer.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIProgressControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIRadioButtonControl.cpp" />
@@ -553,7 +552,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\guilib\GUIResizeControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIRSSControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIScrollBarControl.cpp" />
-    <ClCompile Include="..\..\xbmc\guilib\GUISelectButtonControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUISettingsSliderControl.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIShader.cpp" />
     <ClCompile Include="..\..\xbmc\guilib\GUIShaderDX.cpp" />
@@ -714,6 +712,7 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClCompile Include="..\..\xbmc\peripherals\devices\PeripheralJoystick.cpp" />
     <ClCompile Include="..\..\xbmc\peripherals\EventScanner.cpp" />
     <ClCompile Include="..\..\xbmc\peripherals\EventScanRate.cpp" />
+    <ClCompile Include="..\..\xbmc\network\httprequesthandler\HTTPRequestHandlerUtils.cpp" />
     <ClCompile Include="..\..\xbmc\platform\posix\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Testsuite|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -1090,8 +1089,10 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClInclude Include="..\..\xbmc\cores\VideoPlayer\VideoRenderers\WinRenderer.h" />
     <ClInclude Include="..\..\xbmc\dialogs\GUIDialogKeyboardGeneric.h" />
     <ClInclude Include="..\..\xbmc\DbUrl.h" />
+    <ClInclude Include="..\..\xbmc\dialogs\GUIDialogKeyboardTouch.h" />
     <ClInclude Include="..\..\xbmc\dialogs\GUIDialogMediaFilter.h" />
     <ClInclude Include="..\..\xbmc\dialogs\GUIDialogSimpleMenu.h" />
+    <ClInclude Include="..\..\xbmc\epg\GUIEPGGridContainerModel.h" />
     <ClInclude Include="..\..\xbmc\events\AddonEvent.h" />
     <ClInclude Include="..\..\xbmc\events\AddonManagementEvent.h" />
     <ClInclude Include="..\..\xbmc\events\BaseEvent.h" />
@@ -1266,6 +1267,7 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClInclude Include="..\..\xbmc\peripherals\devices\PeripheralJoystick.h" />
     <ClInclude Include="..\..\xbmc\peripherals\EventScanner.h" />
     <ClInclude Include="..\..\xbmc\peripherals\EventScanRate.h" />
+    <ClInclude Include="..\..\xbmc\network\httprequesthandler\HTTPRequestHandlerUtils.h" />
     <ClInclude Include="..\..\xbmc\platform\MessagePrinter.h" />
     <ClInclude Include="..\..\xbmc\media\MediaType.h" />
     <ClInclude Include="..\..\xbmc\messaging\ApplicationMessenger.h" />
@@ -1397,7 +1399,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClInclude Include="..\..\xbmc\filesystem\DirectoryCache.h" />
     <ClInclude Include="..\..\xbmc\filesystem\FavouritesDirectory.h" />
     <ClInclude Include="..\..\xbmc\filesystem\FileCache.h" />
-    <ClInclude Include="..\..\xbmc\filesystem\MemBufferCache.h" />
     <ClInclude Include="..\..\xbmc\filesystem\AddonsDirectory.h" />
     <ClInclude Include="..\..\xbmc\filesystem\BlurayDirectory.h" />
     <ClInclude Include="..\..\xbmc\filesystem\CacheStrategy.h" />
@@ -2049,7 +2050,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClInclude Include="..\..\xbmc\guilib\GUIBorderedImage.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIButtonControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUICallback.h" />
-    <ClInclude Include="..\..\xbmc\guilib\GUICheckMarkControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIColorManager.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIControlFactory.h" />
@@ -2078,7 +2078,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClInclude Include="..\..\xbmc\guilib\GUIMessage.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIMoverControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIMultiImage.h" />
-    <ClInclude Include="..\..\xbmc\guilib\GUIMultiSelectText.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIPanelContainer.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIProgressControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIRadioButtonControl.h" />
@@ -2086,7 +2085,6 @@ copy "..\Win32BuildSetup\dependencies\python27.dll" "$(TargetDir)"</Command>
     <ClInclude Include="..\..\xbmc\guilib\GUIResizeControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIRSSControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIScrollBarControl.h" />
-    <ClInclude Include="..\..\xbmc\guilib\GUISelectButtonControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUISettingsSliderControl.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUIShader.h" />
     <ClInclude Include="..\..\xbmc\guilib\GUISliderControl.h" />

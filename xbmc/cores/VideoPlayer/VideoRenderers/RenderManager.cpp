@@ -26,6 +26,7 @@
 #include "threads/SingleLock.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+#include "windowing/WindowingFactory.h"
 
 #include "Application.h"
 #include "messaging/ApplicationMessenger.h"
@@ -38,15 +39,15 @@
 #include "HwDecRender/RendererVAAPI.h"
 #include "HwDecRender/RendererVDPAU.h"
 #if defined(TARGET_DARWIN_OSX)
-#include "HwDecRender/RendererVDA.h"
+#include "HwDecRender/RendererVTBGL.h"
 #endif
 #elif HAS_GLES == 2
   #include "LinuxRendererGLES.h"
 #if defined(HAS_MMAL)
 #include "HwDecRender/MMALRenderer.h"
 #endif
-#if defined(HAVE_VIDEOTOOLBOXDECODER)
-#include "HwDecRender/RendererVTB.h"
+#if defined(TARGET_DARWIN_IOS)
+#include "HwDecRender/RendererVTBGLES.h"
 #endif
 #if defined(HAS_IMXVPU)
 #include "HwDecRender/RendererIMX.h"
@@ -125,24 +126,37 @@ void CRenderManager::CClockSync::Reset()
 
 unsigned int CRenderManager::m_nextCaptureId = 0;
 
-CRenderManager::CRenderManager(CDVDClock &clock, IRenderMsg *player) : m_dvdClock(clock)
+CRenderManager::CRenderManager(CDVDClock &clock, IRenderMsg *player) :
+  m_pRenderer(nullptr),
+  m_bTriggerUpdateResolution(false),
+  m_bRenderGUI(true),
+  m_waitForBufferCount(0),
+  m_rendermethod(0),
+  m_renderedOverlay(false),
+  m_renderDebug(false),
+  m_renderState(STATE_UNCONFIGURED),
+  m_displayLatency(0.0),
+  m_videoDelay(0),
+  m_QueueSize(2),
+  m_QueueSkip(0),
+  m_format(RENDER_FMT_NONE),
+  m_width(0),
+  m_height(0),
+  m_dwidth(0),
+  m_dheight(0),
+  m_fps(0.0f),
+  m_extended_format(0),
+  m_orientation(0),
+  m_NumberBuffers(0),
+  m_lateframes(-1),
+  m_presentpts(0.0),
+  m_presentstep(PRESENT_IDLE),
+  m_presentsource(0),
+  m_dvdClock(clock),
+  m_playerPort(player),
+  m_captureWaitCounter(0),
+  m_hasCaptures(false)
 {
-  m_pRenderer = nullptr;
-  m_renderState = STATE_UNCONFIGURED;
-
-  m_presentstep = PRESENT_IDLE;
-  m_rendermethod = 0;
-  m_presentsource = 0;
-  m_bTriggerUpdateResolution = false;
-  m_hasCaptures = false;
-  m_displayLatency = 0.0f;
-  m_QueueSize   = 2;
-  m_QueueSkip   = 0;
-  m_format      = RENDER_FMT_NONE;
-  m_renderedOverlay = false;
-  m_captureWaitCounter = 0;
-  m_playerPort = player;
-  m_renderDebug = false;
 }
 
 CRenderManager::~CRenderManager()
@@ -171,24 +185,13 @@ bool CRenderManager::Configure(DVDVideoPicture& picture, float fps, unsigned fla
 
   // check if something has changed
   {
-    float config_framerate = fps;
-    float render_framerate = g_graphicsContext.GetFPS();
-    if (CSettings::GetInstance().GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) == ADJUST_REFRESHRATE_OFF)
-      render_framerate = config_framerate;
-    bool changerefresh = (fps != 0) &&
-                         (m_fps == 0.0 || fmod(m_fps, fps) != 0.0) &&
-                         (render_framerate != config_framerate);
-
     CSingleLock lock(m_statelock);
-    
-    m_fps = fps;
-    CheckEnableClockSync();
 
     if (m_width == picture.iWidth &&
         m_height == picture.iHeight &&
         m_dwidth == picture.iDisplayWidth &&
         m_dheight == picture.iDisplayHeight &&
-        !changerefresh &&
+        m_fps == fps &&
         (m_flags & ~CONF_FLAGS_FULLSCREEN) == (flags & ~CONF_FLAGS_FULLSCREEN) &&
         m_format == picture.format &&
         m_extended_format == picture.extended_format &&
@@ -232,6 +235,8 @@ bool CRenderManager::Configure(DVDVideoPicture& picture, float fps, unsigned fla
     m_NumberBuffers  = buffers;
     m_renderState = STATE_CONFIGURING;
     m_stateEvent.Reset();
+
+    CheckEnableClockSync();
 
     CSingleLock lock2(m_presentlock);
     m_presentstep = PRESENT_READY;
@@ -522,9 +527,7 @@ void CRenderManager::CreateRenderer()
     }
     else if (m_format == RENDER_FMT_CVBREF)
     {
-#if defined(TARGET_DARWIN_OSX)
-      m_pRenderer = new CRendererVDA;
-#elif defined(HAVE_VIDEOTOOLBOXDECODER)
+#if defined(TARGET_DARWIN)
       m_pRenderer = new CRendererVTB;
 #endif
     }
@@ -1055,10 +1058,15 @@ void CRenderManager::PresentBlend(bool clear, DWORD flags, DWORD alpha)
 
 void CRenderManager::UpdateDisplayLatency()
 {
-  float refresh = g_graphicsContext.GetFPS();
+  float fps = g_graphicsContext.GetFPS();
+  float refresh = fps;
   if (g_graphicsContext.GetVideoResolution() == RES_WINDOW)
     refresh = 0; // No idea about refresh rate when windowed, just get the default latency
   m_displayLatency = (double) g_advancedSettings.GetDisplayLatency(refresh);
+
+  int buffers = g_Windowing.NoOfBuffers();
+  m_displayLatency += (buffers - 1) / fps;
+
 }
 
 void CRenderManager::UpdateResolution()
@@ -1335,17 +1343,19 @@ void CRenderManager::PrepareNextRender()
     ++iter;
     while (iter != m_queued.end())
     {
-      // the slot for rendering in time is [pts .. (pts + frametime)]
+      // the slot for rendering in time is [pts .. (pts +  x * frametime)]
       // renderer/drivers have internal queues, being slightliy late here does not mean that
-      // we are really late. If we don't recover here, player will take action
-      if (renderPts < m_Queue[*iter].pts + 0.98 * frametime)
+      // we are really late. The likelihood that we recover decreases the greater m_lateframes
+      // get. Skipping a frame is easier than having decoder dropping one (lateframes > 10)
+      double x = (m_lateframes <= 6) ? 0.98 : 0;
+      if (renderPts < m_Queue[*iter].pts + x * frametime)
         break;
       idx = *iter;
       ++iter;
     }
 
     // skip late frames
-    while(m_queued.front() != idx)
+    while (m_queued.front() != idx)
     {
       requeue(m_discard, m_queued);
       m_QueueSkip++;
@@ -1381,7 +1391,7 @@ void CRenderManager::DiscardBuffer()
 bool CRenderManager::GetStats(int &lateframes, double &pts, int &queued, int &discard)
 {
   CSingleLock lock(m_presentlock);
-  lateframes = m_lateframes / 10;;
+  lateframes = m_lateframes / 10;
   pts = m_presentpts;
   queued = m_queued.size();
   discard  = m_discard.size();
@@ -1390,13 +1400,24 @@ bool CRenderManager::GetStats(int &lateframes, double &pts, int &queued, int &di
 
 void CRenderManager::CheckEnableClockSync()
 {
-  if (fabs(m_fps - g_graphicsContext.GetFPS()) < 0.01)
+  // refresh rate can be a multiple of video fps
+  double diff = 1.0;
+
+  if (m_fps != 0)
+  {
+    if (g_graphicsContext.GetFPS() >= m_fps)
+      diff = fmod(g_graphicsContext.GetFPS(), m_fps);
+    else
+      diff = m_fps - g_graphicsContext.GetFPS();
+  }
+
+  if (diff < 0.01)
   {
     m_clockSync.m_enabled = true;
   }
   else
   {
-    m_clockSync.m_enabled = true;
+    m_clockSync.m_enabled = false;
     m_dvdClock.SetSpeedAdjust(0);
   }
 }

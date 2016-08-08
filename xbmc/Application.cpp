@@ -265,6 +265,8 @@ CApplication::CApplication(void)
   , m_musicInfoScanner(new CMusicInfoScanner)
   , m_pictureContentChecker(new CPictureContentCheck)
   , m_fallbackLanguageLoaded(false)
+  , m_WaitingExternalCalls(0)
+  , m_ProcessedExternalCalls(0)
 {
   m_network = NULL;
   TiXmlBase::SetCondenseWhiteSpace(false);
@@ -697,6 +699,8 @@ bool CApplication::Create()
 
 bool CApplication::CreateGUI()
 {
+  m_frameMoveGuard.lock();
+
   m_renderGUI = true;
 #ifdef HAS_SDL
   CLog::Log(LOGNOTICE, "Setup SDL");
@@ -2630,6 +2634,21 @@ void CApplication::HandleShutdownMessage()
   }
 }
 
+void CApplication::LockFrameMoveGuard()
+{
+  ++m_WaitingExternalCalls;
+  m_frameMoveGuard.lock();
+  ++m_ProcessedExternalCalls;
+  g_graphicsContext.Lock();
+};
+
+void CApplication::UnlockFrameMoveGuard()
+{
+  --m_WaitingExternalCalls;
+  g_graphicsContext.Unlock();
+  m_frameMoveGuard.unlock();
+};
+
 void CApplication::FrameMove(bool processEvents, bool processGUI)
 {
   MEASURE_FUNCTION;
@@ -2665,7 +2684,22 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
       m_pInertialScrollingHandler->ProcessInertialScroll(frameTime);
       CSeekHandler::GetInstance().Process();
     }
+
+    // Open the door for external calls e.g python exactly here.
+    // Window size can be between 2 and 10ms and depends on number of continuous requests
+    if (m_WaitingExternalCalls)
+    {
+      CSingleExit ex(g_graphicsContext);
+      m_frameMoveGuard.unlock();
+      // Calculate a window size between 2 and 10ms, 4 continuous requests let the window grow by 1ms
+      unsigned int sleepTime = std::max(static_cast<unsigned int>(2), std::min(m_ProcessedExternalCalls >> 2, static_cast<unsigned int>(10)));
+      Sleep(sleepTime);
+      m_frameMoveGuard.lock();
+    }
+    else
+      m_ProcessedExternalCalls = 0;
   }
+
   if (processGUI && m_renderGUI)
   {
     m_skipGuiRender = false;
@@ -2779,6 +2813,8 @@ void CApplication::Stop(int exitCode)
 {
   try
   {
+    m_frameMoveGuard.unlock();
+
     CVariant vExitCode(CVariant::VariantTypeObject);
     vExitCode["exitcode"] = exitCode;
     CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnQuit", vExitCode);
@@ -2804,6 +2840,13 @@ void CApplication::Stop(int exitCode)
     }
     else
       CLog::Log(LOGNOTICE, "Not saving settings (settings.xml is not present)");
+
+    // kodi may crash or deadlock during exit (shutdown / reboot) due to
+    // either a bug in core or misbehaving addons. so try saving
+    // skin settings early
+    CLog::Log(LOGNOTICE, "Saving skin settings");
+    if (g_SkinInfo != nullptr)
+      g_SkinInfo->SaveSettings();
 
     m_bStop = true;
     m_AppFocused = false;
@@ -3202,20 +3245,12 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
     options.startpercent = item.GetProperty("StartPercent").asDouble(fallback);
   }
 
-  std::string newPlayer;
   if (bRestart)
   {
     // have to be set here due to playstack using this for starting the file
     options.starttime = item.m_lStartOffset / 75.0;
     if (m_itemCurrentFile->IsStack() && m_currentStack->Size() > 0 && m_itemCurrentFile->m_lStartOffset != 0)
       m_itemCurrentFile->m_lStartOffset = STARTOFFSET_RESUME; // to force fullscreen switching
-
-    if (!player.empty() && player != "default")
-      newPlayer = player;
-    else if (m_pPlayer->GetCurrentPlayer().empty())
-      newPlayer = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
-    else
-      newPlayer = m_pPlayer->GetCurrentPlayer();
   }
   else
   {
@@ -3279,11 +3314,6 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
 
       dbs.Close();
     }
-
-    if (player.empty())
-      newPlayer = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
-    else
-      newPlayer = player;
   }
 
   // this really aught to be inside !bRestart, but since PlayStack
@@ -3334,6 +3364,14 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
     if (dMsgCount > 0)
       CLog::LogF(LOGDEBUG,"Ignored %d playback thread messages", dMsgCount);
   }
+
+  std::string newPlayer;
+  if (!player.empty())
+    newPlayer = player;
+  else if (bRestart && !m_pPlayer->GetCurrentPlayer().empty())
+    newPlayer = m_pPlayer->GetCurrentPlayer();
+  else
+    newPlayer = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
 
   // We should restart the player, unless the previous and next tracks are using
   // one of the players that allows gapless playback (paplayer, VideoPlayer)
@@ -4408,7 +4446,14 @@ void CApplication::Process()
   }
 
   // handle any active scripts
-  CScriptInvocationManager::GetInstance().Process();
+
+  {
+    // Allow processing of script threads to let them shut down properly.
+    CSingleExit ex(g_graphicsContext);
+    m_frameMoveGuard.unlock();
+    CScriptInvocationManager::GetInstance().Process();
+    m_frameMoveGuard.lock();
+  }
 
   // process messages, even if a movie is playing
   CApplicationMessenger::GetInstance().ProcessMessages();

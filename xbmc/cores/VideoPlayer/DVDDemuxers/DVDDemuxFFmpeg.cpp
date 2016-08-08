@@ -197,6 +197,7 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
   m_currentPts = DVD_NOPTS_VALUE;
   m_speed = DVD_PLAYSPEED_NORMAL;
   m_program = UINT_MAX;
+
   const AVIOInterruptCB int_cb = { interrupt_cb, this };
 
   if (!pInput) return false;
@@ -493,7 +494,29 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
 
   // in case of mpegts and we have not seen pat/pmt, defer creation of streams
   if (!skipCreateStreams || m_pFormatContext->nb_programs > 0)
-    CreateStreams();
+  {
+    unsigned int nProgram(~0);
+    if (m_pFormatContext->nb_programs > 0)
+    {
+      
+      // select the corrrect program if requested
+      CVariant programProp(pInput->GetProperty("program"));
+      if (!programProp.isNull())
+      {
+        int programNumber = programProp.asInteger();
+
+        for (unsigned int i = 0; i < m_pFormatContext->nb_programs; ++i)
+        {
+          if (m_pFormatContext->programs[i]->program_num == programNumber)
+          {
+            nProgram = i;
+            break;
+          }
+        }
+      }
+    }
+    CreateStreams(nProgram);
+  }
 
   // allow IsProgramChange to return true
   if (skipCreateStreams && GetNrOfStreams() == 0)
@@ -796,14 +819,6 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
 
       if (pPacket)
       {
-        // lavf sometimes bugs out and gives 0 dts/pts instead of no dts/pts
-        // since this could only happens on initial frame under normal
-        // circomstances, let's assume it is wrong all the time
-        if(m_pkt.pkt.dts == 0)
-          m_pkt.pkt.dts = AV_NOPTS_VALUE;
-        if(m_pkt.pkt.pts == 0)
-          m_pkt.pkt.pts = AV_NOPTS_VALUE;
-
         if(m_bMatroska && stream->codec && stream->codec->codec_type == AVMEDIA_TYPE_VIDEO)
         { // matroska can store different timestamps
           // for different formats, for native stored

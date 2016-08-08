@@ -27,8 +27,6 @@ option(ENABLE_CEC         "Enable CEC support?" ON)
 if(UNIX)
   if(NOT APPLE)
     option(ENABLE_INTERNAL_FFMPEG "Enable internal ffmpeg?" ON)
-  else()
-    option(ENABLE_VTB "Enable VTB support?" OFF)
   endif()
   option(FFMPEG_PATH        "Path to external ffmpeg?" "")
   option(ENABLE_INTERNAL_CROSSGUID "Enable internal crossguid?" ON)
@@ -53,6 +51,9 @@ if(NOT WIN32)
   option(WITH_CPU               "build with given cpu" OFF)
   option(ENABLE_CCACHE          "Enable Ccache support" ON)
 endif()
+if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+  option(ENABLE_LIRC            "Enable LIRC support?" ON)
+endif()
 
 get_filename_component(CORE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../.. ABSOLUTE)
 set(CORE_BUILD_DIR build)
@@ -60,13 +61,13 @@ set(CORE_BUILD_DIR build)
 message(STATUS "Source directory: ${CORE_SOURCE_DIR}")
 message(STATUS "Build directory: ${CMAKE_BINARY_DIR}")
 
-include(scripts/common/generatorsetup.cmake)
-include(scripts/common/addoptions.cmake)
-include(scripts/common/archsetup.cmake)
-include(scripts/common/macros.cmake)
-include(scripts/common/managestring.cmake)
-include(scripts/common/projectmacros.cmake)
-include(scripts/common/pathsetup.cmake)
+include(scripts/common/GeneratorSetup.cmake)
+include(scripts/common/AddOptions.cmake)
+include(scripts/common/ArchSetup.cmake)
+include(scripts/common/Macros.cmake)
+include(scripts/common/ManageString.cmake)
+include(scripts/common/ProjectMacros.cmake)
+include(scripts/common/PathSetup.cmake)
 include(ExternalProject)
 
 core_find_git_rev()
@@ -95,7 +96,7 @@ list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 # Required dependencies
 set(required_deps Sqlite3 FreeType PCRE Cpluff LibDvd
                   TinyXML Python Yajl Xslt
-                  JPEG Lzo2 Fribidi TagLib FFMPEG CrossGUID)
+                  Lzo2 Fribidi TagLib FFMPEG CrossGUID)
 if(NOT WIN32)
   list(APPEND required_deps LibSmbClient ZLIB)
 else()
@@ -172,10 +173,6 @@ if(ENABLE_AIRTUNES)
   endif()
 endif()
 
-if(ENABLE_VTB)
-  list(APPEND DEP_DEFINES -DHAVE_VIDEOTOOLBOXDECODER=1)
-endif()
-
 if(NOT WIN32)
   core_optional_dep(OpenGl)
   if(OPENGL_FOUND)
@@ -217,7 +214,7 @@ add_custom_command(OUTPUT ${CORE_BUILD_DIR}/xbmc/CompileInfo.cpp
                                             -DARCH_DEFINES="${ARCH_DEFINES}"
                                             -DAPP_SCMID=${APP_SCMID}
                                             -Dprefix=${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}
-                                            -P ${PROJECT_SOURCE_DIR}/scripts/common/generateversionedfiles.cmake
+                                            -P ${PROJECT_SOURCE_DIR}/scripts/common/GenerateVersionedFiles.cmake
                   DEPENDS ${CORE_SOURCE_DIR}/version.txt
                           ${CORE_SOURCE_DIR}/addons/xbmc.addon/addon.xml.in
                           ${CORE_SOURCE_DIR}/addons/kodi.guilib/addon.xml.in
@@ -287,14 +284,14 @@ if(CORE_SYSTEM_NAME STREQUAL linux)
   core_link_library(sse4 system/libsse4)
 endif()
 
-core_link_library(XBMC_addon addons/library.xbmc.addon/libXBMC_addon)
-core_link_library(XBMC_codec addons/library.xbmc.codec/libXBMC_codec)
-core_link_library(XBMC_pvr addons/library.xbmc.pvr/libXBMC_pvr)
-core_link_library(KODI_adsp addons/library.kodi.adsp/libKODI_adsp)
-core_link_library(KODI_audioengine addons/library.kodi.audioengine/libKODI_audioengine)
-core_link_library(KODI_guilib addons/library.kodi.guilib/libKODI_guilib)
-core_link_library(KODI_inputstream addons/library.kodi.inputstream/libKODI_inputstream)
-core_link_library(KODI_peripheral addons/library.kodi.peripheral/libKODI_peripheral)
+core_link_library(XBMC_addon addons/library.xbmc.addon/libXBMC_addon nowrap)
+core_link_library(XBMC_codec addons/library.xbmc.codec/libXBMC_codec nowrap)
+core_link_library(XBMC_pvr addons/library.xbmc.pvr/libXBMC_pvr nowrap)
+core_link_library(KODI_adsp addons/library.kodi.adsp/libKODI_adsp nowrap)
+core_link_library(KODI_audioengine addons/library.kodi.audioengine/libKODI_audioengine nowrap)
+core_link_library(KODI_guilib addons/library.kodi.guilib/libKODI_guilib nowrap)
+core_link_library(KODI_inputstream addons/library.kodi.inputstream/libKODI_inputstream nowrap)
+core_link_library(KODI_peripheral addons/library.kodi.peripheral/libKODI_peripheral nowrap)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/system/players/VideoPlayer)
 add_custom_target(wrap-libraries ALL DEPENDS ${WRAP_FILES})
@@ -343,7 +340,7 @@ if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check ${APP_NAME_LC}-test)
 
   # For testing commit series
-  add_custom_target(check-commits ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/scripts/common/checkcommits.cmake
+  add_custom_target(check-commits ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/scripts/common/CheckCommits.cmake
                                                    -DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 endif()
 
@@ -359,11 +356,28 @@ if(ENABLE_X11 AND XRANDR_FOUND)
 endif()
 
 # XBMCHelper
-if(CORE_SYSTEM_TYPE STREQUAL darwin)
+if(CORE_SYSTEM_NAME STREQUAL darwin)
   add_subdirectory(${CORE_SOURCE_DIR}/tools/EventClients/Clients/OSXRemote build/XBMCHelper)
 endif()
 
-include(scripts/${CORE_SYSTEM_NAME}/install.cmake)
+include(scripts/${CORE_SYSTEM_NAME}/Install.cmake)
+
+# Prepare add-on build env
+foreach(binding ${addon_bindings})
+  get_filename_component(file ${binding} NAME)
+  set(BINDING_TARGET ${CORE_BUILD_DIR}/include/${APP_NAME_LC}/${file})
+  configure_file(${binding} ${BINDING_TARGET} COPYONLY)
+endforeach()
+
+set(APP_LIB_DIR ${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}/lib/${APP_NAME_LC})
+set(APP_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}/include/${APP_NAME_LC})
+set(CXX11_SWITCH "-std=c++11")
+configure_file(${PROJECT_SOURCE_DIR}/KodiConfig.cmake.in
+               ${CORE_BUILD_DIR}/lib/${APP_NAME_LC}/${APP_NAME_LC}Config.cmake @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/scripts/common/AddonHelpers.cmake
+               ${CORE_BUILD_DIR}/lib/${APP_NAME_LC}/AddonHelpers.cmake COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/scripts/common/AddOptions.cmake
+               ${CORE_BUILD_DIR}/lib/${APP_NAME_LC}/AddOptions.cmake COPYONLY)
 
 # Status
 message(STATUS "#---- CONFIGURATION ----#")

@@ -35,6 +35,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <atomic>
 
 class CAction;
 class CFileItem;
@@ -396,6 +397,16 @@ public:
 
   std::unique_ptr<CServiceManager> m_ServiceManager;
 
+  /*!
+  \brief Locks calls from outside kodi (e.g. python) until framemove is processed.
+  */
+  void LockFrameMoveGuard();
+
+  /*!
+  \brief Unlocks calls from outside kodi (e.g. python).
+  */
+  void UnlockFrameMoveGuard();
+
 protected:
   virtual bool OnSettingsSaving() const override;
 
@@ -516,7 +527,11 @@ protected:
   bool m_fallbackLanguageLoaded;
   
 private:
-  CCriticalSection                m_critSection;                 /*!< critical section for all changes to this class, except for changes to triggers */
+  CCriticalSection m_critSection;                 /*!< critical section for all changes to this class, except for changes to triggers */
+
+  CCriticalSection m_frameMoveGuard;              /*!< critical section for synchronizing GUI actions from inside and outside (python) */
+  std::atomic_uint m_WaitingExternalCalls;        /*!< counts threads wich are waiting to be processed in FrameMove */
+  unsigned int m_ProcessedExternalCalls;          /*!< counts calls wich are processed during one "door open" cycle in FrameMove */
 };
 
 XBMC_GLOBAL_REF(CApplication,g_application);

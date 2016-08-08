@@ -60,7 +60,6 @@ public:
   CDVDVideoCodecFFmpeg(CProcessInfo &processInfo);
   virtual ~CDVDVideoCodecFFmpeg();
   virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) override;
-  virtual void Dispose() override;
   virtual int Decode(uint8_t* pData, int iSize, double dts, double pts) override;
   virtual void Reset() override;
   virtual void Reopen() override;
@@ -77,23 +76,14 @@ public:
   void SetHardware(IHardwareDecoder* hardware);
 
 protected:
+  void Dispose();
   static enum AVPixelFormat GetFormat(struct AVCodecContext * avctx, const AVPixelFormat * fmt);
 
   int  FilterOpen(const std::string& filters, bool scale);
   void FilterClose();
   int  FilterProcess(AVFrame* frame);
   void SetFilters();
-
-  void UpdateName()
-  {
-    if(m_pCodecContext->codec->name)
-      m_name = std::string("ff-") + m_pCodecContext->codec->name;
-    else
-      m_name = "ffmpeg";
-
-    if(m_pHardware)
-      m_name += "-" + m_pHardware->Name();
-  }
+  void UpdateName();
 
   AVFrame* m_pFrame;
   AVFrame* m_pDecodedFrame;

@@ -59,22 +59,21 @@ bool CDVDInputStreamFile::Open()
     flags |= READ_AUDIO_VIDEO;
 
   /*
-   * There are 4 buffer modes available (configurable in as.xml)
+   * There are 5 buffer modes available (configurable in as.xml)
    * 0) Buffer all internet filesystems (like 2 but additionally also ftp, webdav, etc.) (default)
    * 1) Buffer all filesystems (including local)
    * 2) Only buffer true internet filesystems (streams) (http, etc.)
    * 3) No buffer
+   * 4) Buffer all non-local (remote) filesystems
    */
   if (!URIUtils::IsOnDVD(m_item.GetPath()) && !URIUtils::IsBluray(m_item.GetPath())) // Never cache these
   {
-    if (g_advancedSettings.m_networkBufferMode == 0 || g_advancedSettings.m_networkBufferMode == 2)
+    if ((g_advancedSettings.m_cacheBufferMode == CACHE_BUFFER_MODE_INTERNET && URIUtils::IsInternetStream(m_item.GetPath(), true))
+     || (g_advancedSettings.m_cacheBufferMode == CACHE_BUFFER_MODE_TRUE_INTERNET && URIUtils::IsInternetStream(m_item.GetPath(), false))
+     || (g_advancedSettings.m_cacheBufferMode == CACHE_BUFFER_MODE_REMOTE && URIUtils::IsRemote(m_item.GetPath()))
+     || (g_advancedSettings.m_cacheBufferMode == CACHE_BUFFER_MODE_ALL))
     {
-      if (URIUtils::IsInternetStream(CURL(m_item.GetPath()), (g_advancedSettings.m_networkBufferMode == 0) ) )
-        flags |= READ_CACHED;
-    }
-    else if (g_advancedSettings.m_networkBufferMode == 1)
-    {
-      flags |= READ_CACHED; // In buffer mode 1 force cache for (almost) all files
+      flags |= READ_CACHED;
     }
   }
 
